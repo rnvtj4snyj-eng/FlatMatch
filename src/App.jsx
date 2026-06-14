@@ -1,5 +1,3 @@
-Last login: Sat Jun 13 21:32:27 on ttys001
-linco@MacBook-Air-45 ~ % cat ~/flatmatch-app/src/App.jsx
 import { useState, useMemo, useEffect } from "react";
 
 /* ---------------------------------------------
@@ -460,10 +458,10 @@ function Logo({ size = 40 }) {
       aria-label="FlatMatch logo"
       style={{ borderRadius: size * 0.2, display: "block" }}
     >
-      <rect x="0" y="0" width="200" height="200" rx="40" fill="#23363A" />
-      <circle cx="82" cy="110" r="38" fill="#1FA9A0" opacity="0.9" />
-      <circle cx="124" cy="110" r="38" fill="#3D7A8C" opacity="0.9" />
-      <path d="M103 48 L152 92 H140 V132 H66 V92 H54 Z" fill="#F4FAF9" />
+      <rect x="0" y="0" width="200" height="200" rx="40" fill="#1E2B2E" />
+      <circle cx="82" cy="110" r="38" fill="#1A9090" opacity="0.9" />
+      <circle cx="124" cy="110" r="38" fill="#1A9090" opacity="0.9" />
+      <path d="M103 48 L152 92 H140 V132 H66 V92 H54 Z" fill="#F7F6F2" />
     </svg>
   );
 }
@@ -485,7 +483,7 @@ function LogoLockup({ size = 40, align = "center" }) {
           fontFamily: "'DM Serif Display', Georgia, serif",
           fontSize: size * 0.55,
           fontWeight: 600,
-          color: "#23363A",
+          color: "#1E2B2E",
         }}
       >
         FlatMatch
@@ -793,6 +791,29 @@ function Intro({ onStart, onPost }) {
    QUIZ
 --------------------------------------------- */
 
+
+const QUESTION_CATEGORIES = {
+  year: "About you",
+  degree: "About you",
+  sleep: "Daily rhythm",
+  morning: "Daily rhythm",
+  scheduleoverlap: "Daily rhythm",
+  weekend: "Social life",
+  guests: "Social life",
+  alcohol: "Social life",
+  noise: "Flat vibe",
+  cleanliness: "Flat vibe",
+  chores: "Flat vibe",
+  decor: "Flat vibe",
+  pets: "Flat vibe",
+  communication: "Flat vibe",
+  smoking: "Flat vibe",
+  studyenvironment: "Study habits",
+  budgetpriority: "Priorities",
+  commitment: "Priorities",
+  sharedmeals: "Food & cooking",
+};
+
 function Quiz({ question, questionIndex, total, onSelect, onBack }) {
   return (
     <div style={styles.quizWrap}>
@@ -808,7 +829,7 @@ function Quiz({ question, questionIndex, total, onSelect, onBack }) {
           <span />
         )}
         <div style={styles.progressText}>
-          {questionIndex + 1} / {total}
+          {questionIndex + 1} / {total} · {Math.round((questionIndex + 1) / total * 100)}%
         </div>
       </div>
 
@@ -821,7 +842,22 @@ function Quiz({ question, questionIndex, total, onSelect, onBack }) {
         />
       </div>
 
-      <h2 style={styles.question}>{question.text}</h2>
+      <div key={question.id} className="question-anim">
+        {QUESTION_CATEGORIES[question.id] && (
+          <div style={{
+            fontFamily: FONT_BODY,
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            color: COLORS.teal,
+            marginBottom: 10,
+          }}>
+            {QUESTION_CATEGORIES[question.id]}
+          </div>
+        )}
+        <h2 style={styles.question}>{question.text}</h2>
+      </div>
 
       <div style={styles.optionsCol}>
         {question.options.map((opt, i) => (
@@ -908,7 +944,7 @@ function Results({ archetype, ranked, onRestart, onPost, loadingListings, onMark
             <p style={styles.archetypeDescription}>{archetype.description}</p>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 16 }}>
               {Object.entries(tagTotals).sort((a,b) => b[1]-a[1]).slice(0,3).map(([tag]) => (
-                <span key={tag} style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", background: "rgba(255,255,255,0.12)", color: COLORS.paper, borderRadius: 100, padding: "4px 12px" }}>
+                <span key={tag} style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", background: "rgba(255,255,255,0.12)", color: COLORS.paper, borderRadius: 8, padding: "4px 12px" }}>
                   {tag}
                 </span>
               ))}
@@ -1021,7 +1057,7 @@ function getInitials(title) {
 }
 
 function getAvatarColor(title) {
-  const colors = ["#1FA9A0", "#3D7A8C", "#E8746A", "#6B9E78", "#8B7BB5", "#C4884A"];
+  const colors = ["#1A9090", "#1A9090", "#E8746A", "#6B9E78", "#8B7BB5", "#C4884A"];
   let hash = 0;
   for (let i = 0; i < (title || "").length; i++) hash += title.charCodeAt(i);
   return colors[hash % colors.length];
@@ -1510,8 +1546,8 @@ const globalCSS = `
     transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
   }
   .fm-option-btn:hover {
-    border-color: #1FA9A0;
-    background: #f0faf9;
+    border-color: #1A9090;
+    background: #F7F6F2;
     transform: translateX(3px);
   }
   .fm-option-btn:active {
@@ -1533,7 +1569,7 @@ const globalCSS = `
     transition: background 0.15s ease, color 0.15s ease, transform 0.12s ease;
   }
   .fm-secondary-btn:hover {
-    background: #23363A;
+    background: #1E2B2E;
     color: #fff;
     transform: translateY(-1px);
   }
@@ -1551,7 +1587,7 @@ const globalCSS = `
   }
 
   .fm-nav-link:hover {
-    color: #23363A !important;
+    color: #1E2B2E !important;
   }
   .fm-nav-cta:hover {
     opacity: 0.85;
@@ -1563,14 +1599,14 @@ const FONT_DISPLAY = "'DM Serif Display', Georgia, serif";
 const FONT_BODY = "'Inter', sans-serif";
 
 const COLORS = {
-  paper: "#F4FAF9",
-  ink: "#23363A",
-  coral: "#1FA9A0",
-  teal: "#3D7A8C",
-  yellow: "#D6F2EC",
-  inkSoft: "#6B7E82",
+  paper: "#F7F6F2",
+  ink: "#1E2B2E",
+  coral: "#E8746A",
+  teal: "#1A9090",
+  yellow: "#FFF3E0",
+  inkSoft: "#5A6B6E",
   cardBg: "#FFFFFF",
-  border: "#DCEFEC",
+  border: "#E2E5E4",
 };
 
 const styles = {
@@ -1643,7 +1679,7 @@ const styles = {
     fontSize: 14,
     fontWeight: 600,
     color: "#fff",
-    background: COLORS.ink,
+    background: COLORS.coral,
     border: "none",
     cursor: "pointer",
     padding: "8px 18px",
@@ -1722,7 +1758,7 @@ const styles = {
     textAlign: "left",
   },
   eyebrow: {
-    fontFamily: FONT_DISPLAY,
+    fontFamily: FONT_BODY,
     fontSize: 12,
     letterSpacing: "0.2em",
     fontWeight: 600,
@@ -1761,27 +1797,27 @@ const styles = {
   dot: { color: COLORS.border },
 
   primaryBtn: {
-    fontFamily: FONT_DISPLAY,
+    fontFamily: FONT_BODY,
     fontSize: 16,
     fontWeight: 600,
     padding: "16px 36px",
-    background: COLORS.coral,
+    background: COLORS.ink,
     color: "#FFFFFF",
     border: "none",
-    borderRadius: 100,
+    borderRadius: 8,
     cursor: "pointer",
     boxShadow: "none",
   },
 
   secondaryBtn: {
-    fontFamily: FONT_DISPLAY,
+    fontFamily: FONT_BODY,
     fontSize: 14,
     fontWeight: 600,
     padding: "12px 28px",
     background: "transparent",
     color: COLORS.ink,
     border: `1.5px solid ${COLORS.ink}`,
-    borderRadius: 100,
+    borderRadius: 8,
     cursor: "pointer",
     marginTop: 24,
   },
@@ -1808,7 +1844,7 @@ const styles = {
     padding: "4px 0",
   },
   progressText: {
-    fontFamily: FONT_DISPLAY,
+    fontFamily: FONT_BODY,
     fontSize: 13,
     fontWeight: 600,
     color: COLORS.inkSoft,
@@ -1873,7 +1909,7 @@ const styles = {
     overflow: "hidden",
   },
   archetypeEyebrow: {
-    fontFamily: FONT_DISPLAY,
+    fontFamily: FONT_BODY,
     fontSize: 12,
     letterSpacing: "0.2em",
     fontWeight: 600,
@@ -1907,7 +1943,7 @@ const styles = {
     marginBottom: 32,
   },
   sectionLabel: {
-    fontFamily: FONT_DISPLAY,
+    fontFamily: FONT_BODY,
     fontSize: 13,
     letterSpacing: "0.14em",
     fontWeight: 600,
@@ -1929,7 +1965,7 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    fontFamily: FONT_DISPLAY,
+    fontFamily: FONT_BODY,
     fontSize: 15,
     fontWeight: 600,
     flexShrink: 0,
@@ -1960,7 +1996,7 @@ const styles = {
     marginBottom: 10,
   },
   cardTitle: {
-    fontFamily: FONT_DISPLAY,
+    fontFamily: FONT_BODY,
     fontSize: 16,
     fontWeight: 600,
     marginBottom: 4,
@@ -1970,12 +2006,12 @@ const styles = {
     color: COLORS.inkSoft,
   },
   matchBadge: {
-    fontFamily: FONT_DISPLAY,
+    fontFamily: FONT_BODY,
     fontSize: 13,
     fontWeight: 600,
-    color: COLORS.ink,
-    background: COLORS.yellow,
-    borderRadius: 100,
+    color: "#1A6B2E",
+    background: "#D4EDD4",
+    borderRadius: 8,
     padding: "6px 14px",
     whiteSpace: "nowrap",
   },
@@ -1986,14 +2022,14 @@ const styles = {
     marginBottom: 14,
   },
   requestBtn: {
-    fontFamily: FONT_DISPLAY,
+    fontFamily: FONT_BODY,
     fontSize: 13,
     fontWeight: 600,
     padding: "10px 22px",
     background: "transparent",
     color: COLORS.coral,
     border: `1.5px solid ${COLORS.coral}`,
-    borderRadius: 100,
+    borderRadius: 8,
     cursor: "pointer",
   },
 
@@ -2044,14 +2080,14 @@ const styles = {
     color: COLORS.paper,
   },
   pathLabel: {
-    fontFamily: FONT_DISPLAY,
+    fontFamily: FONT_BODY,
     fontSize: 11,
     letterSpacing: "0.18em",
     fontWeight: 600,
     color: COLORS.yellow,
   },
   pathLabelSecondary: {
-    fontFamily: FONT_DISPLAY,
+    fontFamily: FONT_BODY,
     fontSize: 11,
     letterSpacing: "0.18em",
     fontWeight: 600,
@@ -2096,7 +2132,7 @@ const styles = {
     fontSize: 13.5,
     color: COLORS.ink,
     background: COLORS.yellow,
-    borderRadius: 100,
+    borderRadius: 8,
     padding: "10px 18px",
     display: "inline-block",
   },
@@ -2131,12 +2167,14 @@ const styles = {
     flexWrap: "wrap",
   },
   ucBadge: {
+    textTransform: "uppercase",
+    letterSpacing: "0.08em",
     fontFamily: FONT_BODY,
     fontSize: 12,
     fontWeight: 600,
     color: COLORS.teal,
-    background: COLORS.border,
-    borderRadius: 100,
+    background: "rgba(26,144,144,0.08)",
+    borderRadius: 8,
     padding: "6px 14px",
     display: "inline-block",
     marginBottom: 16,
@@ -2153,7 +2191,7 @@ const styles = {
     marginBottom: 24,
   },
   label: {
-    fontFamily: FONT_DISPLAY,
+    fontFamily: FONT_BODY,
     fontSize: 13,
     fontWeight: 600,
     color: COLORS.ink,
@@ -2188,7 +2226,7 @@ const styles = {
     fontSize: 13.5,
     fontWeight: 500,
     padding: "12px 18px",
-    borderRadius: 100,
+    borderRadius: 8,
     border: `1.5px solid ${COLORS.border}`,
     background: COLORS.cardBg,
     color: COLORS.ink,
@@ -2199,7 +2237,7 @@ const styles = {
     fontSize: 13.5,
     fontWeight: 600,
     padding: "12px 18px",
-    borderRadius: 100,
+    borderRadius: 8,
     border: `1.5px solid ${COLORS.coral}`,
     background: COLORS.coral,
     color: "#FFFFFF",
@@ -2215,7 +2253,7 @@ const styles = {
     fontSize: 13,
     fontWeight: 500,
     padding: "10px 16px",
-    borderRadius: 100,
+    borderRadius: 8,
     border: `1.5px solid ${COLORS.border}`,
     background: COLORS.cardBg,
     color: COLORS.ink,
@@ -2226,7 +2264,7 @@ const styles = {
     fontSize: 13,
     fontWeight: 600,
     padding: "10px 16px",
-    borderRadius: 100,
+    borderRadius: 8,
     border: `1.5px solid ${COLORS.teal}`,
     background: COLORS.teal,
     color: "#FFFFFF",
@@ -2256,19 +2294,19 @@ const styles = {
   },
   feeCard: {
     background: "#fff",
-    border: "1.5px solid #DCEFEC",
+    border: "1.5px solid #E2E5E4",
     borderRadius: 18,
     padding: "22px",
     marginBottom: 24,
     boxShadow: "0 8px 24px rgba(35,54,58,0.07)",
   },
   feeRow: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 },
-  feeLabel: { fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 17, fontWeight: 600, color: "#23363A" },
+  feeLabel: { fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 17, fontWeight: 600, color: "#1E2B2E" },
   feeAmount: { fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 26, fontWeight: 700, color: "#ff6b4a" },
   feeMeta: { fontSize: 12.5, color: "#6b7e82", marginBottom: 14 },
-  feeDivider: { height: 1, background: "#DCEFEC", marginBottom: 14 },
+  feeDivider: { height: 1, background: "#E2E5E4", marginBottom: 14 },
   feePoints: { display: "flex", flexDirection: "column", gap: 8 },
-  feePoint: { fontSize: 13.5, color: "#23363A", lineHeight: 1.5 },
+  feePoint: { fontSize: 13.5, color: "#1E2B2E", lineHeight: 1.5 },
   formError: {
     fontSize: 13,
     color: "#C0455A",
@@ -2290,4 +2328,4 @@ const styles = {
     lineHeight: 1.6,
   },
 };
-linco@MacBook-Air-45 ~ % 
+linco@MacBook-Air-45 ~ %
