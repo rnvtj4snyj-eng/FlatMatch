@@ -793,35 +793,12 @@ function Intro({ onStart, onPost }) {
    QUIZ
 --------------------------------------------- */
 
-
-const QUESTION_CATEGORIES = {
-  year: "About you",
-  degree: "About you",
-  sleep: "Daily rhythm",
-  morning: "Daily rhythm",
-  weekend: "Social life",
-  guests: "Social life",
-  alcohol: "Social life",
-  noise: "Flat vibe",
-  cleanliness: "Flat vibe",
-  chores: "Flat vibe",
-  decor: "Flat vibe",
-  study_environment: "Study habits",
-  budget_priority: "Priorities",
-  commitment: "Priorities",
-  shared_meals: "Food & cooking",
-  pets: "Flat vibe",
-  communication: "Flat vibe",
-  smoking: "Flat vibe",
-  schedule_overlap: "Daily rhythm",
-};
-
 function Quiz({ question, questionIndex, total, onSelect, onBack }) {
-  const category = QUESTION_CATEGORIES[question.id] || "";
-  const pct = Math.round(((questionIndex + 1) / total) * 100);
-
   return (
     <div style={styles.quizWrap}>
+      <div style={{ marginBottom: 16 }}>
+        <Logo size={32} />
+      </div>
       <div style={styles.progressRow}>
         {onBack ? (
           <button style={styles.backBtn} onClick={onBack} aria-label="Previous question">
@@ -830,27 +807,32 @@ function Quiz({ question, questionIndex, total, onSelect, onBack }) {
         ) : (
           <span />
         )}
-        <div style={styles.progressText}>{questionIndex + 1} / {total} · {pct}%</div>
+        <div style={styles.progressText}>
+          {questionIndex + 1} / {total}
+        </div>
       </div>
 
       <div style={styles.progressBarOuter}>
-        <div style={{ ...styles.progressBarInner, width: `${pct}%` }} />
+        <div
+          style={{
+            ...styles.progressBarInner,
+            width: `${((questionIndex + 1) / total) * 100}%`,
+          }}
+        />
       </div>
 
-      <div key={question.id} className="question-anim">
-        {category && (
-          <div style={{ fontFamily: FONT_BODY, fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: COLORS.teal, marginBottom: 10 }}>
-            {category}
-          </div>
-        )}
-        <h2 style={styles.question}>{question.text}</h2>
-        <div style={styles.optionsCol}>
-          {question.options.map((opt, i) => (
-            <button key={i} className="fm-option-btn" style={styles.optionBtn} onClick={() => onSelect(i)}>
-              {opt.label}
-            </button>
-          ))}
-        </div>
+      <h2 style={styles.question}>{question.text}</h2>
+
+      <div style={styles.optionsCol}>
+        {question.options.map((opt, i) => (
+          <button
+            key={i}
+            style={styles.optionBtn}
+            onClick={() => onSelect(i)}
+          >
+            {opt.label}
+          </button>
+        ))}
       </div>
     </div>
   );
@@ -1511,12 +1493,6 @@ const globalCSS = `
     .stamp-anim { animation: none !important; }
   }
 
-
-  @keyframes questionIn {
-    0% { opacity: 0; transform: translateX(18px); }
-    100% { opacity: 1; transform: translateX(0); }
-  }
-  .question-anim { animation: questionIn 0.22s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
   button:focus-visible, .stamp-anim:focus-visible {
     outline: 3px solid #5FA8A0;
     outline-offset: 2px;
@@ -1838,7 +1814,7 @@ const styles = {
     color: COLORS.inkSoft,
   },
   progressBarOuter: {
-    height: 8,
+    height: 6,
     background: COLORS.border,
     borderRadius: 100,
     overflow: "hidden",
