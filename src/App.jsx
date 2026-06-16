@@ -502,7 +502,7 @@ function LogoLockup({ size = 40, align = "center" }) {
    NAV BAR
 --------------------------------------------- */
 
-function NavBar({ onHome, onPost, onSeek }) {
+function NavBar({ onHome, onPost, onSeek, onSaved }) {
   return (
     <nav style={styles.navbar}>
       <div style={styles.navInner}>
@@ -511,7 +511,8 @@ function NavBar({ onHome, onPost, onSeek }) {
           <span style={styles.navLogoText}>FlatMatch</span>
         </button>
         <div style={styles.navLinks}>
-          <button className="fm-nav-link" style={styles.navLink} onClick={onSeek}>Find a flat</button>
+          <button className="fm-nav-link" style={styles.navLink} onClick={onSeek}>Match with a flat</button>
+          <button className="fm-nav-link" style={styles.navLink} onClick={onSaved}>Saved</button>
           <button className="fm-nav-cta" style={styles.navCta} onClick={onPost}>Post a spot</button>
         </div>
       </div>
@@ -520,13 +521,14 @@ function NavBar({ onHome, onPost, onSeek }) {
 }
 
 export default function App() {
-  const [stage, setStage] = useState("intro"); // intro | quiz | result | post | posted
+  const [stage, setStage] = useState("intro"); // intro | quiz | result | post | posted | saved
   const [currentQ, setCurrentQ] = useState(0);
   const [answers, setAnswers] = useState({});
   const [userListings, setUserListings] = useState([]);
   const [loadingListings, setLoadingListings] = useState(true);
   const [postError, setPostError] = useState(null);
   const [sessionContact, setSessionContact] = useState(null);
+  const [savedListings, setSavedListings] = useState([]);
 
   const tagTotals = useMemo(() => scoreToTags(answers), [answers]);
   const archetype = useMemo(() => determineArchetype(tagTotals), [tagTotals]);
@@ -576,6 +578,14 @@ export default function App() {
     }
   }
 
+  function onSave(listingId) {
+    setSavedListings((prev) =>
+      prev.includes(listingId)
+        ? prev.filter((id) => id !== listingId)
+        : [...prev, listingId]
+    );
+  }
+
   async function markFilled(listingId) {
     try {
       await markListingFilled(listingId);
@@ -608,6 +618,7 @@ export default function App() {
         onHome={restart}
         onPost={() => setStage("post")}
         onSeek={() => { setAnswers({}); setCurrentQ(0); setStage("quiz"); }}
+        onSaved={() => setStage("saved")}
       />
 
       {stage === "intro" && (
@@ -629,6 +640,22 @@ export default function App() {
         />
       )}
 
+      {stage === "saved" && (
+        <Results
+          archetype={archetype}
+          ranked={ranked.filter((l) => savedListings.includes(l.id))}
+          onRestart={restart}
+          onPost={() => setStage("post")}
+          loadingListings={loadingListings}
+          onMarkFilled={markFilled}
+          sessionContact={sessionContact}
+          tagTotals={tagTotals}
+          onSave={onSave}
+          savedListings={savedListings}
+          isSavedView={true}
+        />
+      )}
+
       {stage === "result" && (
         <Results
           archetype={archetype}
@@ -639,6 +666,8 @@ export default function App() {
           onMarkFilled={markFilled}
           sessionContact={sessionContact}
           tagTotals={tagTotals}
+          onSave={onSave}
+          savedListings={savedListings}
         />
       )}
 
@@ -709,7 +738,7 @@ function Intro({ onStart, onPost }) {
           </svg>
           <h2 style={styles.heroHeading}>I'm looking to join a flat</h2>
           <p style={styles.heroSubtext}>Find a group that matches your vibe. Take a 3-min quiz and get ranked by compatibility.</p>
-          <button className="hero-btn" style={styles.heroBtn} onClick={onStart}>Find my flat</button>
+          <button className="hero-btn" style={styles.heroBtn} onClick={onStart}>Match with a flat</button>
         </div>
       </div>
     </div>
@@ -827,7 +856,7 @@ function HowMatchingWorks() {
   );
 }
 
-function Results({ archetype, ranked, onRestart, onPost, loadingListings, onMarkFilled, sessionContact, tagTotals }) {
+function Results({ archetype, ranked, onRestart, onPost, loadingListings, onMarkFilled, sessionContact, tagTotals, onSave, savedListings, isSavedView }) {
   const [suburbFilter, setSuburbFilter] = useState("all");
   const [sortBy, setSortBy] = useState("match"); // match | distance
 
@@ -863,24 +892,32 @@ function Results({ archetype, ranked, onRestart, onPost, loadingListings, onMark
       <div style={{ marginBottom: 16, width: "100%" }}>
         <Logo size={32} />
       </div>
-      <div className="stamp-anim" style={styles.archetypeCard}>
-        <div style={styles.archetypeEyebrow}>YOUR FLATTING ARCHETYPE</div>
-        <div style={{ display: "flex", alignItems: "flex-start", gap: 20, flexWrap: "wrap" }}>
-          <div style={{ fontSize: 52, lineHeight: 1, flexShrink: 0 }}>{archetype.emoji}</div>
-          <div style={{ flex: 1 }}>
-            <h1 style={styles.archetypeName}>{archetype.name}</h1>
-            <p style={styles.archetypeTagline}>{archetype.tagline}</p>
-            <p style={styles.archetypeDescription}>{archetype.description}</p>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 16 }}>
-              {Object.entries(tagTotals).sort((a,b) => b[1]-a[1]).slice(0,3).map(([tag]) => (
-                <span key={tag} style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", background: "rgba(255,255,255,0.12)", color: COLORS.paper, borderRadius: 8, padding: "4px 12px" }}>
-                  {tag}
-                </span>
-              ))}
+      {!isSavedView && (
+        <div className="stamp-anim" style={styles.archetypeCard}>
+          <div style={styles.archetypeEyebrow}>YOUR FLATTING ARCHETYPE</div>
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 20, flexWrap: "wrap" }}>
+            <div style={{ fontSize: 52, lineHeight: 1, flexShrink: 0 }}>{archetype.emoji}</div>
+            <div style={{ flex: 1 }}>
+              <h1 style={styles.archetypeName}>{archetype.name}</h1>
+              <p style={styles.archetypeTagline}>{archetype.tagline}</p>
+              <p style={styles.archetypeDescription}>{archetype.description}</p>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 16 }}>
+                {Object.entries(tagTotals).sort((a,b) => b[1]-a[1]).slice(0,3).map(([tag]) => (
+                  <span key={tag} style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", background: "rgba(255,255,255,0.12)", color: COLORS.paper, borderRadius: 8, padding: "4px 12px" }}>
+                    {tag}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
+      {isSavedView && (
+        <div style={{ marginBottom: 30 }}>
+          <h1 style={{ ...styles.h2, marginBottom: 8 }}>Saved listings</h1>
+          <p style={{ fontSize: 14.5, color: COLORS.inkSoft, marginBottom: 0 }}>Your bookmarked flats — pick up where you left off</p>
+        </div>
+      )}
 
       {!loadingListings && (
         <div style={{ width: "100%", background: "rgba(26, 144, 144, 0.08)", border: `1px solid rgba(26, 144, 144, 0.2)`, borderRadius: 12, padding: "12px 16px", marginBottom: 20, fontSize: 13.5, color: COLORS.teal, fontWeight: 500 }}>
@@ -888,7 +925,7 @@ function Results({ archetype, ranked, onRestart, onPost, loadingListings, onMark
         </div>
       )}
 
-      {!loadingListings && (
+      {!loadingListings && !isSavedView && (
         <div style={styles.filterBar}>
           <div style={styles.fieldGroup}>
             <label style={styles.label}>Suburb</label>
@@ -946,7 +983,7 @@ function Results({ archetype, ranked, onRestart, onPost, loadingListings, onMark
             ) : (
               <div style={styles.cardsCol}>
                 {groups.map((listing) => (
-                  <ListingCard key={listing.id} listing={listing} onMarkFilled={onMarkFilled} sessionContact={sessionContact} />
+                  <ListingCard key={listing.id} listing={listing} onMarkFilled={onMarkFilled} sessionContact={sessionContact} onSave={onSave} savedListings={savedListings} />
                 ))}
               </div>
             )}
@@ -959,7 +996,7 @@ function Results({ archetype, ranked, onRestart, onPost, loadingListings, onMark
             ) : (
               <div style={styles.cardsCol}>
                 {solos.map((listing) => (
-                  <ListingCard key={listing.id} listing={listing} onMarkFilled={onMarkFilled} sessionContact={sessionContact} />
+                  <ListingCard key={listing.id} listing={listing} onMarkFilled={onMarkFilled} sessionContact={sessionContact} onSave={onSave} savedListings={savedListings} />
                 ))}
               </div>
             )}
@@ -1009,9 +1046,10 @@ function timeAgo(ts) {
   return `${days}d ago`;
 }
 
-function ListingCard({ listing, onMarkFilled, sessionContact }) {
+function ListingCard({ listing, onMarkFilled, sessionContact, onSave, savedListings }) {
   const [revealed, setRevealed] = useState(false);
   const isOwner = !!(sessionContact && listing.contact && sessionContact === listing.contact);
+  const isSaved = savedListings && savedListings.includes(listing.id);
   const daysLeft = listing.expiresAt
     ? Math.max(0, Math.ceil((listing.expiresAt - Date.now()) / (1000 * 60 * 60 * 24)))
     : null;
@@ -1035,7 +1073,21 @@ function ListingCard({ listing, onMarkFilled, sessionContact }) {
           </div>
           <div style={styles.cardPostedDate}>{timeAgo(listing.renewedAt || listing.createdAt)}</div>
         </div>
-        <div style={styles.matchBadge}>{listing.score}% match</div>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+          <div style={styles.matchBadge}>{listing.score}% match</div>
+          {onSave && (
+            <button
+              style={styles.bookmarkBtn}
+              onClick={() => onSave(listing.id)}
+              title={isSaved ? "Remove from saved" : "Save listing"}
+              aria-label={isSaved ? "Remove from saved" : "Save listing"}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill={isSaved ? COLORS.teal : "none"} stroke={COLORS.teal} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2z"></path>
+              </svg>
+            </button>
+          )}
+        </div>
       </div>
       {listing.photo && (
         <img
@@ -2081,6 +2133,16 @@ const styles = {
     padding: "6px 14px",
     marginBottom: 10,
   },
+  bookmarkBtn: {
+    background: "transparent",
+    border: "none",
+    cursor: "pointer",
+    padding: "4px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    transition: "opacity 0.2s ease",
+  },
 
   /* Intro extras */
   introPostRow: {
@@ -2429,5 +2491,46 @@ const styles = {
     marginTop: 18,
     textAlign: "center",
     lineHeight: 1.6,
+  },
+  photoUploadBox: {
+    border: `2px dashed ${COLORS.border}`,
+    borderRadius: 12,
+    padding: "20px",
+    textAlign: "center",
+    cursor: "pointer",
+    transition: "background-color 0.2s ease, border-color 0.2s ease",
+  },
+  photoUploadLabel: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 8,
+    cursor: "pointer",
+  },
+  photoPreview: {
+    maxWidth: "100%",
+    maxHeight: 300,
+    borderRadius: 12,
+    objectFit: "cover",
+  },
+  removePhotoBtn: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    background: "#000",
+    color: "#fff",
+    border: "none",
+    borderRadius: "50%",
+    width: 32,
+    height: 32,
+    fontSize: 16,
+    cursor: "pointer",
+  },
+  listingPhoto: {
+    width: "100%",
+    maxHeight: 300,
+    borderRadius: 12,
+    objectFit: "cover",
+    marginBottom: 12,
   },
 };
