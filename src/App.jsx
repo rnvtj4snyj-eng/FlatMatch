@@ -527,7 +527,6 @@ export default function App() {
   const [loadingListings, setLoadingListings] = useState(true);
   const [postError, setPostError] = useState(null);
   const [sessionContact, setSessionContact] = useState(null);
-  const [pendingListing, setPendingListing] = useState(null);
 
   const tagTotals = useMemo(() => scoreToTags(answers), [answers]);
   const archetype = useMemo(() => determineArchetype(tagTotals), [tagTotals]);
@@ -564,19 +563,11 @@ export default function App() {
   }, []);
 
   async function submitListing(listing) {
-    setPendingListing(listing);
-    setStage("payment");
-  }
-
-  async function confirmPayment() {
-    const listing = pendingListing;
-    if (!listing) return;
     setPostError(null);
     setSessionContact(listing.contact);
     try {
       const record = await createListing(listing);
       setUserListings((prev) => [record, ...prev]);
-      setPendingListing(null);
       setStage("posted");
     } catch (err) {
       console.error("Error saving listing:", err);
@@ -654,15 +645,6 @@ export default function App() {
         <PostForm
           onSubmit={submitListing}
           onCancel={() => setStage("intro")}
-          error={postError}
-        />
-      )}
-
-      {stage === "payment" && (
-        <PaymentStep
-          onConfirm={confirmPayment}
-          onCancel={() => { setPendingListing(null); setStage("post"); }}
-          listing={pendingListing}
           error={postError}
         />
       )}
@@ -1477,53 +1459,6 @@ function PostForm({ onSubmit, onCancel, error }) {
         Your listing is visible to anyone using FlatMatch — only share
         contact details you're comfortable being public.
       </p>
-    </div>
-  );
-}
-
-/* ---------------------------------------------
-   PAYMENT STEP
---------------------------------------------- */
-
-const LISTING_FEE = 9;
-
-function PaymentStep({ onConfirm, onCancel, error }) {
-  const [paying, setPaying] = useState(false);
-  async function handlePay() {
-    setPaying(true);
-    await new Promise((r) => setTimeout(r, 1200));
-    setPaying(false);
-    onConfirm();
-  }
-  return (
-    <div style={styles.formWrap}>
-      <LogoLockup size={32} align="left" />
-      <h1 style={styles.h2}>One small step</h1>
-      <p style={styles.intro}>
-        A listing fee keeps FlatMatch focused on serious groups — no spam, no ghost listings.
-      </p>
-      <div style={styles.feeCard}>
-        <div style={styles.feeRow}>
-          <span style={styles.feeLabel}>Listing fee</span>
-          <span style={styles.feeAmount}>NZ${LISTING_FEE}</span>
-        </div>
-        <div style={styles.feeMeta}>Active for 30 days · visible to all · remove anytime</div>
-        <div style={styles.feeDivider} />
-        <div style={styles.feePoints}>
-          <div style={styles.feePoint}>✓ Appears in every compatible user's ranked results</div>
-          <div style={styles.feePoint}>✓ Auto-expires after 30 days — no zombie listings</div>
-          <div style={styles.feePoint}>✓ Mark as filled anytime to remove it immediately</div>
-          <div style={styles.feePoint}>✓ Only real groups pay to post — keeps the feed clean</div>
-        </div>
-      </div>
-      {error && <div style={styles.formError}>{error}</div>}
-      <div style={styles.formActions}>
-        <button style={styles.primaryBtn} onClick={handlePay} disabled={paying}>
-          {paying ? "Processing..." : `Pay NZ$${LISTING_FEE} & post listing`}
-        </button>
-        <button type="button" style={styles.secondaryBtn} onClick={onCancel}>Go back</button>
-      </div>
-      <p style={styles.shareNote}>Simulated payment — connect Stripe before going live.</p>
     </div>
   );
 }
