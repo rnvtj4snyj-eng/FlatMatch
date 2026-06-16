@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { fetchListings, createListing, markListingFilled } from "./listingsService";
 
 /* ---------------------------------------------
    LOCATION DATA
@@ -548,28 +549,10 @@ export default function App() {
   async function loadListings() {
     setLoadingListings(true);
     try {
-      if (!window.storage) {
-        setUserListings([]);
-        return;
-      }
-      const keysResult = await window.storage.list("listing:", true);
-      const keys = keysResult?.keys || [];
-      const loaded = [];
-      for (const key of keys) {
-        try {
-          const result = await window.storage.get(key, true);
-          if (result?.value) {
-            loaded.push(JSON.parse(result.value));
-          }
-        } catch {
-          // skip unreadable entries
-        }
-      }
-      const now = Date.now();
-      const active = loaded.filter(l => !l.filled && (!l.expiresAt || l.expiresAt > now));
-      active.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-      setUserListings(active);
-    } catch {
+      const listings = await fetchListings();
+      setUserListings(listings);
+    } catch (err) {
+      console.error("Failed to load listings:", err);
       setUserListings([]);
     } finally {
       setLoadingListings(false);
@@ -589,42 +572,26 @@ export default function App() {
     const listing = pendingListing;
     if (!listing) return;
     setPostError(null);
-    const id = `listing:${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
-    const record = { ...listing, id, createdAt: Date.now(), expiresAt: Date.now() + THIRTY_DAYS, filled: false };
     setSessionContact(listing.contact);
     try {
-      if (!window.storage) {
-        setUserListings((prev) => [record, ...prev]);
-        setPendingListing(null);
-        setStage("posted");
-        return;
-      }
-      const result = await window.storage.set(id, JSON.stringify(record), true);
-      if (!result) throw new Error("Save failed");
+      const record = await createListing(listing);
       setUserListings((prev) => [record, ...prev]);
       setPendingListing(null);
       setStage("posted");
     } catch (err) {
+      console.error("Error saving listing:", err);
       setPostError("Couldn't save your listing — try again in a moment.");
       setStage("post");
     }
   }
 
   async function markFilled(listingId) {
-    if (!window.storage) {
-      setUserListings((prev) => prev.filter((l) => l.id !== listingId));
-      return;
-    }
     try {
-      const result = await window.storage.get(listingId, true);
-      if (result?.value) {
-        const record = JSON.parse(result.value);
-        record.filled = true;
-        await window.storage.set(listingId, JSON.stringify(record), true);
-      }
+      await markListingFilled(listingId);
       setUserListings((prev) => prev.filter((l) => l.id !== listingId));
-    } catch { /* silent */ }
+    } catch (err) {
+      console.error("Error marking listing filled:", err);
+    }
   }
 
   function selectAnswer(qIndex, optIndex) {
@@ -1080,6 +1047,7 @@ function ListingCard({ listing, onMarkFilled, sessionContact }) {
   const daysLeft = listing.expiresAt
     ? Math.max(0, Math.ceil((listing.expiresAt - Date.now()) / (1000 * 60 * 60 * 24)))
     : null;
+  const spotsLeft = listing.spotsNeeded ?? null;
   return (
     <div className="fm-card" style={styles.card}>
       <div style={styles.cardTopRow}>
@@ -1101,6 +1069,13 @@ function ListingCard({ listing, onMarkFilled, sessionContact }) {
         </div>
         <div style={styles.matchBadge}>{listing.score}% match</div>
       </div>
+      {listing.photo && (
+        <img
+          src={listing.photo}
+          alt="Flat"
+          style={styles.listingPhoto}
+        />
+      )}
       {daysLeft !== null && daysLeft <= 7 && (
         <div style={styles.expiryWarning}>
           Listing expires in {daysLeft} day{daysLeft !== 1 ? "s" : ""} — renew to stay visible
@@ -1111,6 +1086,7 @@ function ListingCard({ listing, onMarkFilled, sessionContact }) {
           ✓ Mark as filled — remove listing
         </button>
       )}
+      <StatusBadge status={listing.status || "looking"} />
       <p style={styles.cardBio}>{listing.bio}</p>
       {revealed && listing.contact ? (
         <div style={styles.contactReveal}>
@@ -1158,10 +1134,48 @@ function emptyForm() {
   };
 }
 
+const STATUS_OPTIONS = [
+  { key: "looking", label: "Actively looking", color: "#1A9090", dot: "#1A9090" },
+  { key: "almost", label: "Almost full — 1 spot left", color: "#E8A030", dot: "#E8A030" },
+  { key: "paused", label: "Taking a break", color: "#9AAAB0", dot: "#9AAAB0" },
+];
+
+function StatusBadge({ status }) {
+  const s = STATUS_OPTIONS.find(o => o.key === status) || STATUS_OPTIONS[0];
+  return (
+    <div style={{
+      display: "inline-flex", alignItems: "center", gap: 6,
+      fontSize: 12, fontWeight: 600, color: s.color,
+      background: `${s.color}18`, borderRadius: 999, padding: "4px 10px",
+      marginBottom: 10,
+    }}>
+      <span style={{
+        width: 6, height: 6, borderRadius: "50%", background: s.dot,
+        display: "inline-block",
+        animation: status === "looking" ? "pulse 2s infinite" : "none",
+      }} />
+      {s.label}
+    </div>
+  );
+}
+
 function PostForm({ onSubmit, onCancel, error }) {
   const [form, setForm] = useState(emptyForm());
   const [submitting, setSubmitting] = useState(false);
   const [validationError, setValidationError] = useState(null);
+  const [photo, setPhoto] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState(null);
+
+  function handlePhotoUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPhoto(reader.result);
+      setPhotoPreview(reader.result);
+    };
+    reader.readAsDataURL(file);
+  }
 
   function update(field, value) {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -1220,6 +1234,7 @@ function PostForm({ onSubmit, onCancel, error }) {
       bio: form.bio.trim(),
       contact: form.contact.trim(),
       tags,
+      photo: photo || null,
     });
     setSubmitting(false);
   }
@@ -1348,6 +1363,31 @@ function PostForm({ onSubmit, onCancel, error }) {
             value={form.bio}
             onChange={(e) => update("bio", e.target.value)}
           />
+        </div>
+
+        <div style={styles.fieldGroup}>
+          <label style={styles.label}>Flat photo (optional but recommended)</label>
+          <div style={styles.photoUploadBox}>
+            {photoPreview ? (
+              <div style={{ position: "relative", display: "inline-block" }}>
+                <img src={photoPreview} alt="Flat preview" style={styles.photoPreview} />
+                <button
+                  type="button"
+                  style={styles.removePhotoBtn}
+                  onClick={() => { setPhoto(null); setPhotoPreview(null); }}
+                >
+                  ✕ Remove
+                </button>
+              </div>
+            ) : (
+              <label style={styles.photoUploadLabel} htmlFor="photo-input">
+                <span style={{ fontSize: 28 }}>📷</span>
+                <span style={{ fontSize: 13, color: COLORS.inkSoft }}>Add a photo of your flat or crew</span>
+                <span style={{ fontSize: 11, color: COLORS.inkSoft, opacity: 0.8 }}>Makes your listing stand out</span>
+                <input id="photo-input" type="file" accept="image/*" style={{ display: "none" }} onChange={handlePhotoUpload} />
+              </label>
+            )}
+          </div>
         </div>
 
         <div style={styles.fieldGroup}>
@@ -1520,6 +1560,10 @@ const globalCSS = `
 
   @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600;700&display=swap');
 
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.85); }
+  }
   @keyframes cardSlam {
     0% { transform: scale(0.92) translateY(12px); opacity: 0; }
     100% { transform: scale(1) translateY(0); opacity: 1; }
@@ -2326,6 +2370,55 @@ const styles = {
     marginTop: 18,
     textAlign: "center",
     lineHeight: 1.6,
+  },
+  photoUploadBox: {
+    border: `2px dashed ${COLORS.border}`,
+    borderRadius: 14,
+    padding: "20px",
+    textAlign: "center",
+    background: COLORS.cardBg,
+  },
+  photoUploadLabel: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 6,
+    cursor: "pointer",
+  },
+  photoPreview: {
+    width: "100%",
+    maxHeight: 220,
+    objectFit: "cover",
+    borderRadius: 12,
+    display: "block",
+  },
+  removePhotoBtn: {
+    position: "absolute",
+    top: 8, right: 8,
+    background: "rgba(30,43,46,0.75)",
+    color: "#fff",
+    border: "none",
+    borderRadius: 8,
+    padding: "4px 10px",
+    fontSize: 12,
+    fontWeight: 600,
+    cursor: "pointer",
+  },
+  listingPhoto: {
+    width: "100%",
+    maxHeight: 200,
+    objectFit: "cover",
+    borderRadius: 12,
+    marginBottom: 12,
+    display: "block",
+  },
+  spotsBadge: {
+    fontSize: 11,
+    fontWeight: 600,
+    color: COLORS.teal,
+    background: `${COLORS.teal}18`,
+    borderRadius: 999,
+    padding: "2px 8px",
   },
 };
 linco@MacBook-Air-45 ~ %
