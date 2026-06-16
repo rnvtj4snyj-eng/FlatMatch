@@ -502,7 +502,7 @@ function LogoLockup({ size = 40, align = "center" }) {
    NAV BAR
 --------------------------------------------- */
 
-function NavBar({ onHome, onPost, onQuiz }) {
+function NavBar({ onHome, onPost, onSeek }) {
   return (
     <nav style={styles.navbar}>
       <div style={styles.navInner}>
@@ -511,8 +511,8 @@ function NavBar({ onHome, onPost, onQuiz }) {
           <span style={styles.navLogoText}>FlatMatch</span>
         </button>
         <div style={styles.navLinks}>
-          <button className="fm-nav-link" style={styles.navLink} onClick={onQuiz}>Take the quiz</button>
-          <button className="fm-nav-cta" style={styles.navCta} onClick={onPost}>Post a listing</button>
+          <button className="fm-nav-link" style={styles.navLink} onClick={onSeek}>Find a flat</button>
+          <button className="fm-nav-cta" style={styles.navCta} onClick={onPost}>Post a spot</button>
         </div>
       </div>
     </nav>
@@ -616,7 +616,7 @@ export default function App() {
       <NavBar
         onHome={restart}
         onPost={() => setStage("post")}
-        onQuiz={() => { setAnswers({}); setCurrentQ(0); setStage("quiz"); }}
+        onSeek={() => { setAnswers({}); setCurrentQ(0); setStage("quiz"); }}
       />
 
       {stage === "intro" && (
@@ -702,52 +702,31 @@ function Intro({ onStart, onPost }) {
         who turn out to be a totally different vibe.
       </p>
 
-      <div style={{ display: "flex", gap: 8, marginTop: 28, marginBottom: 0, flexWrap: "wrap" }}>
-        {[
-          { n: "1", label: "Post your listing", sub: "Under a minute" },
-          { n: "2", label: "Take the quiz", sub: "~3 mins, 19 questions" },
-          { n: "3", label: "See your matches", sub: "Ranked by compatibility" },
-        ].map((s) => (
-          <div key={s.n} style={{ display: "flex", alignItems: "center", gap: 10, background: COLORS.cardBg, border: `1px solid ${COLORS.border}`, borderRadius: 12, padding: "10px 14px", flex: "1 1 160px" }}>
-            <div style={{ width: 28, height: 28, borderRadius: "50%", background: COLORS.ink, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, flexShrink: 0 }}>{s.n}</div>
-            <div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: COLORS.ink }}>{s.label}</div>
-              <div style={{ fontSize: 11, color: COLORS.inkSoft }}>{s.sub}</div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div style={styles.pathsGrid}>
-        <div style={styles.pathCardPrimary}>
-          <div style={styles.pathLabel}>STEP 1</div>
-          <h3 style={styles.pathTitle}>Post your listing</h3>
-          <p style={styles.pathDescription}>
-            Got a flat with spots open, or need to join a group? Post it in
-            under a minute — your listing instantly becomes visible to
-            everyone taking the questionnaire.
-          </p>
-          <button style={styles.primaryBtn} onClick={onPost}>
-            Post your listing
-          </button>
+      <div style={styles.heroCta}>
+        <div className="hero-card" style={styles.heroCard}>
+          <svg style={styles.heroIcon} viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="24" cy="12" r="6" stroke={COLORS.teal} strokeWidth="2" fill="none" />
+            <path d="M8 22c0-4 3.6-7 8-7s8 3 8 7m16 0c0-4 3.6-7 8-7s8 3 8 7" stroke={COLORS.teal} strokeWidth="2" fill="none" strokeLinecap="round" />
+            <path d="M10 32c-1 2-2 5-2 6" stroke={COLORS.teal} strokeWidth="2" fill="none" strokeLinecap="round" />
+            <path d="M24 30v8" stroke={COLORS.teal} strokeWidth="2" fill="none" strokeLinecap="round" />
+            <path d="M38 32c1 2 2 5 2 6" stroke={COLORS.teal} strokeWidth="2" fill="none" strokeLinecap="round" />
+          </svg>
+          <h2 style={styles.heroHeading}>Our group has a spot</h2>
+          <p style={styles.heroSubtext}>You have your people. Post your spot and find the perfect person to complete your flat.</p>
+          <button className="hero-btn" style={styles.heroBtn} onClick={onPost}>Post our spot</button>
         </div>
 
-        <div style={styles.pathCard}>
-          <div style={styles.pathLabelSecondary}>STEP 2</div>
-          <h3 style={styles.pathTitle}>Take the questionnaire</h3>
-          <p style={styles.pathDescription}>
-            15 quick questions about how you actually live. You'll get your
-            flatting archetype, then see every listing ranked by how
-            compatible it is with you — highest match first.
-          </p>
-          <div style={styles.introMeta}>
-            <span>~3 minutes</span>
-            <span style={styles.dot}>·</span>
-            <span>Get ranked matches</span>
-          </div>
-          <button style={styles.secondaryBtn} onClick={onStart}>
-            Start the questionnaire
-          </button>
+        <div className="hero-card" style={styles.heroCard}>
+          <svg style={styles.heroIcon} viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="24" cy="12" r="6" stroke={COLORS.teal} strokeWidth="2" fill="none" />
+            <path d="M18 22c0-4 2.7-7 6-7s6 3 6 7" stroke={COLORS.teal} strokeWidth="2" fill="none" />
+            <path d="M12 32c-1.5 2-3 5-3 6" stroke={COLORS.teal} strokeWidth="2" fill="none" strokeLinecap="round" />
+            <path d="M24 30v8" stroke={COLORS.teal} strokeWidth="2" fill="none" strokeLinecap="round" />
+            <path d="M36 32c1.5 2 3 5 3 6" stroke={COLORS.teal} strokeWidth="2" fill="none" strokeLinecap="round" />
+          </svg>
+          <h2 style={styles.heroHeading}>I'm looking to join a flat</h2>
+          <p style={styles.heroSubtext}>Find a group that matches your vibe. Take a 3-min quiz and get ranked by compatibility.</p>
+          <button className="hero-btn" style={styles.heroBtn} onClick={onStart}>Find my flat</button>
         </div>
       </div>
     </div>
@@ -921,6 +900,12 @@ function Results({ archetype, ranked, onRestart, onPost, loadingListings, onMark
       </div>
 
       {!loadingListings && (
+        <div style={{ width: "100%", background: "rgba(26, 144, 144, 0.08)", border: `1px solid rgba(26, 144, 144, 0.2)`, borderRadius: 12, padding: "12px 16px", marginBottom: 20, fontSize: 13.5, color: COLORS.teal, fontWeight: 500 }}>
+          ✓ Showing listings ranked by your compatibility score
+        </div>
+      )}
+
+      {!loadingListings && (
         <div style={styles.filterBar}>
           <div style={styles.fieldGroup}>
             <label style={styles.label}>Suburb</label>
@@ -1086,6 +1071,16 @@ function ListingCard({ listing, onMarkFilled, sessionContact }) {
           ✓ Mark as filled — remove listing
         </button>
       )}
+      {listing.listingType === "room" && (
+        <div style={{ ...styles.typeBadge, background: "#1A909018", color: "#1A9090", borderColor: "#1A9090" }}>
+          Room available
+        </div>
+      )}
+      {listing.listingType === "group" && (
+        <div style={{ ...styles.typeBadge, background: "#8B7BB518", color: "#8B7BB5", borderColor: "#8B7BB5" }}>
+          Group looking for one more
+        </div>
+      )}
       <StatusBadge status={listing.status || "looking"} />
       <p style={styles.cardBio}>{listing.bio}</p>
       {revealed && listing.contact ? (
@@ -1121,10 +1116,13 @@ const NZ_TAG_OPTIONS = [
 
 function emptyForm() {
   return {
+    listingType: "room", // room | group
     postType: "group", // group | solo
     title: "",
     people: "1",
     spotsNeeded: "1",
+    groupSize: "2", // for group listing type
+    groupSeeking: "1", // 1 or 2
     suburb: "",
     budget: "",
     moveIn: "",
@@ -1211,18 +1209,25 @@ function PostForm({ onSubmit, onCancel, error }) {
       tags[key] = 2;
     }
 
-    const people = parseInt(form.people, 10) || 1;
-    const spotsNeeded = form.postType === "solo" ? 0 : parseInt(form.spotsNeeded, 10) || 1;
+    let title = "";
+    let people = 1;
+    let spotsNeeded = 1;
 
-    const title =
-      form.postType === "solo"
-        ? "Solo looking to join a group"
-        : form.title.trim() ||
-          `${people} looking for ${spotsNeeded} more`;
+    if (form.listingType === "room") {
+      people = parseInt(form.people, 10) || 1;
+      spotsNeeded = parseInt(form.spotsNeeded, 10) || 1;
+      title = form.title.trim() || `${people} looking for ${spotsNeeded} more`;
+    } else {
+      // group listing type
+      people = parseInt(form.groupSize, 10) || 2;
+      spotsNeeded = parseInt(form.groupSeeking, 10) || 1;
+      title = `${people} looking for ${spotsNeeded} more`;
+    }
 
     setSubmitting(true);
     await onSubmit({
-      type: form.postType,
+      listingType: form.listingType,
+      type: form.postType || "group",
       title,
       people,
       spotsNeeded,
@@ -1253,64 +1258,101 @@ function PostForm({ onSubmit, onCancel, error }) {
           <div style={styles.toggleRow}>
             <button
               type="button"
-              style={form.postType === "group" ? styles.toggleBtnActive : styles.toggleBtn}
-              onClick={() => update("postType", "group")}
+              style={form.listingType === "room" ? styles.toggleBtnActive : styles.toggleBtn}
+              onClick={() => update("listingType", "room")}
             >
-              A group with spots open
+              A room in our flat
             </button>
             <button
               type="button"
-              style={form.postType === "solo" ? styles.toggleBtnActive : styles.toggleBtn}
-              onClick={() => update("postType", "solo")}
+              style={form.listingType === "group" ? styles.toggleBtnActive : styles.toggleBtn}
+              onClick={() => update("listingType", "group")}
             >
-              Just me, looking to join
+              Our group is looking
             </button>
           </div>
         </div>
 
-        {form.postType === "group" && (
-          <div style={styles.fieldRow}>
+        {form.listingType === "room" && (
+          <>
+            <div style={styles.fieldRow}>
+              <div style={styles.fieldGroup}>
+                <label style={styles.label}>How many people are you currently?</label>
+                <input
+                  style={styles.input}
+                  type="number"
+                  min="1"
+                  max="10"
+                  value={form.people}
+                  onChange={(e) => update("people", e.target.value)}
+                />
+              </div>
+              <div style={styles.fieldGroup}>
+                <label style={styles.label}>How many spots open?</label>
+                <input
+                  style={styles.input}
+                  type="number"
+                  min="1"
+                  max="10"
+                  value={form.spotsNeeded}
+                  onChange={(e) => update("spotsNeeded", e.target.value)}
+                />
+              </div>
+            </div>
+
             <div style={styles.fieldGroup}>
-              <label style={styles.label}>How many people are you currently?</label>
+              <label style={styles.label}>Listing title (optional)</label>
               <input
                 style={styles.input}
-                type="number"
-                min="1"
-                max="10"
-                value={form.people}
-                onChange={(e) => update("people", e.target.value)}
+                type="text"
+                placeholder="e.g. 2 looking for 2 chill flatmates"
+                value={form.title}
+                onChange={(e) => update("title", e.target.value)}
               />
             </div>
-            <div style={styles.fieldGroup}>
-              <label style={styles.label}>How many spots open?</label>
-              <input
-                style={styles.input}
-                type="number"
-                min="1"
-                max="10"
-                value={form.spotsNeeded}
-                onChange={(e) => update("spotsNeeded", e.target.value)}
-              />
-            </div>
-          </div>
+          </>
         )}
 
-        {form.postType === "group" && (
-          <div style={styles.fieldGroup}>
-            <label style={styles.label}>Listing title (optional)</label>
-            <input
-              style={styles.input}
-              type="text"
-              placeholder="e.g. 2 looking for 2 chill flatmates"
-              value={form.title}
-              onChange={(e) => update("title", e.target.value)}
-            />
-          </div>
+        {form.listingType === "group" && (
+          <>
+            <div style={styles.fieldRow}>
+              <div style={styles.fieldGroup}>
+                <label style={styles.label}>How many are in your group?</label>
+                <input
+                  style={styles.input}
+                  type="number"
+                  min="1"
+                  max="5"
+                  value={form.groupSize}
+                  onChange={(e) => update("groupSize", e.target.value)}
+                />
+              </div>
+              <div style={styles.fieldGroup}>
+                <label style={styles.label}>How many more are you looking for?</label>
+                <div style={styles.toggleRow}>
+                  <button
+                    type="button"
+                    style={form.groupSeeking === "1" ? styles.toggleBtnActive : styles.toggleBtn}
+                    onClick={() => update("groupSeeking", "1")}
+                  >
+                    1 person
+                  </button>
+                  <button
+                    type="button"
+                    style={form.groupSeeking === "2" ? styles.toggleBtnActive : styles.toggleBtn}
+                    onClick={() => update("groupSeeking", "2")}
+                  >
+                    2 people
+                  </button>
+                </div>
+              </div>
+            </div>
+          </>
         )}
 
         <div style={styles.fieldRow}>
           <div style={styles.fieldGroup}>
-            <label style={styles.label}>Suburb</label>
+            <label style={styles.label}>Where are you looking?</label>
             <select
               style={styles.input}
               value={form.suburb}
@@ -1351,11 +1393,7 @@ function PostForm({ onSubmit, onCancel, error }) {
         </div>
 
         <div style={styles.fieldGroup}>
-          <label style={styles.label}>
-            {form.postType === "group"
-              ? "Tell people about your flat — vibe, routines, what you're after"
-              : "Tell groups about yourself — vibe, routines, what you're after"}
-          </label>
+          <label style={styles.label}>Tell people about your group — vibe, routines, what you're after</label>
           <textarea
             style={styles.textarea}
             rows={4}
@@ -1635,6 +1673,26 @@ const globalCSS = `
   }
   .fm-nav-cta:hover {
     opacity: 0.85;
+  }
+
+  .hero-card {
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  }
+  .hero-card:hover {
+    border-color: #1A9090;
+    box-shadow: 0 8px 24px rgba(26,144,144,0.15);
+    transform: translateY(-4px);
+  }
+
+  .hero-btn {
+    transition: background 0.15s ease, transform 0.12s ease;
+  }
+  .hero-btn:hover {
+    opacity: 0.88;
+    transform: translateY(-1px);
+  }
+  .hero-btn:active {
+    transform: translateY(0) scale(0.98);
   }
 
 `;
@@ -2076,6 +2134,17 @@ const styles = {
     borderRadius: 8,
     cursor: "pointer",
   },
+  typeBadge: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 6,
+    fontSize: 12,
+    fontWeight: 600,
+    borderRadius: 999,
+    border: "1.5px solid",
+    padding: "6px 14px",
+    marginBottom: 10,
+  },
 
   /* Intro extras */
   introPostRow: {
@@ -2093,6 +2162,60 @@ const styles = {
     cursor: "pointer",
     textDecoration: "underline",
     padding: 0,
+  },
+  heroCta: {
+    display: "flex",
+    gap: 24,
+    marginTop: 40,
+    width: "100%",
+    flexWrap: "wrap",
+  },
+  heroCard: {
+    background: COLORS.cardBg,
+    border: `1px solid ${COLORS.border}`,
+    borderRadius: 20,
+    padding: "36px",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 16,
+    textAlign: "center",
+    justifyContent: "space-between",
+    flex: 1,
+    minWidth: "280px",
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  heroIcon: {
+    width: 48,
+    height: 48,
+    flexShrink: 0,
+  },
+  heroHeading: {
+    fontFamily: FONT_DISPLAY,
+    fontSize: 22,
+    fontWeight: 600,
+    lineHeight: 1.3,
+    color: COLORS.ink,
+    textAlign: "center",
+  },
+  heroSubtext: {
+    fontSize: 14.5,
+    lineHeight: 1.6,
+    color: COLORS.inkSoft,
+    textAlign: "center",
+  },
+  heroBtn: {
+    fontFamily: FONT_BODY,
+    fontSize: 16,
+    fontWeight: 700,
+    padding: "14px 0",
+    background: COLORS.teal,
+    color: "#FFFFFF",
+    border: "none",
+    borderRadius: 12,
+    cursor: "pointer",
+    width: "100%",
+    transition: "opacity 0.15s ease, transform 0.12s ease",
   },
   pathsGrid: {
     display: "grid",
