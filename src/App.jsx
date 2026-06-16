@@ -638,6 +638,7 @@ export default function App() {
           loadingListings={loadingListings}
           onMarkFilled={markFilled}
           sessionContact={sessionContact}
+          tagTotals={tagTotals}
         />
       )}
 
@@ -826,7 +827,7 @@ function HowMatchingWorks() {
   );
 }
 
-function Results({ archetype, ranked, onRestart, onPost, loadingListings, onMarkFilled, sessionContact }) {
+function Results({ archetype, ranked, onRestart, onPost, loadingListings, onMarkFilled, sessionContact, tagTotals }) {
   const [suburbFilter, setSuburbFilter] = useState("all");
   const [sortBy, setSortBy] = useState("match"); // match | distance
 
