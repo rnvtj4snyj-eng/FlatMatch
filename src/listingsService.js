@@ -1,224 +1,151 @@
-import supabase from "./supabaseClient";
+import { supabase } from './supabaseClient'
 
-/**
- * Listings Service
- * Handles all database operations for listings
- * Falls back to localStorage if Supabase is not configured
- */
-
-// LocalStorage fallback key
-const LS_LISTINGS_KEY = "flatmatch_listings";
-
-/**
- * Fetch all active listings from Supabase or localStorage
- * @returns {Promise<Array>} Array of active listings
- */
 export async function fetchListings() {
-  try {
-    if (!supabase) {
-      // Fallback to localStorage
-      const stored = localStorage.getItem(LS_LISTINGS_KEY);
-      const listings = stored ? JSON.parse(stored) : [];
-      const now = Date.now();
-      return listings.filter(
-        (l) => !l.filled && (!l.expiresAt || l.expiresAt > now)
-      );
-    }
+  const { data, error } = await supabase
+    .from('listings')
+    .select('*')
+    .gt('expires_at', new Date().toISOString())
+    .order('created_at', { ascending: false })
 
-    const now = new Date().toISOString();
-    const { data, error } = await supabase
-      .from("listings")
-      .select("*")
-      .eq("filled", false)
-      .or(`expiresAt.is.null,expiresAt.gt."${now}"`)
-      .order("createdAt", { ascending: false });
+  if (error) throw error
 
-    if (error) {
-      console.error("Error fetching listings:", error);
-      return [];
-    }
-
-    return data || [];
-  } catch (err) {
-    console.error("Error in fetchListings:", err);
-    return [];
-  }
+  return data.map(l => ({
+    id: l.id,
+    type: l.type,
+    listingType: l.listing_type,
+    title: l.title,
+    crew: l.crew,
+    seeking: l.seeking,
+    people: l.people,
+    spotsNeeded: l.spots_needed,
+    suburb: l.suburb,
+    area: l.area,
+    distanceKm: l.distance_km,
+    budget: l.budget,
+    moveIn: l.move_in,
+    bio: l.bio,
+    contact: l.contact,
+    tags: l.tags,
+    photo: l.photo_url,
+    status: l.status,
+    updates: l.updates || [],
+    createdAt: new Date(l.created_at).getTime(),
+    renewedAt: new Date(l.renewed_at).getTime(),
+    expiresAt: new Date(l.expires_at).getTime(),
+  }))
 }
 
-/**
- * Create a new listing
- * @param {Object} listing - The listing data
- * @returns {Promise<Object>} The created listing with ID
- */
 export async function createListing(listing) {
-  try {
-    if (!supabase) {
-      // Fallback to localStorage
-      const id = `listing:${Date.now()}-${Math.random()
-        .toString(36)
-        .slice(2, 8)}`;
-      const record = {
-        ...listing,
-        id,
-        createdAt: Date.now(),
-        renewedAt: Date.now(),
-        expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000,
-        filled: false,
-      };
-      const stored = localStorage.getItem(LS_LISTINGS_KEY) || "[]";
-      const listings = JSON.parse(stored);
-      listings.push(record);
-      localStorage.setItem(LS_LISTINGS_KEY, JSON.stringify(listings));
-      return record;
+  let photoUrl = null
+
+  if (listing.photo) {
+    const base64 = listing.photo.split(',')[1]
+    const byteArray = Uint8Array.from(atob(base64), c => c.charCodeAt(0))
+    const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`
+
+    const { error: uploadError } = await supabase.storage
+      .from('listing-photos')
+      .upload(fileName, byteArray, { contentType: 'image/jpeg' })
+
+    if (!uploadError) {
+      const { data: urlData } = supabase.storage
+        .from('listing-photos')
+        .getPublicUrl(fileName)
+      photoUrl = urlData.publicUrl
     }
+  }
 
-    const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
-    const now = new Date();
-    const expiresAt = new Date(now.getTime() + THIRTY_DAYS_MS).toISOString();
+  const { data, error } = await supabase
+    .from('listings')
+    .insert({
+      type: listing.type,
+      listing_type: listing.listingType,
+      title: listing.title,
+      crew: listing.crew || null,
+      seeking: listing.seeking || null,
+      people: listing.people,
+      spots_needed: listing.spotsNeeded,
+      suburb: listing.suburb,
+      area: listing.area,
+      distance_km: listing.distanceKm,
+      budget: listing.budget,
+      move_in: listing.moveIn,
+      bio: listing.bio,
+      contact: listing.contact,
+      tags: listing.tags,
+      photo_url: photoUrl,
+      status: 'looking',
+    })
+    .select()
+    .single()
 
-    const { data, error } = await supabase
-      .from("listings")
-      .insert([
-        {
-          title: listing.title,
-          type: listing.type,
-          people: listing.people,
-          spotsNeeded: listing.spotsNeeded,
-          suburb: listing.suburb,
-          area: listing.area,
-          distanceKm: listing.distanceKm,
-          budget: listing.budget,
-          moveIn: listing.moveIn,
-          bio: listing.bio,
-          contact: listing.contact,
-          tags: listing.tags,
-          filled: false,
-          createdAt: now.toISOString(),
-          renewedAt: now.toISOString(),
-          expiresAt: expiresAt,
-        },
-      ])
-      .select()
-      .single();
+  if (error) throw error
 
-    if (error) {
-      console.error("Error creating listing:", error);
-      throw error;
-    }
-
-    return data;
-  } catch (err) {
-    console.error("Error in createListing:", err);
-    throw err;
+  return {
+    ...listing,
+    id: data.id,
+    photo: photoUrl,
+    createdAt: new Date(data.created_at).getTime(),
+    renewedAt: new Date(data.renewed_at).getTime(),
+    expiresAt: new Date(data.expires_at).getTime(),
   }
 }
 
-/**
- * Mark a listing as filled
- * @param {string} listingId - The ID of the listing to mark filled
- * @returns {Promise<void>}
- */
 export async function markListingFilled(listingId) {
-  try {
-    if (!supabase) {
-      // Fallback to localStorage
-      const stored = localStorage.getItem(LS_LISTINGS_KEY) || "[]";
-      const listings = JSON.parse(stored);
-      const filtered = listings.filter((l) => l.id !== listingId);
-      localStorage.setItem(LS_LISTINGS_KEY, JSON.stringify(filtered));
-      return;
-    }
+  const { error } = await supabase
+    .from('listings')
+    .delete()
+    .eq('id', listingId)
 
-    const { error } = await supabase
-      .from("listings")
-      .update({ filled: true })
-      .eq("id", listingId);
-
-    if (error) {
-      console.error("Error marking listing filled:", error);
-      throw error;
-    }
-  } catch (err) {
-    console.error("Error in markListingFilled:", err);
-    throw err;
-  }
+  if (error) throw error
 }
 
-/**
- * Renew a listing (extend expiry date)
- * @param {string} listingId - The ID of the listing to renew
- * @returns {Promise<Object>} The updated listing
- */
-export async function renewListing(listingId) {
-  try {
-    if (!supabase) {
-      // Fallback to localStorage
-      const stored = localStorage.getItem(LS_LISTINGS_KEY) || "[]";
-      const listings = JSON.parse(stored);
-      const listingIndex = listings.findIndex((l) => l.id === listingId);
-      if (listingIndex >= 0) {
-        const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
-        listings[listingIndex].renewedAt = Date.now();
-        listings[listingIndex].expiresAt = Date.now() + THIRTY_DAYS;
-        localStorage.setItem(LS_LISTINGS_KEY, JSON.stringify(listings));
-        return listings[listingIndex];
-      }
-      return null;
-    }
+export async function updateListingStatus(listingId, status) {
+  const { error } = await supabase
+    .from('listings')
+    .update({ status })
+    .eq('id', listingId)
 
-    const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
-    const now = new Date();
-    const expiresAt = new Date(now.getTime() + THIRTY_DAYS_MS).toISOString();
-
-    const { data, error } = await supabase
-      .from("listings")
-      .update({
-        renewedAt: now.toISOString(),
-        expiresAt: expiresAt,
-      })
-      .eq("id", listingId)
-      .select()
-      .single();
-
-    if (error) {
-      console.error("Error renewing listing:", error);
-      throw error;
-    }
-
-    return data;
-  } catch (err) {
-    console.error("Error in renewListing:", err);
-    throw err;
-  }
+  if (error) throw error
 }
 
-/**
- * Delete a listing
- * @param {string} listingId - The ID of the listing to delete
- * @returns {Promise<void>}
- */
-export async function deleteListing(listingId) {
-  try {
-    if (!supabase) {
-      // Fallback to localStorage
-      const stored = localStorage.getItem(LS_LISTINGS_KEY) || "[]";
-      const listings = JSON.parse(stored);
-      const filtered = listings.filter((l) => l.id !== listingId);
-      localStorage.setItem(LS_LISTINGS_KEY, JSON.stringify(filtered));
-      return;
-    }
+export async function incrementViews(listingId) {
+  const { error } = await supabase.rpc('increment_views', { listing_id: listingId })
+  if (error) console.error(error)
+}
 
-    const { error } = await supabase
-      .from("listings")
-      .delete()
-      .eq("id", listingId);
+export async function getViews(listingId) {
+  const { data, error } = await supabase
+    .from('listing_views')
+    .select('views')
+    .eq('listing_id', listingId)
+    .single()
 
-    if (error) {
-      console.error("Error deleting listing:", error);
-      throw error;
-    }
-  } catch (err) {
-    console.error("Error in deleteListing:", err);
-    throw err;
-  }
+  if (error) return 0
+  return data.views
+}
+
+export async function submitInterest(card) {
+  const { error } = await supabase
+    .from('interests')
+    .insert(card)
+  if (error) throw error
+}
+
+export async function getInterests(listingId) {
+  const { data, error } = await supabase
+    .from('interests')
+    .select('*')
+    .eq('listing_id', listingId)
+    .order('score', { ascending: false })
+  if (error) throw error
+  return data
+}
+
+export async function connectInterest(interestId) {
+  const { error } = await supabase
+    .from('interests')
+    .update({ connected: true, connected_at: new Date().toISOString() })
+    .eq('id', interestId)
+  if (error) throw error
 }

@@ -1,10 +1,10 @@
-import { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { fetchListings, createListing, markListingFilled } from "./listingsService";
-
+ 
 /* ---------------------------------------------
    LOCATION DATA
 --------------------------------------------- */
-
+ 
 // Approx distance from UC's Ilam campus, in km (rough driving/cycling distance)
 const UC_SUBURBS = [
   { name: "Ilam", distanceKm: 0.5 },
@@ -23,16 +23,16 @@ const UC_SUBURBS = [
   { name: "New Brighton", distanceKm: 12 },
   { name: "Other / not sure yet", distanceKm: null },
 ];
-
+ 
 function suburbDistance(suburbName) {
   const match = UC_SUBURBS.find((s) => s.name === suburbName);
   return match ? match.distanceKm : null;
 }
-
+ 
 /* ---------------------------------------------
    QUESTIONNAIRE
 --------------------------------------------- */
-
+ 
 const QUESTIONS = [
   {
     id: "sleep",
@@ -205,11 +205,11 @@ const QUESTIONS = [
     ],
   },
 ];
-
+ 
 /* ---------------------------------------------
    ARCHETYPES
 --------------------------------------------- */
-
+ 
 const ARCHETYPES = [
   {
     id: "homebody_circle",
@@ -275,7 +275,7 @@ const ARCHETYPES = [
     dominant: ["budget"],
   },
 ];
-
+ 
 function scoreToTags(answers) {
   const tagTotals = {};
   for (const qId in answers) {
@@ -287,7 +287,7 @@ function scoreToTags(answers) {
   }
   return tagTotals;
 }
-
+ 
 function determineArchetype(tagTotals) {
   let best = ARCHETYPES[0];
   let bestScore = -Infinity;
@@ -296,7 +296,6 @@ function determineArchetype(tagTotals) {
     for (const tag of archetype.dominant) {
       score += tagTotals[tag] || 0;
     }
-    // slight normalization so single-tag archetypes aren't unfairly favoured
     score = score / archetype.dominant.length;
     if (score > bestScore) {
       bestScore = score;
@@ -305,11 +304,11 @@ function determineArchetype(tagTotals) {
   }
   return best;
 }
-
+ 
 /* ---------------------------------------------
    SAMPLE LISTINGS (groups + solos)
 --------------------------------------------- */
-
+ 
 const SAMPLE_LISTINGS = [
   {
     id: "g1",
@@ -424,9 +423,8 @@ const SAMPLE_LISTINGS = [
     tags: { early: 2, quiet: 1 },
   },
 ];
-
+ 
 function compatibilityScore(userTags, listingTags) {
-  // cosine-similarity-ish overlap, normalized to a percentage
   const allTags = new Set([...Object.keys(userTags), ...Object.keys(listingTags)]);
   let dot = 0;
   let userMag = 0;
@@ -440,14 +438,13 @@ function compatibilityScore(userTags, listingTags) {
   }
   if (userMag === 0 || listingMag === 0) return 50;
   const cosine = dot / (Math.sqrt(userMag) * Math.sqrt(listingMag));
-  // map cosine [0,1] to a friendlier [40,99] range so nothing feels like a 0% match
   return Math.round(40 + cosine * 59);
 }
-
+ 
 /* ---------------------------------------------
    LOGO
 --------------------------------------------- */
-
+ 
 function Logo({ size = 40 }) {
   return (
     <svg
@@ -466,7 +463,7 @@ function Logo({ size = 40 }) {
     </svg>
   );
 }
-
+ 
 function LogoLockup({ size = 40, align = "center" }) {
   return (
     <div
@@ -492,17 +489,50 @@ function LogoLockup({ size = 40, align = "center" }) {
     </div>
   );
 }
-
+ 
 /* ---------------------------------------------
    APP
 --------------------------------------------- */
-
-
+ 
 /* ---------------------------------------------
    NAV BAR
 --------------------------------------------- */
-
-function NavBar({ onHome, onPost, onSeek, onSaved }) {
+ 
+function FindAFlatDropdown({ onSeek, onBrowse }) {
+  const [open, setOpen] = useState(false);
+  const ref = React.useRef(null);
+ 
+  useEffect(() => {
+    function handleClick(e) {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+ 
+  return (
+    <div ref={ref} style={{ position: "relative" }}>
+      <button style={styles.navDropdownBtn} onClick={() => setOpen(o => !o)}>
+        Find a flat {open ? "▴" : "▾"}
+      </button>
+      {open && (
+        <div style={styles.navDropdown}>
+          <button style={styles.navDropdownItem} onClick={() => { setOpen(false); onSeek(); }}>
+            <div style={styles.navDropdownLabel}>Take the quiz</div>
+            <div style={styles.navDropdownSub}>Get matched by compatibility</div>
+          </button>
+          <div style={styles.navDropdownDivider} />
+          <button style={styles.navDropdownItem} onClick={() => { setOpen(false); onBrowse(); }}>
+            <div style={styles.navDropdownLabel}>Browse listings</div>
+            <div style={styles.navDropdownSub}>See everything without the quiz</div>
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+ 
+function NavBar({ onHome, onPost, onSeek, onSaved, onBrowse }) {
   return (
     <nav style={styles.navbar}>
       <div style={styles.navInner}>
@@ -511,33 +541,41 @@ function NavBar({ onHome, onPost, onSeek, onSaved }) {
           <span style={styles.navLogoText}>FlatMatch</span>
         </button>
         <div style={styles.navLinks}>
-          <button className="fm-nav-link" style={styles.navLink} onClick={onSeek}>Match with a flat</button>
-          <button className="fm-nav-link" style={styles.navLink} onClick={onSaved}>Saved</button>
+          <button className="fm-nav-link" style={styles.navSaved} onClick={onSaved}>Saved</button>
+          <FindAFlatDropdown onSeek={onSeek} onBrowse={onBrowse} />
           <button className="fm-nav-cta" style={styles.navCta} onClick={onPost}>Post a spot</button>
         </div>
       </div>
     </nav>
   );
 }
-
+ 
 export default function App() {
-  const [stage, setStage] = useState("intro"); // intro | quiz | result | post | posted | saved
+  const [stage, setStage] = useState("intro");
   const [currentQ, setCurrentQ] = useState(0);
-  const [answers, setAnswers] = useState({});
+  const [answers, setAnswers] = useState(() => {
+    try {
+      const saved = localStorage.getItem("fm_answers");
+      return saved ? JSON.parse(saved) : {};
+    } catch { return {}; }
+  });
+  const [hasQuizzed, setHasQuizzed] = useState(() => {
+    return localStorage.getItem("fm_has_quizzed") === "true";
+  });
   const [userListings, setUserListings] = useState([]);
   const [loadingListings, setLoadingListings] = useState(true);
   const [postError, setPostError] = useState(null);
   const [sessionContact, setSessionContact] = useState(null);
   const [savedListings, setSavedListings] = useState([]);
-
+ 
   const tagTotals = useMemo(() => scoreToTags(answers), [answers]);
   const archetype = useMemo(() => determineArchetype(tagTotals), [tagTotals]);
-
+ 
   const allListings = useMemo(
     () => [...userListings, ...SAMPLE_LISTINGS],
     [userListings]
   );
-
+ 
   const ranked = useMemo(() => {
     return allListings
       .map((listing) => ({
@@ -546,7 +584,7 @@ export default function App() {
       }))
       .sort((a, b) => b.score - a.score);
   }, [tagTotals, allListings]);
-
+ 
   async function loadListings() {
     setLoadingListings(true);
     try {
@@ -559,11 +597,11 @@ export default function App() {
       setLoadingListings(false);
     }
   }
-
+ 
   useEffect(() => {
     loadListings();
   }, []);
-
+ 
   async function submitListing(listing) {
     setPostError(null);
     setSessionContact(listing.contact);
@@ -577,7 +615,7 @@ export default function App() {
       setStage("post");
     }
   }
-
+ 
   function onSave(listingId) {
     setSavedListings((prev) =>
       prev.includes(listingId)
@@ -585,7 +623,7 @@ export default function App() {
         : [...prev, listingId]
     );
   }
-
+ 
   async function markFilled(listingId) {
     try {
       await markListingFilled(listingId);
@@ -594,23 +632,29 @@ export default function App() {
       console.error("Error marking listing filled:", err);
     }
   }
-
+ 
   function selectAnswer(qIndex, optIndex) {
     const q = QUESTIONS[qIndex];
     setAnswers((prev) => ({ ...prev, [q.id]: optIndex }));
     if (qIndex < QUESTIONS.length - 1) {
       setTimeout(() => setCurrentQ(qIndex + 1), 180);
     } else {
+      setHasQuizzed(true);
+      localStorage.setItem("fm_has_quizzed", "true");
+      localStorage.setItem("fm_answers", JSON.stringify({
+        ...answers,
+        [QUESTIONS[qIndex].id]: optIndex,
+      }));
       setTimeout(() => setStage("result"), 180);
     }
   }
-
+ 
   function restart() {
     setAnswers({});
     setCurrentQ(0);
     setStage("intro");
   }
-
+ 
   return (
     <div style={styles.page}>
       <style>{globalCSS}</style>
@@ -619,15 +663,16 @@ export default function App() {
         onPost={() => setStage("post")}
         onSeek={() => { setAnswers({}); setCurrentQ(0); setStage("quiz"); }}
         onSaved={() => setStage("saved")}
+        onBrowse={() => setStage("result")}
       />
-
+ 
       {stage === "intro" && (
         <Intro
           onStart={() => setStage("quiz")}
           onPost={() => setStage("post")}
         />
       )}
-
+ 
       {stage === "quiz" && (
         <Quiz
           question={QUESTIONS[currentQ]}
@@ -639,7 +684,7 @@ export default function App() {
           }
         />
       )}
-
+ 
       {stage === "saved" && (
         <Results
           archetype={archetype}
@@ -653,9 +698,10 @@ export default function App() {
           onSave={onSave}
           savedListings={savedListings}
           isSavedView={true}
+          hasQuizzed={hasQuizzed}
         />
       )}
-
+ 
       {stage === "result" && (
         <Results
           archetype={archetype}
@@ -668,9 +714,10 @@ export default function App() {
           tagTotals={tagTotals}
           onSave={onSave}
           savedListings={savedListings}
+          hasQuizzed={hasQuizzed}
         />
       )}
-
+ 
       {stage === "post" && (
         <PostForm
           onSubmit={submitListing}
@@ -678,7 +725,7 @@ export default function App() {
           error={postError}
         />
       )}
-
+ 
       {stage === "posted" && (
         <PostedConfirmation
           onBrowse={() => setStage("intro")}
@@ -693,11 +740,11 @@ export default function App() {
     </div>
   );
 }
-
+ 
 /* ---------------------------------------------
    INTRO
 --------------------------------------------- */
-
+ 
 function Intro({ onStart, onPost }) {
   return (
     <div style={styles.introWrap}>
@@ -713,29 +760,17 @@ function Intro({ onStart, onPost }) {
         you want the place to be — so you spend less time messaging randoms
         who turn out to be a totally different vibe.
       </p>
-
+ 
       <div style={styles.heroCta}>
         <div className="hero-card" style={styles.heroCard}>
-          <svg style={styles.heroIcon} viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="24" cy="12" r="6" stroke={COLORS.teal} strokeWidth="2" fill="none" />
-            <path d="M8 22c0-4 3.6-7 8-7s8 3 8 7m16 0c0-4 3.6-7 8-7s8 3 8 7" stroke={COLORS.teal} strokeWidth="2" fill="none" strokeLinecap="round" />
-            <path d="M10 32c-1 2-2 5-2 6" stroke={COLORS.teal} strokeWidth="2" fill="none" strokeLinecap="round" />
-            <path d="M24 30v8" stroke={COLORS.teal} strokeWidth="2" fill="none" strokeLinecap="round" />
-            <path d="M38 32c1 2 2 5 2 6" stroke={COLORS.teal} strokeWidth="2" fill="none" strokeLinecap="round" />
-          </svg>
+          <span style={{ fontSize: 48 }}>🏠</span>
           <h2 style={styles.heroHeading}>Our group has a spot</h2>
           <p style={styles.heroSubtext}>You have your people. Post your spot and find the perfect person to complete your flat.</p>
           <button className="hero-btn" style={styles.heroBtn} onClick={onPost}>Post our spot</button>
         </div>
-
+ 
         <div className="hero-card" style={styles.heroCard}>
-          <svg style={styles.heroIcon} viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="24" cy="12" r="6" stroke={COLORS.teal} strokeWidth="2" fill="none" />
-            <path d="M18 22c0-4 2.7-7 6-7s6 3 6 7" stroke={COLORS.teal} strokeWidth="2" fill="none" />
-            <path d="M12 32c-1.5 2-3 5-3 6" stroke={COLORS.teal} strokeWidth="2" fill="none" strokeLinecap="round" />
-            <path d="M24 30v8" stroke={COLORS.teal} strokeWidth="2" fill="none" strokeLinecap="round" />
-            <path d="M36 32c1.5 2 3 5 3 6" stroke={COLORS.teal} strokeWidth="2" fill="none" strokeLinecap="round" />
-          </svg>
+          <span style={{ fontSize: 48 }}>🔍</span>
           <h2 style={styles.heroHeading}>I'm looking to join a flat</h2>
           <p style={styles.heroSubtext}>Find a group that matches your vibe. Take a 3-min quiz and get ranked by compatibility.</p>
           <button className="hero-btn" style={styles.heroBtn} onClick={onStart}>Match with a flat</button>
@@ -744,12 +779,11 @@ function Intro({ onStart, onPost }) {
     </div>
   );
 }
-
+ 
 /* ---------------------------------------------
    QUIZ
 --------------------------------------------- */
-
-
+ 
 const QUESTION_CATEGORIES = {
   year: "About you",
   degree: "About you",
@@ -771,7 +805,7 @@ const QUESTION_CATEGORIES = {
   commitment: "Priorities",
   sharedmeals: "Food & cooking",
 };
-
+ 
 function Quiz({ question, questionIndex, total, onSelect, onBack }) {
   return (
     <div style={styles.quizWrap}>
@@ -790,7 +824,7 @@ function Quiz({ question, questionIndex, total, onSelect, onBack }) {
           {questionIndex + 1} / {total} · {Math.round((questionIndex + 1) / total * 100)}%
         </div>
       </div>
-
+ 
       <div style={styles.progressBarOuter}>
         <div
           style={{
@@ -799,7 +833,7 @@ function Quiz({ question, questionIndex, total, onSelect, onBack }) {
           }}
         />
       </div>
-
+ 
       <div key={question.id} className="question-anim">
         {QUESTION_CATEGORIES[question.id] && (
           <div style={{
@@ -816,7 +850,7 @@ function Quiz({ question, questionIndex, total, onSelect, onBack }) {
         )}
         <h2 style={styles.question}>{question.text}</h2>
       </div>
-
+ 
       <div style={styles.optionsCol}>
         {question.options.map((opt, i) => (
           <button
@@ -831,11 +865,62 @@ function Quiz({ question, questionIndex, total, onSelect, onBack }) {
     </div>
   );
 }
-
+ 
 /* ---------------------------------------------
    RESULTS
 --------------------------------------------- */
-
+ 
+function ActivityPulse({ listings }) {
+  const now = Date.now();
+  const oneDayAgo = now - 1000 * 60 * 60 * 24;
+  const oneWeekAgo = now - 1000 * 60 * 60 * 24 * 7;
+  const newThisWeek = listings.filter(l => l.createdAt > oneWeekAgo).length;
+  const activelyLooking = listings.filter(l => l.status === "looking" || !l.status).length;
+  const newToday = listings.filter(l => l.createdAt > oneDayAgo).length;
+  if (newThisWeek === 0 && activelyLooking === 0) return null;
+  return (
+    <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 16 }}>
+      {newToday > 0 && (
+        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: COLORS.inkSoft }}>
+          <span style={{ width: 6, height: 6, borderRadius: "50%", background: COLORS.teal, display: "inline-block", animation: "pulse 2s infinite" }} />
+          {newToday} new listing{newToday !== 1 ? "s" : ""} today
+        </div>
+      )}
+      {activelyLooking > 0 && (
+        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: COLORS.inkSoft }}>
+          <span style={{ width: 6, height: 6, borderRadius: "50%", background: COLORS.coral, display: "inline-block", animation: "pulse 2s infinite" }} />
+          {activelyLooking} actively looking
+        </div>
+      )}
+      {newThisWeek > 0 && (
+        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: COLORS.inkSoft }}>
+          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#8B7BB5", display: "inline-block" }} />
+          {newThisWeek} posted this week
+        </div>
+      )}
+    </div>
+  );
+}
+ 
+function SeasonCountdown() {
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const peakStart = new Date(currentYear, 10, 1);
+  const oWeek = new Date(currentYear + 1, 1, 3);
+  const inPeakSeason = now >= peakStart;
+  const daysToOWeek = Math.ceil((oWeek - now) / (1000 * 60 * 60 * 24));
+  if (!inPeakSeason) return null;
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 12, background: COLORS.yellow, border: `1.5px solid #FFD66B`, borderRadius: 12, padding: "12px 16px", marginBottom: 20, width: "100%" }}>
+      <span style={{ fontSize: 18 }}>⏳</span>
+      <div>
+        <div style={{ fontWeight: 700, fontSize: 13, color: COLORS.ink }}>Peak flatting season is open</div>
+        <div style={{ fontSize: 12, color: COLORS.inkSoft }}>{daysToOWeek} days until O-Week 2027 — most flats fill up by mid-January</div>
+      </div>
+    </div>
+  );
+}
+ 
 function HowMatchingWorks() {
   const [open, setOpen] = useState(false);
   return (
@@ -855,11 +940,11 @@ function HowMatchingWorks() {
     </div>
   );
 }
-
-function Results({ archetype, ranked, onRestart, onPost, loadingListings, onMarkFilled, sessionContact, tagTotals, onSave, savedListings, isSavedView }) {
+ 
+function Results({ archetype, ranked, onRestart, onPost, loadingListings, onMarkFilled, sessionContact, tagTotals, onSave, savedListings, isSavedView, hasQuizzed }) {
   const [suburbFilter, setSuburbFilter] = useState("all");
-  const [sortBy, setSortBy] = useState("match"); // match | distance
-
+  const [sortBy, setSortBy] = useState("match");
+ 
   const availableSuburbs = useMemo(() => {
     const set = new Set();
     for (const l of ranked) {
@@ -867,7 +952,7 @@ function Results({ archetype, ranked, onRestart, onPost, loadingListings, onMark
     }
     return UC_SUBURBS.filter((s) => set.has(s.name));
   }, [ranked]);
-
+ 
   const filtered = useMemo(() => {
     let list = ranked;
     if (suburbFilter !== "all") {
@@ -883,16 +968,16 @@ function Results({ archetype, ranked, onRestart, onPost, loadingListings, onMark
     }
     return list;
   }, [ranked, suburbFilter, sortBy]);
-
+ 
   const groups = filtered.filter((l) => l.type === "group");
   const solos = filtered.filter((l) => l.type === "solo");
-
+ 
   return (
     <div style={styles.resultsWrap}>
       <div style={{ marginBottom: 16, width: "100%" }}>
         <Logo size={32} />
       </div>
-      {!isSavedView && (
+      {!isSavedView && hasQuizzed && (
         <div className="stamp-anim" style={styles.archetypeCard}>
           <div style={styles.archetypeEyebrow}>YOUR FLATTING ARCHETYPE</div>
           <div style={{ display: "flex", alignItems: "flex-start", gap: 20, flexWrap: "wrap" }}>
@@ -912,19 +997,32 @@ function Results({ archetype, ranked, onRestart, onPost, loadingListings, onMark
           </div>
         </div>
       )}
+      {!isSavedView && !hasQuizzed && (
+        <div style={styles.noQuizPrompt}>
+          <span style={{ fontSize: 28 }}>🏡</span>
+          <div>
+            <div style={{ fontWeight: 700, fontSize: 15, color: COLORS.ink, marginBottom: 4 }}>Take the quiz to see your archetype</div>
+            <div style={{ fontSize: 13, color: COLORS.inkSoft }}>Get personalised match scores based on how you actually live</div>
+          </div>
+          <button style={styles.primaryBtn} onClick={onRestart}>Take the quiz</button>
+        </div>
+      )}
       {isSavedView && (
         <div style={{ marginBottom: 30 }}>
           <h1 style={{ ...styles.h2, marginBottom: 8 }}>Saved listings</h1>
           <p style={{ fontSize: 14.5, color: COLORS.inkSoft, marginBottom: 0 }}>Your bookmarked flats — pick up where you left off</p>
         </div>
       )}
-
+ 
+      <SeasonCountdown />
+      <ActivityPulse listings={ranked} />
+ 
       {!loadingListings && (
         <div style={{ width: "100%", background: "rgba(26, 144, 144, 0.08)", border: `1px solid rgba(26, 144, 144, 0.2)`, borderRadius: 12, padding: "12px 16px", marginBottom: 20, fontSize: 13.5, color: COLORS.teal, fontWeight: 500 }}>
           ✓ Showing listings ranked by your compatibility score
         </div>
       )}
-
+ 
       {!loadingListings && !isSavedView && (
         <div style={styles.filterBar}>
           <div style={styles.fieldGroup}>
@@ -964,14 +1062,14 @@ function Results({ archetype, ranked, onRestart, onPost, loadingListings, onMark
           </div>
         </div>
       )}
-
+ 
       <div style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", margin: "20px 0 8px" }}>
         <span style={{ fontSize: 13, color: COLORS.inkSoft, fontWeight: 500 }}>
           {filtered.length} listing{filtered.length !== 1 ? "s" : ""} found
         </span>
         <HowMatchingWorks />
       </div>
-
+ 
       {loadingListings ? (
         <div style={styles.loadingNote}>Loading listings…</div>
       ) : (
@@ -983,12 +1081,12 @@ function Results({ archetype, ranked, onRestart, onPost, loadingListings, onMark
             ) : (
               <div style={styles.cardsCol}>
                 {groups.map((listing) => (
-                  <ListingCard key={listing.id} listing={listing} onMarkFilled={onMarkFilled} sessionContact={sessionContact} onSave={onSave} savedListings={savedListings} />
+                  <ListingCard key={listing.id} listing={listing} onMarkFilled={onMarkFilled} sessionContact={sessionContact} onSave={onSave} savedListings={savedListings} hasQuizzed={hasQuizzed} onTakeQuiz={onRestart} />
                 ))}
               </div>
             )}
           </div>
-
+ 
           <div style={styles.resultsSection}>
             <h3 style={styles.sectionLabel}>PEOPLE LOOKING TO JOIN A GROUP</h3>
             {solos.length === 0 ? (
@@ -996,14 +1094,14 @@ function Results({ archetype, ranked, onRestart, onPost, loadingListings, onMark
             ) : (
               <div style={styles.cardsCol}>
                 {solos.map((listing) => (
-                  <ListingCard key={listing.id} listing={listing} onMarkFilled={onMarkFilled} sessionContact={sessionContact} onSave={onSave} savedListings={savedListings} />
+                  <ListingCard key={listing.id} listing={listing} onMarkFilled={onMarkFilled} sessionContact={sessionContact} onSave={onSave} savedListings={savedListings} hasQuizzed={hasQuizzed} onTakeQuiz={onRestart} />
                 ))}
               </div>
             )}
           </div>
         </>
       )}
-
+ 
       <div style={styles.resultsActions}>
         <button style={styles.primaryBtn} onClick={onPost}>
           Post your own listing
@@ -1015,26 +1113,25 @@ function Results({ archetype, ranked, onRestart, onPost, loadingListings, onMark
     </div>
   );
 }
-
+ 
 function EmptyState({ text }) {
   return <div style={styles.emptyState}>{text}</div>;
 }
-
-
+ 
 function getInitials(title) {
   if (!title) return "?";
   const words = title.trim().split(/\s+/);
   if (words.length === 1) return words[0][0].toUpperCase();
   return (words[0][0] + words[words.length - 1][0]).toUpperCase();
 }
-
+ 
 function getAvatarColor(title) {
   const colors = ["#1A9090", "#1A9090", "#E8746A", "#6B9E78", "#8B7BB5", "#C4884A"];
   let hash = 0;
   for (let i = 0; i < (title || "").length; i++) hash += title.charCodeAt(i);
   return colors[hash % colors.length];
 }
-
+ 
 function timeAgo(ts) {
   if (!ts) return "";
   const diff = Date.now() - ts;
@@ -1045,8 +1142,28 @@ function timeAgo(ts) {
   const days = Math.floor(hrs / 24);
   return `${days}d ago`;
 }
-
-function ListingCard({ listing, onMarkFilled, sessionContact, onSave, savedListings }) {
+ 
+function ViewCount({ listingId }) {
+  const [views, setViews] = useState(null);
+  useEffect(() => {
+    async function load() {
+      try {
+        const result = await window.storage.get(`views:${listingId}`);
+        if (result) setViews(parseInt(result.value));
+      } catch {}
+      try {
+        const result = await window.storage.get(`views:${listingId}`);
+        const current = result ? parseInt(result.value) : 0;
+        await window.storage.set(`views:${listingId}`, String(current + 1));
+      } catch {}
+    }
+    load();
+  }, [listingId]);
+  if (!views || views < 3) return null;
+  return <span style={{ fontSize: 11, color: COLORS.inkSoft, marginLeft: 6 }}>{views} views</span>;
+}
+ 
+function ListingCard({ listing, onMarkFilled, sessionContact, onSave, savedListings, hasQuizzed, onTakeQuiz }) {
   const [revealed, setRevealed] = useState(false);
   const isOwner = !!(sessionContact && listing.contact && sessionContact === listing.contact);
   const isSaved = savedListings && savedListings.includes(listing.id);
@@ -1062,7 +1179,10 @@ function ListingCard({ listing, onMarkFilled, sessionContact, onSave, savedListi
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 2 }}>
-            <div style={styles.cardTitle}>{listing.title}</div>
+            <div style={styles.cardTitle}>{listing.crew || listing.title}</div>
+            {listing.seeking && (
+              <div style={styles.cardSeeking}>{listing.seeking}</div>
+            )}
             {spotsLeft !== null && (
               <span style={styles.spotsBadge}>{spotsLeft} spot{spotsLeft !== 1 ? "s" : ""} open</span>
             )}
@@ -1071,10 +1191,13 @@ function ListingCard({ listing, onMarkFilled, sessionContact, onSave, savedListi
             {listing.area} · {listing.budget} · Move in {listing.moveIn}
             {listing.distanceKm != null ? ` · ~${listing.distanceKm}km from UC` : ""}
           </div>
-          <div style={styles.cardPostedDate}>{timeAgo(listing.renewedAt || listing.createdAt)}</div>
+          <div style={styles.cardPostedDate}>{timeAgo(listing.renewedAt || listing.createdAt)}<ViewCount listingId={listing.id} /></div>
         </div>
         <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-          <div style={styles.matchBadge}>{listing.score}% match</div>
+          {hasQuizzed
+            ? <div style={styles.matchBadge}>{listing.score}% match</div>
+            : <button style={styles.matchPrompt} onClick={onTakeQuiz}>Quiz me for compatibility ✦</button>
+          }
           {onSave && (
             <button
               style={styles.bookmarkBtn}
@@ -1083,7 +1206,7 @@ function ListingCard({ listing, onMarkFilled, sessionContact, onSave, savedListi
               aria-label={isSaved ? "Remove from saved" : "Save listing"}
             >
               <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill={isSaved ? COLORS.teal : "none"} stroke={COLORS.teal} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2z"></path>
+                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
               </svg>
             </button>
           )}
@@ -1134,11 +1257,11 @@ function ListingCard({ listing, onMarkFilled, sessionContact, onSave, savedListi
     </div>
   );
 }
-
+ 
 /* ---------------------------------------------
    POST FORM
 --------------------------------------------- */
-
+ 
 const NZ_TAG_OPTIONS = [
   { key: "quiet", label: "Quiet / chill weeknights" },
   { key: "social", label: "Social, people often over" },
@@ -1148,16 +1271,16 @@ const NZ_TAG_OPTIONS = [
   { key: "chill", label: "Easy-going, low-key" },
   { key: "budget", label: "Budget-focused" },
 ];
-
+ 
 function emptyForm() {
   return {
-    listingType: "room", // room | group
-    postType: "group", // group | solo
+    listingType: "room",
+    postType: "group",
     title: "",
     people: "1",
     spotsNeeded: "1",
-    groupSize: "2", // for group listing type
-    groupSeeking: "1", // 1 or 2
+    groupSize: "2",
+    groupSeeking: "1",
     suburb: "",
     budget: "",
     moveIn: "",
@@ -1166,13 +1289,13 @@ function emptyForm() {
     selectedTags: [],
   };
 }
-
+ 
 const STATUS_OPTIONS = [
   { key: "looking", label: "Actively looking", color: "#1A9090", dot: "#1A9090" },
   { key: "almost", label: "Almost full — 1 spot left", color: "#E8A030", dot: "#E8A030" },
   { key: "paused", label: "Taking a break", color: "#9AAAB0", dot: "#9AAAB0" },
 ];
-
+ 
 function StatusBadge({ status }) {
   const s = STATUS_OPTIONS.find(o => o.key === status) || STATUS_OPTIONS[0];
   return (
@@ -1191,14 +1314,14 @@ function StatusBadge({ status }) {
     </div>
   );
 }
-
+ 
 function PostForm({ onSubmit, onCancel, error }) {
   const [form, setForm] = useState(emptyForm());
   const [submitting, setSubmitting] = useState(false);
   const [validationError, setValidationError] = useState(null);
   const [photo, setPhoto] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
-
+ 
   function handlePhotoUpload(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -1209,11 +1332,11 @@ function PostForm({ onSubmit, onCancel, error }) {
     };
     reader.readAsDataURL(file);
   }
-
+ 
   function update(field, value) {
     setForm((prev) => ({ ...prev, [field]: value }));
   }
-
+ 
   function toggleTag(key) {
     setForm((prev) => {
       const has = prev.selectedTags.includes(key);
@@ -1225,11 +1348,11 @@ function PostForm({ onSubmit, onCancel, error }) {
       };
     });
   }
-
+ 
   async function handleSubmit(e) {
     e.preventDefault();
     setValidationError(null);
-
+ 
     if (!form.suburb || !form.budget.trim() || !form.moveIn.trim() || !form.bio.trim() || !form.contact.trim()) {
       setValidationError("Please fill in all fields so people know what they're looking at.");
       return;
@@ -1238,27 +1361,26 @@ function PostForm({ onSubmit, onCancel, error }) {
       setValidationError("Pick at least one vibe tag — it's how matching works.");
       return;
     }
-
+ 
     const tags = {};
     for (const key of form.selectedTags) {
       tags[key] = 2;
     }
-
+ 
     let title = "";
     let people = 1;
     let spotsNeeded = 1;
-
+ 
     if (form.listingType === "room") {
       people = parseInt(form.people, 10) || 1;
       spotsNeeded = parseInt(form.spotsNeeded, 10) || 1;
       title = form.title.trim() || `${people} looking for ${spotsNeeded} more`;
     } else {
-      // group listing type
       people = parseInt(form.groupSize, 10) || 2;
       spotsNeeded = parseInt(form.groupSeeking, 10) || 1;
       title = `${people} looking for ${spotsNeeded} more`;
     }
-
+ 
     setSubmitting(true);
     await onSubmit({
       listingType: form.listingType,
@@ -1278,7 +1400,7 @@ function PostForm({ onSubmit, onCancel, error }) {
     });
     setSubmitting(false);
   }
-
+ 
   return (
     <div style={styles.formWrap}>
       <LogoLockup size={32} align="left" />
@@ -1286,7 +1408,7 @@ function PostForm({ onSubmit, onCancel, error }) {
       <p style={styles.intro}>
         A couple of minutes now means people who'd actually fit can find you.
       </p>
-
+ 
       <form onSubmit={handleSubmit} style={styles.form}>
         <div style={styles.fieldGroup}>
           <label style={styles.label}>What are you posting?</label>
@@ -1307,7 +1429,7 @@ function PostForm({ onSubmit, onCancel, error }) {
             </button>
           </div>
         </div>
-
+ 
         {form.listingType === "room" && (
           <>
             <div style={styles.fieldRow}>
@@ -1334,7 +1456,7 @@ function PostForm({ onSubmit, onCancel, error }) {
                 />
               </div>
             </div>
-
+ 
             <div style={styles.fieldGroup}>
               <label style={styles.label}>Listing title (optional)</label>
               <input
@@ -1347,7 +1469,7 @@ function PostForm({ onSubmit, onCancel, error }) {
             </div>
           </>
         )}
-
+ 
         {form.listingType === "group" && (
           <>
             <div style={styles.fieldRow}>
@@ -1384,7 +1506,7 @@ function PostForm({ onSubmit, onCancel, error }) {
             </div>
           </>
         )}
-
+ 
         <div style={styles.fieldRow}>
           <div style={styles.fieldGroup}>
             <label style={styles.label}>Where are you looking?</label>
@@ -1415,7 +1537,7 @@ function PostForm({ onSubmit, onCancel, error }) {
             />
           </div>
         </div>
-
+ 
         <div style={styles.fieldGroup}>
           <label style={styles.label}>Move-in date</label>
           <input
@@ -1426,7 +1548,7 @@ function PostForm({ onSubmit, onCancel, error }) {
             onChange={(e) => update("moveIn", e.target.value)}
           />
         </div>
-
+ 
         <div style={styles.fieldGroup}>
           <label style={styles.label}>Tell people about your group — vibe, routines, what you're after</label>
           <textarea
@@ -1437,7 +1559,7 @@ function PostForm({ onSubmit, onCancel, error }) {
             onChange={(e) => update("bio", e.target.value)}
           />
         </div>
-
+ 
         <div style={styles.fieldGroup}>
           <label style={styles.label}>Flat photo (optional but recommended)</label>
           <div style={styles.photoUploadBox}>
@@ -1462,7 +1584,7 @@ function PostForm({ onSubmit, onCancel, error }) {
             )}
           </div>
         </div>
-
+ 
         <div style={styles.fieldGroup}>
           <label style={styles.label}>Vibe tags — pick what fits (at least 1)</label>
           <div style={styles.tagGrid}>
@@ -1482,7 +1604,7 @@ function PostForm({ onSubmit, onCancel, error }) {
             ))}
           </div>
         </div>
-
+ 
         <div style={styles.fieldGroup}>
           <label style={styles.label}>Contact (email, Instagram, phone — your call)</label>
           <input
@@ -1493,11 +1615,11 @@ function PostForm({ onSubmit, onCancel, error }) {
             onChange={(e) => update("contact", e.target.value)}
           />
         </div>
-
+ 
         {(validationError || error) && (
           <div style={styles.formError}>{validationError || error}</div>
         )}
-
+ 
         <div style={styles.formActions}>
           <button type="submit" style={styles.primaryBtn} disabled={submitting}>
             {submitting ? "Posting…" : "Post listing"}
@@ -1507,7 +1629,7 @@ function PostForm({ onSubmit, onCancel, error }) {
           </button>
         </div>
       </form>
-
+ 
       <p style={styles.shareNote}>
         Your listing is visible to anyone using FlatMatch — only share
         contact details you're comfortable being public.
@@ -1515,11 +1637,11 @@ function PostForm({ onSubmit, onCancel, error }) {
     </div>
   );
 }
-
+ 
 /* ---------------------------------------------
    POSTED CONFIRMATION
 --------------------------------------------- */
-
+ 
 function PostedConfirmation({ onBrowse, onTakeQuiz }) {
   return (
     <div style={styles.introWrap}>
@@ -1541,12 +1663,11 @@ function PostedConfirmation({ onBrowse, onTakeQuiz }) {
     </div>
   );
 }
-
-
+ 
 /* ---------------------------------------------
    FOOTER
 --------------------------------------------- */
-
+ 
 function Footer() {
   return (
     <footer style={styles.footer}>
@@ -1578,14 +1699,13 @@ function Footer() {
     </footer>
   );
 }
-
-
+ 
 const globalCSS = `
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { -webkit-font-smoothing: antialiased; }
-
+ 
   @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600;700&display=swap');
-
+ 
   @keyframes pulse {
     0%, 100% { opacity: 1; transform: scale(1); }
     50% { opacity: 0.5; transform: scale(0.85); }
@@ -1598,7 +1718,7 @@ const globalCSS = `
   @media (prefers-reduced-motion: reduce) {
     .stamp-anim { animation: none !important; }
   }
-
+ 
   button:focus-visible, .stamp-anim:focus-visible {
     outline: 3px solid #5FA8A0;
     outline-offset: 2px;
@@ -1611,7 +1731,6 @@ const globalCSS = `
     transform: translateY(-2px);
     border-color: #b0c4c8;
   }
-
   .fm-option-btn {
     transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
   }
@@ -1623,7 +1742,6 @@ const globalCSS = `
   .fm-option-btn:active {
     transform: translateX(1px) scale(0.99);
   }
-
   .fm-primary-btn {
     transition: background 0.15s ease, transform 0.12s ease, opacity 0.15s ease;
   }
@@ -1634,7 +1752,6 @@ const globalCSS = `
   .fm-primary-btn:active {
     transform: translateY(0) scale(0.98);
   }
-
   .fm-secondary-btn {
     transition: background 0.15s ease, color 0.15s ease, transform 0.12s ease;
   }
@@ -1646,7 +1763,6 @@ const globalCSS = `
   .fm-secondary-btn:active {
     transform: translateY(0) scale(0.98);
   }
-
   .fm-request-btn {
     transition: background 0.15s ease, color 0.15s ease, transform 0.12s ease;
   }
@@ -1655,14 +1771,12 @@ const globalCSS = `
     color: #fff;
     transform: translateY(-1px);
   }
-
   .fm-nav-link:hover {
     color: #1E2B2E !important;
   }
   .fm-nav-cta:hover {
     opacity: 0.85;
   }
-
   .hero-card {
     transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
   }
@@ -1671,7 +1785,6 @@ const globalCSS = `
     box-shadow: 0 8px 24px rgba(26,144,144,0.15);
     transform: translateY(-4px);
   }
-
   .hero-btn {
     transition: background 0.15s ease, transform 0.12s ease;
   }
@@ -1682,12 +1795,11 @@ const globalCSS = `
   .hero-btn:active {
     transform: translateY(0) scale(0.98);
   }
-
 `;
-
+ 
 const FONT_DISPLAY = "'DM Serif Display', Georgia, serif";
 const FONT_BODY = "'Inter', sans-serif";
-
+ 
 const COLORS = {
   paper: "#F7F6F2",
   ink: "#1E2B2E",
@@ -1698,7 +1810,7 @@ const COLORS = {
   cardBg: "#FFFFFF",
   border: "#E2E5E4",
 };
-
+ 
 const styles = {
   page: {
     minHeight: "100vh",
@@ -1710,7 +1822,6 @@ const styles = {
     alignItems: "center",
     padding: "100px 20px 60px",
   },
-
   navbar: {
     position: "fixed",
     top: 0,
@@ -1775,7 +1886,71 @@ const styles = {
     padding: "8px 18px",
     borderRadius: 8,
   },
-
+  navSaved: {
+    fontFamily: FONT_BODY,
+    fontSize: 14,
+    fontWeight: 600,
+    color: COLORS.ink,
+    background: "transparent",
+    border: `1.5px solid ${COLORS.ink}`,
+    cursor: "pointer",
+    padding: "8px 16px",
+    borderRadius: 8,
+    transition: "background 0.15s ease, color 0.15s ease",
+  },
+  navDropdownBtn: {
+    fontFamily: FONT_BODY,
+    fontSize: 14,
+    fontWeight: 600,
+    color: COLORS.teal,
+    background: `${COLORS.teal}12`,
+    border: `1.5px solid ${COLORS.teal}`,
+    cursor: "pointer",
+    padding: "8px 16px",
+    borderRadius: 8,
+    transition: "background 0.15s ease",
+  },
+  navDropdown: {
+    position: "absolute",
+    top: "calc(100% + 8px)",
+    right: 0,
+    background: "#fff",
+    border: `1.5px solid ${COLORS.border}`,
+    borderRadius: 14,
+    boxShadow: "0 8px 24px rgba(35,54,58,0.12)",
+    minWidth: 220,
+    zIndex: 200,
+    overflow: "hidden",
+  },
+  navDropdownItem: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-start",
+    gap: 2,
+    width: "100%",
+    padding: "14px 16px",
+    background: "transparent",
+    border: "none",
+    cursor: "pointer",
+    textAlign: "left",
+    transition: "background 0.15s ease",
+  },
+  navDropdownLabel: {
+    fontFamily: FONT_BODY,
+    fontSize: 14,
+    fontWeight: 600,
+    color: COLORS.ink,
+  },
+  navDropdownSub: {
+    fontFamily: FONT_BODY,
+    fontSize: 12,
+    color: COLORS.inkSoft,
+  },
+  navDropdownDivider: {
+    height: 1,
+    background: COLORS.border,
+    margin: "0 16px",
+  },
   footer: {
     width: "100%",
     borderTop: `1px solid ${COLORS.border}`,
@@ -1793,9 +1968,7 @@ const styles = {
     justifyContent: "space-between",
     marginBottom: 32,
   },
-  footerLeft: {
-    maxWidth: 220,
-  },
+  footerLeft: { maxWidth: 220 },
   footerBrand: {
     fontFamily: FONT_DISPLAY,
     fontSize: 15,
@@ -1840,12 +2013,13 @@ const styles = {
     fontSize: 12,
     color: COLORS.inkSoft,
   },
-
-  /* Intro */
   introWrap: {
     maxWidth: 760,
     width: "100%",
-    textAlign: "left",
+    textAlign: "center",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
   },
   eyebrow: {
     fontFamily: FONT_BODY,
@@ -1861,19 +2035,16 @@ const styles = {
     fontWeight: 600,
     lineHeight: 1.2,
     marginBottom: 16,
-    textAlign: "left",
+    textAlign: "center",
   },
-  highlight: {
-    color: COLORS.coral,
-  },
+  highlight: { color: COLORS.coral },
   intro: {
     fontSize: 16,
     lineHeight: 1.7,
     color: COLORS.inkSoft,
     maxWidth: 560,
-    marginLeft: 0,
-    marginRight: "auto",
-    marginBottom: 24,
+    margin: "0 auto 24px",
+    textAlign: "center",
   },
   introMeta: {
     fontSize: 13,
@@ -1885,7 +2056,6 @@ const styles = {
     flexWrap: "wrap",
   },
   dot: { color: COLORS.border },
-
   primaryBtn: {
     fontFamily: FONT_BODY,
     fontSize: 16,
@@ -1898,7 +2068,6 @@ const styles = {
     cursor: "pointer",
     boxShadow: "none",
   },
-
   secondaryBtn: {
     fontFamily: FONT_BODY,
     fontSize: 14,
@@ -1911,8 +2080,6 @@ const styles = {
     cursor: "pointer",
     marginTop: 24,
   },
-
-  /* Quiz */
   quizWrap: {
     maxWidth: 680,
     width: "100%",
@@ -1978,8 +2145,6 @@ const styles = {
     lineHeight: 1.5,
     transition: "border-color 0.15s ease, transform 0.1s ease",
   },
-
-  /* Results */
   resultsWrap: {
     maxWidth: 860,
     width: "100%",
@@ -2027,7 +2192,6 @@ const styles = {
     marginLeft: "auto",
     marginRight: "auto",
   },
-
   resultsSection: {
     width: "100%",
     marginBottom: 32,
@@ -2045,7 +2209,6 @@ const styles = {
     flexDirection: "column",
     gap: 14,
   },
-
   avatar: {
     width: 40,
     height: 40,
@@ -2071,7 +2234,6 @@ const styles = {
     color: COLORS.inkSoft,
     marginTop: 3,
   },
-
   card: {
     background: COLORS.cardBg,
     border: `1.5px solid ${COLORS.border}`,
@@ -2104,6 +2266,27 @@ const styles = {
     borderRadius: 8,
     padding: "6px 14px",
     whiteSpace: "nowrap",
+  },
+  matchPrompt: {
+    fontFamily: FONT_BODY,
+    fontSize: 11,
+    fontWeight: 600,
+    color: COLORS.teal,
+    background: `${COLORS.teal}12`,
+    border: `1.5px solid ${COLORS.teal}`,
+    borderRadius: 8,
+    padding: "6px 10px",
+    whiteSpace: "nowrap",
+    cursor: "pointer",
+    maxWidth: 120,
+    textAlign: "center",
+    lineHeight: 1.3,
+  },
+  cardSeeking: {
+    fontSize: 12,
+    fontWeight: 600,
+    color: COLORS.teal,
+    marginTop: 2,
   },
   cardBio: {
     fontSize: 14,
@@ -2143,8 +2326,14 @@ const styles = {
     justifyContent: "center",
     transition: "opacity 0.2s ease",
   },
-
-  /* Intro extras */
+  spotsBadge: {
+    fontSize: 11,
+    fontWeight: 600,
+    color: COLORS.teal,
+    background: `${COLORS.teal}18`,
+    borderRadius: 999,
+    padding: "2px 8px",
+  },
   introPostRow: {
     marginTop: 20,
     fontSize: 13.5,
@@ -2268,8 +2457,6 @@ const styles = {
     lineHeight: 1.6,
     opacity: 0.9,
   },
-
-  /* Results extras */
   loadingNote: {
     textAlign: "center",
     fontSize: 14,
@@ -2301,8 +2488,6 @@ const styles = {
     padding: "10px 18px",
     display: "inline-block",
   },
-
-  /* Form */
   formWrap: {
     maxWidth: 720,
     width: "100%",
@@ -2492,6 +2677,18 @@ const styles = {
     textAlign: "center",
     lineHeight: 1.6,
   },
+  noQuizPrompt: {
+    width: "100%",
+    background: COLORS.cardBg,
+    border: `1.5px solid ${COLORS.border}`,
+    borderRadius: 24,
+    padding: "28px 32px",
+    marginBottom: 40,
+    display: "flex",
+    alignItems: "center",
+    gap: 20,
+    flexWrap: "wrap",
+  },
   photoUploadBox: {
     border: `2px dashed ${COLORS.border}`,
     borderRadius: 12,
@@ -2534,3 +2731,4 @@ const styles = {
     marginBottom: 12,
   },
 };
+ 

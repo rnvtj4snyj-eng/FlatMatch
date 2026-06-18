@@ -1,14 +1,6 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const SUPABASE_URL = 'https://lrvuszggxukwhrcpxflq.supabase.co'
+const SUPABASE_ANON_KEY = 'sb_publishable_HRRzex36W84BAqe-UkTkQA_2_s35Tre'
 
-if (!supabaseUrl || !supabaseKey) {
-  console.warn("Supabase credentials not configured. Using local storage fallback.");
-}
-
-const supabase = supabaseUrl && supabaseKey 
-  ? createClient(supabaseUrl, supabaseKey)
-  : null;
-
-export default supabase;
+export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
