@@ -449,17 +449,31 @@ function Logo({ size = 40 }) {
   return (
     <svg
       width={size}
-      height={size}
-      viewBox="0 0 200 200"
+      height={size * 1.2}
+      viewBox="0 0 400 480"
       xmlns="http://www.w3.org/2000/svg"
       role="img"
       aria-label="FlatMatch logo"
-      style={{ borderRadius: size * 0.2, display: "block" }}
+      style={{ borderRadius: size * 0.15, display: "block" }}
     >
-      <rect x="0" y="0" width="200" height="200" rx="40" fill="#1E2B2E" />
-      <circle cx="82" cy="110" r="38" fill="#1A9090" opacity="0.9" />
-      <circle cx="124" cy="110" r="38" fill="#1A9090" opacity="0.9" />
-      <path d="M103 48 L152 92 H140 V132 H66 V92 H54 Z" fill="#F7F6F2" />
+      <rect width="400" height="480" rx="60" fill="#F7F6F2"/>
+      <circle cx="160" cy="210" r="120" fill="#2d3f7c"/>
+      <circle cx="250" cy="210" r="120" fill="#7C5CBF" opacity="0.75"/>
+      <g transform="translate(205, 175)">
+        <polygon points="0,-36 38,8 -38,8" fill="white"/>
+        <rect x="-26" y="8" width="52" height="36" fill="white"/>
+        <rect x="-10" y="20" width="20" height="24" fill="#5a3fa0"/>
+      </g>
+      <text
+        x="200"
+        y="400"
+        textAnchor="middle"
+        fontFamily="'Inter', 'Arial Black', sans-serif"
+        fontWeight="800"
+        fontSize="48"
+        fill="#7C5CBF"
+        letterSpacing="-1"
+      >FlatMatch</text>
     </svg>
   );
 }
