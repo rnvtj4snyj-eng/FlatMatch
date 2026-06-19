@@ -1822,7 +1822,189 @@ function ViewCount({ listingId }) {
   if (!views || views < 3) return null;
   return <span style={{ fontSize: 11, color: COLORS.inkSoft, marginLeft: 6 }}>{views} views</span>;
 }
- 
+ function FoundMyFlatBtn({ listingId }) {
+  const [stage, setStage] = useState("idle"); // idle | form | submitted
+  const [story, setStory] = useState("");
+  const [name, setName] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  if (stage === "submitted") {
+    return (
+      <div style={foundStyles.successBox}>
+        🎉 Thanks for sharing! Your story helps other students trust FlatMatch.
+      </div>
+    );
+  }
+
+  if (stage === "form") {
+    return (
+      <div style={foundStyles.formBox}>
+        <div style={foundStyles.formHeading}>Tell us your story 🏠</div>
+        <p style={foundStyles.formSubtext}>
+          How did FlatMatch help? One or two sentences is perfect.
+          It'll show on the homepage to help other students trust the app.
+        </p>
+        <textarea
+          style={foundStyles.textarea}
+          rows={3}
+          placeholder='e.g. "Found my flat group in a week — everyone matched on the quiz and the vibe has been perfect."'
+          value={story}
+          onChange={e => setStory(e.target.value)}
+        />
+        <input
+          style={foundStyles.input}
+          type="text"
+          placeholder="Your first name + year (e.g. Jamie, second-year)"
+          value={name}
+          onChange={e => setName(e.target.value)}
+        />
+        <div style={foundStyles.formBtns}>
+          <button
+            style={foundStyles.submitBtn}
+            disabled={!story.trim() || !name.trim() || submitting}
+            onClick={async () => {
+              if (!story.trim() || !name.trim()) return;
+              setSubmitting(true);
+              try {
+                await window.storage.set(
+                  `story:${listingId}:${Date.now()}`,
+                  JSON.stringify({
+                    story: story.trim(),
+                    name: name.trim(),
+                    listingId,
+                    createdAt: Date.now(),
+                  }),
+                  true
+                );
+                setStage("submitted");
+              } catch (err) {
+                console.error("Failed to save story:", err);
+                setStage("submitted");
+              }
+              setSubmitting(false);
+            }}
+          >
+            {submitting ? "Sharing…" : "Share my story"}
+          </button>
+          <button
+            style={foundStyles.cancelBtn}
+            onClick={() => setStage("idle")}
+          >
+            Maybe later
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <button
+      style={foundStyles.nudgeBtn}
+      onClick={() => setStage("form")}
+    >
+      🎉 Did FlatMatch help you find your flat? Share your story
+    </button>
+  );
+}
+
+const foundStyles = {
+  nudgeBtn: {
+    marginTop: 12,
+    width: "100%",
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 13,
+    fontWeight: 600,
+    color: "#7C5CBF",
+    background: "rgba(124,92,191,0.07)",
+    border: "1.5px dashed #7C5CBF",
+    borderRadius: 10,
+    padding: "12px 16px",
+    cursor: "pointer",
+    textAlign: "center",
+  },
+  formBox: {
+    marginTop: 14,
+    background: "#f8f7ff",
+    border: "1.5px solid #dde3f0",
+    borderRadius: 14,
+    padding: "20px 18px",
+    display: "flex",
+    flexDirection: "column",
+    gap: 12,
+  },
+  formHeading: {
+    fontFamily: "'DM Serif Display', Georgia, serif",
+    fontSize: 17,
+    fontWeight: 600,
+    color: "#1a2540",
+  },
+  formSubtext: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 13,
+    color: "#718096",
+    lineHeight: 1.6,
+  },
+  textarea: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 14,
+    padding: "12px 14px",
+    border: "1.5px solid #dde3f0",
+    borderRadius: 10,
+    background: "#fff",
+    color: "#1a2540",
+    resize: "vertical",
+    lineHeight: 1.6,
+  },
+  input: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 14,
+    padding: "10px 14px",
+    border: "1.5px solid #dde3f0",
+    borderRadius: 10,
+    background: "#fff",
+    color: "#1a2540",
+  },
+  formBtns: {
+    display: "flex",
+    gap: 10,
+    flexWrap: "wrap",
+  },
+  submitBtn: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 14,
+    fontWeight: 700,
+    padding: "11px 24px",
+    background: "#7C5CBF",
+    color: "#fff",
+    border: "none",
+    borderRadius: 10,
+    cursor: "pointer",
+  },
+  cancelBtn: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 13,
+    fontWeight: 600,
+    padding: "11px 18px",
+    background: "transparent",
+    color: "#718096",
+    border: "1.5px solid #dde3f0",
+    borderRadius: 10,
+    cursor: "pointer",
+  },
+  successBox: {
+    marginTop: 12,
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 13,
+    fontWeight: 600,
+    color: "#2d3f7c",
+    background: "rgba(45,63,124,0.07)",
+    border: "1.5px solid rgba(45,63,124,0.2)",
+    borderRadius: 10,
+    padding: "12px 16px",
+    textAlign: "center",
+    lineHeight: 1.6,
+  },
+};
 function ListingCard({ listing, onMarkFilled, sessionContact, onSave, savedListings, hasQuizzed, onTakeQuiz }) {
   const [revealed, setRevealed] = useState(false);
 const tokens = JSON.parse(localStorage.getItem('fm_tokens') || '{}');
@@ -1903,8 +2085,11 @@ const isOwner = !!tokens[listing.id];
       <StatusBadge status={listing.status || "looking"} />
       <p style={styles.cardBio}>{listing.bio}</p>
       {revealed && listing.contact ? (
-        <div style={styles.contactReveal}>
-          Get in touch: <strong>{listing.contact}</strong>
+        <div>
+          <div style={styles.contactReveal}>
+            Get in touch: <strong>{listing.contact}</strong>
+          </div>
+          <FoundMyFlatBtn listingId={listing.id} />
         </div>
       ) : (
         <button
