@@ -55,6 +55,8 @@ export async function createListing(listing) {
     }
   }
 
+  const deleteToken = crypto.randomUUID()
+
   const { data, error } = await supabase
     .from('listings')
     .insert({
@@ -75,11 +77,16 @@ export async function createListing(listing) {
       tags: listing.tags,
       photo_url: photoUrl,
       status: 'looking',
+      delete_token: deleteToken,
     })
     .select()
     .single()
 
   if (error) throw error
+
+  const saved = JSON.parse(localStorage.getItem('fm_tokens') || '{}')
+  saved[data.id] = deleteToken
+  localStorage.setItem('fm_tokens', JSON.stringify(saved))
 
   return {
     ...listing,
@@ -92,12 +99,20 @@ export async function createListing(listing) {
 }
 
 export async function markListingFilled(listingId) {
+  const saved = JSON.parse(localStorage.getItem('fm_tokens') || '{}')
+  const token = saved[listingId]
+  if (!token) throw new Error('Not authorised')
+
   const { error } = await supabase
     .from('listings')
     .delete()
     .eq('id', listingId)
+    .eq('delete_token', token)
 
   if (error) throw error
+
+  delete saved[listingId]
+  localStorage.setItem('fm_tokens', JSON.stringify(saved))
 }
 
 export async function updateListingStatus(listingId, status) {

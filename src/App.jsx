@@ -1165,7 +1165,8 @@ function ViewCount({ listingId }) {
  
 function ListingCard({ listing, onMarkFilled, sessionContact, onSave, savedListings, hasQuizzed, onTakeQuiz }) {
   const [revealed, setRevealed] = useState(false);
-  const isOwner = !!(sessionContact && listing.contact && sessionContact === listing.contact);
+const tokens = JSON.parse(localStorage.getItem('fm_tokens') || '{}');
+const isOwner = !!tokens[listing.id];
   const isSaved = savedListings && savedListings.includes(listing.id);
   const daysLeft = listing.expiresAt
     ? Math.max(0, Math.ceil((listing.expiresAt - Date.now()) / (1000 * 60 * 60 * 24)))
