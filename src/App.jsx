@@ -753,49 +753,91 @@ function Intro({ onStart, onPost }) {
 
       {/* ── 1. HERO ── */}
       <section style={introStyles.heroSection}>
-        <div style={introStyles.ucBadge}>🎓 Built for University of Canterbury students</div>
+        <div style={introStyles.ucBadge}>🎓 Built for UC Canterbury students</div>
         <h1 style={introStyles.heroHeadline}>
-          Find flatmates who actually<br />
-          <span style={introStyles.heroHighlight}>suit you.</span>
+          One place for every<br />
+          <span style={introStyles.heroHighlight}>Christchurch flat search.</span>
         </h1>
         <p style={introStyles.heroSubline}>
-          A 3-minute quiz matches you with flats and flatmates based on how you actually
-          live — sleep schedules, tidiness, how social you want the place to be.
-          No more messaging randoms who turn out to be completely the wrong vibe.
+          Stop scrolling TradeMe, Facebook groups, and Messenger threads at the same time.
+          FlatMatch brings together people who have rooms and people who need them —
+          and matches you by vibe, not just availability.
         </p>
         <div style={introStyles.heroCtas}>
           <button style={introStyles.ctaPrimary} onClick={onStart}>
-            Take the quiz — it's free
+            Find a flat — take the quiz
           </button>
           <button style={introStyles.ctaSecondary} onClick={onPost}>
             Post a listing
           </button>
         </div>
         <p style={introStyles.heroMeta}>
-          No account needed · Christchurch only · Takes 3 minutes
+          Free · No account needed · Christchurch only · Takes 3 minutes
         </p>
       </section>
 
-      {/* ── 2. HOW IT WORKS ── */}
+      {/* ── 2. THE PROBLEM ── */}
+      <section style={introStyles.problemSection}>
+        <div style={introStyles.problemGrid}>
+          <div style={introStyles.problemLeft}>
+            <div style={introStyles.sectionEyebrow}>THE OLD WAY</div>
+            <h2 style={introStyles.problemHeading}>Finding a flat is a mess.</h2>
+            <div style={introStyles.problemList}>
+              {[
+                "Posting in 5 different Facebook groups and getting ghosted",
+                "TradeMe listings with no info about who actually lives there",
+                "Messaging 10 people and realising you're totally different vibes",
+                "Groups formed in halls with no way to find one more person",
+                "No way to know if you'll actually get along until it's too late",
+              ].map((item, i) => (
+                <div key={i} style={introStyles.problemItem}>
+                  <span style={introStyles.problemX}>✕</span>
+                  <span style={introStyles.problemText}>{item}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div style={introStyles.problemRight}>
+            <div style={introStyles.sectionEyebrow}>THE FLATMATCH WAY</div>
+            <h2 style={introStyles.problemHeadingLight}>One place. Right people.</h2>
+            <div style={introStyles.problemList}>
+              {[
+                "One listing reaches everyone looking — no reposting",
+                "Profiles show who lives there and what the vibe actually is",
+                "Quiz matching means you filter by compatibility before messaging",
+                "Groups and solo searchers both post in the same place",
+                "Know your match % before you even reach out",
+              ].map((item, i) => (
+                <div key={i} style={introStyles.solutionItem}>
+                  <span style={introStyles.solutionCheck}>✓</span>
+                  <span style={introStyles.solutionText}>{item}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── 3. HOW IT WORKS ── */}
       <section style={introStyles.howSection}>
         <div style={introStyles.sectionEyebrow}>HOW IT WORKS</div>
-        <h2 style={introStyles.sectionHeading}>From quiz to compatible flat in minutes</h2>
+        <h2 style={introStyles.sectionHeading}>Simple. Fast. Actually useful.</h2>
         <div style={introStyles.stepsRow}>
           {[
             {
               num: "1",
-              title: "Answer 17 quick questions",
-              body: "Bedtimes, cleanliness, how often you want people over — the stuff that actually makes or breaks a flat.",
+              title: "Post or take the quiz",
+              body: "Have a room? Post your listing in 2 minutes. Looking to join a flat? Take a 3-minute quiz about how you actually live.",
             },
             {
               num: "2",
-              title: "Get your flatting archetype",
-              body: "We turn your answers into a personality profile — The Homebody Circle, The Social Hub, Study First, and more.",
+              title: "Everything's in one feed",
+              body: "Groups with rooms, solo searchers, people forming new flats — all in one place, no tab switching.",
             },
             {
               num: "3",
-              title: "See listings ranked by match %",
-              body: "Every listing gets a compatibility score against your profile. The closer the vibe, the higher it ranks.",
+              title: "Match % tells you who's worth messaging",
+              body: "Your quiz answers get scored against every listing. Higher match = closer habits. Message the ones that make sense.",
             },
           ].map((step) => (
             <div key={step.num} style={introStyles.stepCard}>
@@ -807,7 +849,7 @@ function Intro({ onStart, onPost }) {
         </div>
       </section>
 
-      {/* ── 3. TWO PATHS ── */}
+      {/* ── 4. TWO PATHS ── */}
       <section style={introStyles.pathsSection}>
         <div style={introStyles.sectionEyebrow}>GET STARTED</div>
         <h2 style={introStyles.sectionHeading}>Where do you sit right now?</h2>
@@ -816,13 +858,14 @@ function Intro({ onStart, onPost }) {
             <span style={introStyles.pathEmoji}>🔍</span>
             <h3 style={introStyles.pathTitle}>I'm looking to join a flat</h3>
             <p style={introStyles.pathBody}>
-              Take the quiz, get your archetype, and see every listing
-              ranked by how well your habits line up. No more guessing.
+              Take the quiz, get your flatting archetype, and see every
+              listing in Christchurch ranked by how well your habits line up.
+              No more cold messaging randoms.
             </p>
             <ul style={introStyles.pathChecklist}>
               <li>✓ Takes 3 minutes</li>
-              <li>✓ No account needed</li>
-              <li>✓ Ranked by real compatibility</li>
+              <li>✓ See match % before you message</li>
+              <li>✓ Groups and rooms all in one place</li>
             </ul>
             <button style={introStyles.pathBtnPrimary} onClick={onStart}>
               Match me with a flat
@@ -831,77 +874,30 @@ function Intro({ onStart, onPost }) {
 
           <div style={introStyles.pathCardRight}>
             <span style={introStyles.pathEmoji}>🏠</span>
-            <h3 style={introStyles.pathTitleDark}>Our group has a spot</h3>
+            <h3 style={introStyles.pathTitleDark}>We have a room or we're forming a group</h3>
             <p style={introStyles.pathBodyDark}>
-              Post your listing in under two minutes. Set your vibe tags
-              and the right people will find you — ranked to the top of
-              their results.
+              Post once and reach every UC student looking right now —
+              solo searchers, groups forming, people moving to Christchurch.
+              Set your vibe tags and the right people find you.
             </p>
             <ul style={introStyles.pathChecklistDark}>
               <li>✓ Free to post</li>
-              <li>✓ Shown to matched students first</li>
-              <li>✓ Contact only shared when requested</li>
+              <li>✓ One listing, all searchers</li>
+              <li>✓ Contact only shared when someone requests</li>
             </ul>
             <button style={introStyles.pathBtnSecondary} onClick={onPost}>
-              Post our spot
+              Post our listing
             </button>
           </div>
-        </div>
-      </section>
-
-      {/* ── 4. TRUST SIGNALS ── */}
-      <section style={introStyles.trustSection}>
-        <div style={introStyles.trustGrid}>
-          <div style={introStyles.trustStat}>
-            <div style={introStyles.trustStatNum}>17</div>
-            <div style={introStyles.trustStatLabel}>Questions that actually matter</div>
-          </div>
-          <div style={introStyles.trustDivider} />
-          <div style={introStyles.trustStat}>
-            <div style={introStyles.trustStatNum}>7</div>
-            <div style={introStyles.trustStatLabel}>Flatting archetypes</div>
-          </div>
-          <div style={introStyles.trustDivider} />
-          <div style={introStyles.trustStat}>
-            <div style={introStyles.trustStatNum}>15+</div>
-            <div style={introStyles.trustStatLabel}>Christchurch suburbs covered</div>
-          </div>
-          <div style={introStyles.trustDivider} />
-          <div style={introStyles.trustStat}>
-            <div style={introStyles.trustStatNum}>0</div>
-            <div style={introStyles.trustStatLabel}>Accounts required</div>
-          </div>
-        </div>
-
-        <div style={introStyles.quotesRow}>
-          {[
-            {
-              quote: "Found my flat group in a week. Everyone's on the same schedule and it's made such a difference.",
-              name: "Second-year, Ilam",
-            },
-            {
-              quote: "Posted our listing and had messages from people who actually matched our vibe within a day.",
-              name: "Third-year group, Riccarton",
-            },
-            {
-              quote: "Way better than TradeMe. You can actually tell if you'll get along before you even message.",
-              name: "First-year, Upper Riccarton",
-            },
-          ].map((q, i) => (
-            <div key={i} style={introStyles.quoteCard}>
-              <p style={introStyles.quoteText}>"{q.quote}"</p>
-              <div style={introStyles.quoteName}>— {q.name}</div>
-            </div>
-          ))}
         </div>
       </section>
 
       {/* ── 5. ARCHETYPE TEASER ── */}
       <section style={introStyles.archetypeSection}>
         <div style={introStyles.sectionEyebrow}>YOUR FLATTING ARCHETYPE</div>
-        <h2 style={introStyles.sectionHeading}>Which one are you?</h2>
+        <h2 style={introStyles.sectionHeading}>The quiz figures out your flatting style.</h2>
         <p style={introStyles.archetypeSubline}>
-          Take the quiz to find out. Hover each one to see if it sounds like you.
+          Hover each archetype — one of these is probably you.
         </p>
         <div style={introStyles.archetypeGrid}>
           {ARCHETYPES.map((a) => (
@@ -929,18 +925,23 @@ function Intro({ onStart, onPost }) {
         </button>
       </section>
 
-      {/* ── 6. FINAL CTA STRIP ── */}
+      {/* ── 6. FINAL CTA ── */}
       <section style={introStyles.finalCtaSection}>
         <h2 style={introStyles.finalCtaHeading}>
           Flatting season moves fast.<br />Don't leave it to chance.
         </h2>
         <p style={introStyles.finalCtaBody}>
-          Most flats near UC fill up by mid-January. Take the quiz now and
-          know exactly who you're compatible with before the rush.
+          Most flats near UC fill up by mid-January. Post your listing or
+          take the quiz now — everything's in one place, and it takes minutes.
         </p>
-        <button style={introStyles.ctaPrimary} onClick={onStart}>
-          Find my people — take the quiz
-        </button>
+        <div style={introStyles.finalCtaBtns}>
+          <button style={introStyles.finalCtaBtnPrimary} onClick={onStart}>
+            Take the quiz
+          </button>
+          <button style={introStyles.finalCtaBtnSecondary} onClick={onPost}>
+            Post a listing
+          </button>
+        </div>
       </section>
 
     </div>
@@ -956,6 +957,8 @@ const introStyles = {
     alignItems: "center",
     gap: 0,
   },
+
+  // ── HERO ──
   heroSection: {
     width: "100%",
     textAlign: "center",
@@ -969,8 +972,8 @@ const introStyles = {
     fontSize: 12,
     fontWeight: 700,
     letterSpacing: "0.06em",
-    color: "#1A9090",
-    background: "rgba(26,144,144,0.10)",
+    color: "#4B6BB7",
+    background: "rgba(75,107,183,0.10)",
     borderRadius: 999,
     padding: "6px 16px",
     marginBottom: 28,
@@ -978,21 +981,21 @@ const introStyles = {
   },
   heroHeadline: {
     fontFamily: "'DM Serif Display', Georgia, serif",
-    fontSize: "clamp(36px, 6vw, 58px)",
+    fontSize: "clamp(36px, 6vw, 56px)",
     fontWeight: 600,
     lineHeight: 1.15,
-    color: "#1E2B2E",
+    color: "#1a2540",
     marginBottom: 20,
   },
   heroHighlight: {
-    color: "#E8746A",
+    color: "#7C5CBF",
   },
   heroSubline: {
     fontFamily: "'Inter', sans-serif",
     fontSize: 17,
     lineHeight: 1.75,
-    color: "#5A6B6E",
-    maxWidth: 560,
+    color: "#4a5568",
+    maxWidth: 580,
     marginBottom: 36,
   },
   heroCtas: {
@@ -1007,7 +1010,7 @@ const introStyles = {
     fontSize: 16,
     fontWeight: 700,
     padding: "16px 36px",
-    background: "#1E2B2E",
+    background: "#2d3f7c",
     color: "#fff",
     border: "none",
     borderRadius: 10,
@@ -1019,23 +1022,25 @@ const introStyles = {
     fontWeight: 600,
     padding: "16px 32px",
     background: "transparent",
-    color: "#1E2B2E",
-    border: "2px solid #1E2B2E",
+    color: "#2d3f7c",
+    border: "2px solid #2d3f7c",
     borderRadius: 10,
     cursor: "pointer",
   },
   heroMeta: {
     fontFamily: "'Inter', sans-serif",
     fontSize: 12.5,
-    color: "#5A6B6E",
+    color: "#718096",
     letterSpacing: "0.04em",
   },
+
+  // ── SHARED ──
   sectionEyebrow: {
     fontFamily: "'Inter', sans-serif",
     fontSize: 11,
     fontWeight: 700,
     letterSpacing: "0.18em",
-    color: "#1A9090",
+    color: "#7C5CBF",
     marginBottom: 12,
     textAlign: "center",
   },
@@ -1043,15 +1048,104 @@ const introStyles = {
     fontFamily: "'DM Serif Display', Georgia, serif",
     fontSize: "clamp(24px, 4vw, 34px)",
     fontWeight: 600,
-    color: "#1E2B2E",
+    color: "#1a2540",
     textAlign: "center",
     marginBottom: 40,
     lineHeight: 1.25,
   },
+
+  // ── PROBLEM / SOLUTION ──
+  problemSection: {
+    width: "100%",
+    padding: "72px 0",
+    borderTop: "1px solid #dde3f0",
+  },
+  problemGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+    gap: 24,
+    width: "100%",
+  },
+  problemLeft: {
+    background: "#f8f7ff",
+    border: "1.5px solid #dde3f0",
+    borderRadius: 20,
+    padding: "36px 32px",
+    display: "flex",
+    flexDirection: "column",
+    gap: 20,
+  },
+  problemRight: {
+    background: "#2d3f7c",
+    borderRadius: 20,
+    padding: "36px 32px",
+    display: "flex",
+    flexDirection: "column",
+    gap: 20,
+  },
+  problemHeading: {
+    fontFamily: "'DM Serif Display', Georgia, serif",
+    fontSize: 22,
+    fontWeight: 600,
+    color: "#1a2540",
+    lineHeight: 1.3,
+    marginTop: -4,
+  },
+  problemHeadingLight: {
+    fontFamily: "'DM Serif Display', Georgia, serif",
+    fontSize: 22,
+    fontWeight: 600,
+    color: "#fff",
+    lineHeight: 1.3,
+    marginTop: -4,
+  },
+  problemList: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 12,
+  },
+  problemItem: {
+    display: "flex",
+    alignItems: "flex-start",
+    gap: 10,
+  },
+  problemX: {
+    fontSize: 13,
+    fontWeight: 700,
+    color: "#a0aec0",
+    flexShrink: 0,
+    marginTop: 2,
+  },
+  problemText: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 14,
+    lineHeight: 1.6,
+    color: "#4a5568",
+  },
+  solutionItem: {
+    display: "flex",
+    alignItems: "flex-start",
+    gap: 10,
+  },
+  solutionCheck: {
+    fontSize: 13,
+    fontWeight: 700,
+    color: "#1A9090",
+    flexShrink: 0,
+    marginTop: 2,
+  },
+  solutionText: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 14,
+    lineHeight: 1.6,
+    color: "rgba(255,255,255,0.85)",
+  },
+
+  // ── HOW IT WORKS ──
   howSection: {
     width: "100%",
     padding: "72px 0",
-    borderTop: "1px solid #E2E5E4",
+    borderTop: "1px solid #dde3f0",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
@@ -1063,8 +1157,8 @@ const introStyles = {
     width: "100%",
   },
   stepCard: {
-    background: "#FFFFFF",
-    border: "1.5px solid #E2E5E4",
+    background: "#fff",
+    border: "1.5px solid #dde3f0",
     borderRadius: 20,
     padding: "32px 28px",
     display: "flex",
@@ -1075,26 +1169,28 @@ const introStyles = {
     fontFamily: "'DM Serif Display', Georgia, serif",
     fontSize: 40,
     fontWeight: 700,
-    color: "#E8746A",
+    color: "#7C5CBF",
     lineHeight: 1,
   },
   stepTitle: {
     fontFamily: "'Inter', sans-serif",
     fontSize: 16,
     fontWeight: 700,
-    color: "#1E2B2E",
+    color: "#1a2540",
     lineHeight: 1.35,
   },
   stepBody: {
     fontFamily: "'Inter', sans-serif",
     fontSize: 14,
     lineHeight: 1.7,
-    color: "#5A6B6E",
+    color: "#4a5568",
   },
+
+  // ── TWO PATHS ──
   pathsSection: {
     width: "100%",
     padding: "72px 0",
-    borderTop: "1px solid #E2E5E4",
+    borderTop: "1px solid #dde3f0",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
@@ -1106,7 +1202,7 @@ const introStyles = {
     width: "100%",
   },
   pathCardLeft: {
-    background: "#1E2B2E",
+    background: "#2d3f7c",
     borderRadius: 24,
     padding: "40px 36px",
     display: "flex",
@@ -1114,8 +1210,8 @@ const introStyles = {
     gap: 16,
   },
   pathCardRight: {
-    background: "#FFFFFF",
-    border: "1.5px solid #E2E5E4",
+    background: "#fff",
+    border: "1.5px solid #dde3f0",
     borderRadius: 24,
     padding: "40px 36px",
     display: "flex",
@@ -1129,27 +1225,27 @@ const introStyles = {
     fontFamily: "'DM Serif Display', Georgia, serif",
     fontSize: 22,
     fontWeight: 600,
-    color: "#F7F6F2",
+    color: "#fff",
     lineHeight: 1.3,
   },
   pathTitleDark: {
     fontFamily: "'DM Serif Display', Georgia, serif",
     fontSize: 22,
     fontWeight: 600,
-    color: "#1E2B2E",
+    color: "#1a2540",
     lineHeight: 1.3,
   },
   pathBody: {
     fontFamily: "'Inter', sans-serif",
     fontSize: 14.5,
     lineHeight: 1.7,
-    color: "rgba(247,246,242,0.75)",
+    color: "rgba(255,255,255,0.75)",
   },
   pathBodyDark: {
     fontFamily: "'Inter', sans-serif",
     fontSize: 14.5,
     lineHeight: 1.7,
-    color: "#5A6B6E",
+    color: "#4a5568",
   },
   pathChecklist: {
     listStyle: "none",
@@ -1158,7 +1254,7 @@ const introStyles = {
     flexDirection: "column",
     gap: 8,
     fontSize: 13.5,
-    color: "rgba(247,246,242,0.65)",
+    color: "rgba(255,255,255,0.65)",
     fontFamily: "'Inter', sans-serif",
     fontWeight: 500,
   },
@@ -1169,7 +1265,7 @@ const introStyles = {
     flexDirection: "column",
     gap: 8,
     fontSize: 13.5,
-    color: "#5A6B6E",
+    color: "#718096",
     fontFamily: "'Inter', sans-serif",
     fontWeight: 500,
   },
@@ -1178,7 +1274,7 @@ const introStyles = {
     fontSize: 15,
     fontWeight: 700,
     padding: "15px 0",
-    background: "#E8746A",
+    background: "#7C5CBF",
     color: "#fff",
     border: "none",
     borderRadius: 10,
@@ -1192,93 +1288,19 @@ const introStyles = {
     fontWeight: 700,
     padding: "15px 0",
     background: "transparent",
-    color: "#1E2B2E",
-    border: "2px solid #1E2B2E",
+    color: "#2d3f7c",
+    border: "2px solid #2d3f7c",
     borderRadius: 10,
     cursor: "pointer",
     marginTop: 8,
     width: "100%",
   },
-  trustSection: {
-    width: "100%",
-    padding: "72px 0",
-    borderTop: "1px solid #E2E5E4",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    gap: 52,
-  },
-  trustGrid: {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: 0,
-    justifyContent: "center",
-    width: "100%",
-    background: "#FFFFFF",
-    border: "1.5px solid #E2E5E4",
-    borderRadius: 20,
-    overflow: "hidden",
-  },
-  trustStat: {
-    flex: 1,
-    minWidth: 140,
-    padding: "32px 24px",
-    textAlign: "center",
-    display: "flex",
-    flexDirection: "column",
-    gap: 6,
-  },
-  trustStatNum: {
-    fontFamily: "'DM Serif Display', Georgia, serif",
-    fontSize: 42,
-    fontWeight: 700,
-    color: "#E8746A",
-    lineHeight: 1,
-  },
-  trustStatLabel: {
-    fontFamily: "'Inter', sans-serif",
-    fontSize: 13,
-    color: "#5A6B6E",
-    lineHeight: 1.4,
-  },
-  trustDivider: {
-    width: 1,
-    background: "#E2E5E4",
-    alignSelf: "stretch",
-  },
-  quotesRow: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-    gap: 16,
-    width: "100%",
-  },
-  quoteCard: {
-    background: "#FFFFFF",
-    border: "1.5px solid #E2E5E4",
-    borderRadius: 16,
-    padding: "24px 22px",
-    display: "flex",
-    flexDirection: "column",
-    gap: 12,
-  },
-  quoteText: {
-    fontFamily: "'DM Serif Display', Georgia, serif",
-    fontSize: 15,
-    lineHeight: 1.65,
-    color: "#1E2B2E",
-    fontStyle: "italic",
-  },
-  quoteName: {
-    fontFamily: "'Inter', sans-serif",
-    fontSize: 12,
-    fontWeight: 600,
-    color: "#5A6B6E",
-    letterSpacing: "0.04em",
-  },
+
+  // ── ARCHETYPES ──
   archetypeSection: {
     width: "100%",
     padding: "72px 0",
-    borderTop: "1px solid #E2E5E4",
+    borderTop: "1px solid #dde3f0",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
@@ -1286,9 +1308,10 @@ const introStyles = {
   archetypeSubline: {
     fontFamily: "'Inter', sans-serif",
     fontSize: 15,
-    color: "#5A6B6E",
+    color: "#718096",
     marginBottom: 36,
     marginTop: -24,
+    textAlign: "center",
   },
   archetypeGrid: {
     display: "flex",
@@ -1302,8 +1325,8 @@ const introStyles = {
     display: "flex",
     alignItems: "center",
     gap: 10,
-    background: "#FFFFFF",
-    border: "1.5px solid #E2E5E4",
+    background: "#fff",
+    border: "1.5px solid #dde3f0",
     borderRadius: 14,
     padding: "14px 20px",
     cursor: "pointer",
@@ -1311,9 +1334,9 @@ const introStyles = {
     flex: "0 1 auto",
   },
   archetypeChipActive: {
-    borderColor: "#1A9090",
-    boxShadow: "0 0 0 3px rgba(26,144,144,0.12)",
-    background: "rgba(26,144,144,0.04)",
+    borderColor: "#7C5CBF",
+    boxShadow: "0 0 0 3px rgba(124,92,191,0.12)",
+    background: "rgba(124,92,191,0.04)",
   },
   archetypeChipEmoji: {
     fontSize: 26,
@@ -1323,13 +1346,13 @@ const introStyles = {
     fontFamily: "'Inter', sans-serif",
     fontSize: 13.5,
     fontWeight: 700,
-    color: "#1E2B2E",
+    color: "#1a2540",
     lineHeight: 1.3,
   },
   archetypeChipTagline: {
     fontFamily: "'Inter', sans-serif",
     fontSize: 11.5,
-    color: "#1A9090",
+    color: "#7C5CBF",
     lineHeight: 1.4,
     marginTop: 3,
     fontWeight: 500,
@@ -1338,18 +1361,19 @@ const introStyles = {
     fontFamily: "'Inter', sans-serif",
     fontSize: 15,
     fontWeight: 700,
-    color: "#1A9090",
-    background: "rgba(26,144,144,0.08)",
-    border: "1.5px solid #1A9090",
+    color: "#7C5CBF",
+    background: "rgba(124,92,191,0.08)",
+    border: "1.5px solid #7C5CBF",
     borderRadius: 10,
     padding: "14px 32px",
     cursor: "pointer",
   },
+
+  // ── FINAL CTA ──
   finalCtaSection: {
     width: "100%",
     padding: "72px 40px",
-    borderTop: "1px solid #E2E5E4",
-    background: "#1E2B2E",
+    background: "#2d3f7c",
     borderRadius: 24,
     marginBottom: 40,
     display: "flex",
@@ -1362,15 +1386,43 @@ const introStyles = {
     fontFamily: "'DM Serif Display', Georgia, serif",
     fontSize: "clamp(26px, 4vw, 38px)",
     fontWeight: 600,
-    color: "#F7F6F2",
+    color: "#fff",
     lineHeight: 1.25,
   },
   finalCtaBody: {
     fontFamily: "'Inter', sans-serif",
     fontSize: 15.5,
     lineHeight: 1.7,
-    color: "rgba(247,246,242,0.70)",
+    color: "rgba(255,255,255,0.70)",
     maxWidth: 480,
+  },
+  finalCtaBtns: {
+    display: "flex",
+    gap: 14,
+    flexWrap: "wrap",
+    justifyContent: "center",
+  },
+  finalCtaBtnPrimary: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 16,
+    fontWeight: 700,
+    padding: "16px 36px",
+    background: "#7C5CBF",
+    color: "#fff",
+    border: "none",
+    borderRadius: 10,
+    cursor: "pointer",
+  },
+  finalCtaBtnSecondary: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 16,
+    fontWeight: 600,
+    padding: "16px 32px",
+    background: "transparent",
+    color: "#fff",
+    border: "2px solid rgba(255,255,255,0.4)",
+    borderRadius: 10,
+    cursor: "pointer",
   },
 };
  
