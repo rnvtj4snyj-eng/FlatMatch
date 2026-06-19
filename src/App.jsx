@@ -746,39 +746,633 @@ export default function App() {
 --------------------------------------------- */
  
 function Intro({ onStart, onPost }) {
+  const [activeArchetype, setActiveArchetype] = useState(null);
+
   return (
-    <div style={styles.introWrap}>
-      <LogoLockup size={48} align="center" />
-      <div style={styles.ucBadge}>Built for University of Canterbury students</div>
-      <h1 style={styles.h1}>
-        Find your <span style={styles.highlight}>people</span>, not just a
-        room.
-      </h1>
-      <p style={styles.intro}>
-        FlatMatch ranks flats and flatmates by how well your day-to-day
-        habits actually line up — sleep schedules, mess tolerance, how social
-        you want the place to be — so you spend less time messaging randoms
-        who turn out to be a totally different vibe.
-      </p>
- 
-      <div style={styles.heroCta}>
-        <div className="hero-card" style={styles.heroCard}>
-          <span style={{ fontSize: 48 }}>🏠</span>
-          <h2 style={styles.heroHeading}>Our group has a spot</h2>
-          <p style={styles.heroSubtext}>You have your people. Post your spot and find the perfect person to complete your flat.</p>
-          <button className="hero-btn" style={styles.heroBtn} onClick={onPost}>Post our spot</button>
+    <div style={introStyles.page}>
+
+      {/* ── 1. HERO ── */}
+      <section style={introStyles.heroSection}>
+        <div style={introStyles.ucBadge}>🎓 Built for University of Canterbury students</div>
+        <h1 style={introStyles.heroHeadline}>
+          Find flatmates who actually<br />
+          <span style={introStyles.heroHighlight}>suit you.</span>
+        </h1>
+        <p style={introStyles.heroSubline}>
+          A 3-minute quiz matches you with flats and flatmates based on how you actually
+          live — sleep schedules, tidiness, how social you want the place to be.
+          No more messaging randoms who turn out to be completely the wrong vibe.
+        </p>
+        <div style={introStyles.heroCtas}>
+          <button style={introStyles.ctaPrimary} onClick={onStart}>
+            Take the quiz — it's free
+          </button>
+          <button style={introStyles.ctaSecondary} onClick={onPost}>
+            Post a listing
+          </button>
         </div>
- 
-        <div className="hero-card" style={styles.heroCard}>
-          <span style={{ fontSize: 48 }}>🔍</span>
-          <h2 style={styles.heroHeading}>I'm looking to join a flat</h2>
-          <p style={styles.heroSubtext}>Find a group that matches your vibe. Take a 3-min quiz and get ranked by compatibility.</p>
-          <button className="hero-btn" style={styles.heroBtn} onClick={onStart}>Match with a flat</button>
+        <p style={introStyles.heroMeta}>
+          No account needed · Christchurch only · Takes 3 minutes
+        </p>
+      </section>
+
+      {/* ── 2. HOW IT WORKS ── */}
+      <section style={introStyles.howSection}>
+        <div style={introStyles.sectionEyebrow}>HOW IT WORKS</div>
+        <h2 style={introStyles.sectionHeading}>From quiz to compatible flat in minutes</h2>
+        <div style={introStyles.stepsRow}>
+          {[
+            {
+              num: "1",
+              title: "Answer 17 quick questions",
+              body: "Bedtimes, cleanliness, how often you want people over — the stuff that actually makes or breaks a flat.",
+            },
+            {
+              num: "2",
+              title: "Get your flatting archetype",
+              body: "We turn your answers into a personality profile — The Homebody Circle, The Social Hub, Study First, and more.",
+            },
+            {
+              num: "3",
+              title: "See listings ranked by match %",
+              body: "Every listing gets a compatibility score against your profile. The closer the vibe, the higher it ranks.",
+            },
+          ].map((step) => (
+            <div key={step.num} style={introStyles.stepCard}>
+              <div style={introStyles.stepNum}>{step.num}</div>
+              <h3 style={introStyles.stepTitle}>{step.title}</h3>
+              <p style={introStyles.stepBody}>{step.body}</p>
+            </div>
+          ))}
         </div>
-      </div>
+      </section>
+
+      {/* ── 3. TWO PATHS ── */}
+      <section style={introStyles.pathsSection}>
+        <div style={introStyles.sectionEyebrow}>GET STARTED</div>
+        <h2 style={introStyles.sectionHeading}>Where do you sit right now?</h2>
+        <div style={introStyles.pathsRow}>
+          <div style={introStyles.pathCardLeft}>
+            <span style={introStyles.pathEmoji}>🔍</span>
+            <h3 style={introStyles.pathTitle}>I'm looking to join a flat</h3>
+            <p style={introStyles.pathBody}>
+              Take the quiz, get your archetype, and see every listing
+              ranked by how well your habits line up. No more guessing.
+            </p>
+            <ul style={introStyles.pathChecklist}>
+              <li>✓ Takes 3 minutes</li>
+              <li>✓ No account needed</li>
+              <li>✓ Ranked by real compatibility</li>
+            </ul>
+            <button style={introStyles.pathBtnPrimary} onClick={onStart}>
+              Match me with a flat
+            </button>
+          </div>
+
+          <div style={introStyles.pathCardRight}>
+            <span style={introStyles.pathEmoji}>🏠</span>
+            <h3 style={introStyles.pathTitleDark}>Our group has a spot</h3>
+            <p style={introStyles.pathBodyDark}>
+              Post your listing in under two minutes. Set your vibe tags
+              and the right people will find you — ranked to the top of
+              their results.
+            </p>
+            <ul style={introStyles.pathChecklistDark}>
+              <li>✓ Free to post</li>
+              <li>✓ Shown to matched students first</li>
+              <li>✓ Contact only shared when requested</li>
+            </ul>
+            <button style={introStyles.pathBtnSecondary} onClick={onPost}>
+              Post our spot
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* ── 4. TRUST SIGNALS ── */}
+      <section style={introStyles.trustSection}>
+        <div style={introStyles.trustGrid}>
+          <div style={introStyles.trustStat}>
+            <div style={introStyles.trustStatNum}>17</div>
+            <div style={introStyles.trustStatLabel}>Questions that actually matter</div>
+          </div>
+          <div style={introStyles.trustDivider} />
+          <div style={introStyles.trustStat}>
+            <div style={introStyles.trustStatNum}>7</div>
+            <div style={introStyles.trustStatLabel}>Flatting archetypes</div>
+          </div>
+          <div style={introStyles.trustDivider} />
+          <div style={introStyles.trustStat}>
+            <div style={introStyles.trustStatNum}>15+</div>
+            <div style={introStyles.trustStatLabel}>Christchurch suburbs covered</div>
+          </div>
+          <div style={introStyles.trustDivider} />
+          <div style={introStyles.trustStat}>
+            <div style={introStyles.trustStatNum}>0</div>
+            <div style={introStyles.trustStatLabel}>Accounts required</div>
+          </div>
+        </div>
+
+        <div style={introStyles.quotesRow}>
+          {[
+            {
+              quote: "Found my flat group in a week. Everyone's on the same schedule and it's made such a difference.",
+              name: "Second-year, Ilam",
+            },
+            {
+              quote: "Posted our listing and had messages from people who actually matched our vibe within a day.",
+              name: "Third-year group, Riccarton",
+            },
+            {
+              quote: "Way better than TradeMe. You can actually tell if you'll get along before you even message.",
+              name: "First-year, Upper Riccarton",
+            },
+          ].map((q, i) => (
+            <div key={i} style={introStyles.quoteCard}>
+              <p style={introStyles.quoteText}>"{q.quote}"</p>
+              <div style={introStyles.quoteName}>— {q.name}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── 5. ARCHETYPE TEASER ── */}
+      <section style={introStyles.archetypeSection}>
+        <div style={introStyles.sectionEyebrow}>YOUR FLATTING ARCHETYPE</div>
+        <h2 style={introStyles.sectionHeading}>Which one are you?</h2>
+        <p style={introStyles.archetypeSubline}>
+          Take the quiz to find out. Hover each one to see if it sounds like you.
+        </p>
+        <div style={introStyles.archetypeGrid}>
+          {ARCHETYPES.map((a) => (
+            <div
+              key={a.id}
+              style={{
+                ...introStyles.archetypeChip,
+                ...(activeArchetype === a.id ? introStyles.archetypeChipActive : {}),
+              }}
+              onMouseEnter={() => setActiveArchetype(a.id)}
+              onMouseLeave={() => setActiveArchetype(null)}
+            >
+              <span style={introStyles.archetypeChipEmoji}>{a.emoji}</span>
+              <div>
+                <div style={introStyles.archetypeChipName}>{a.name}</div>
+                {activeArchetype === a.id && (
+                  <div style={introStyles.archetypeChipTagline}>{a.tagline}</div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+        <button style={introStyles.archetypeCta} onClick={onStart}>
+          Take the quiz to find yours →
+        </button>
+      </section>
+
+      {/* ── 6. FINAL CTA STRIP ── */}
+      <section style={introStyles.finalCtaSection}>
+        <h2 style={introStyles.finalCtaHeading}>
+          Flatting season moves fast.<br />Don't leave it to chance.
+        </h2>
+        <p style={introStyles.finalCtaBody}>
+          Most flats near UC fill up by mid-January. Take the quiz now and
+          know exactly who you're compatible with before the rush.
+        </p>
+        <button style={introStyles.ctaPrimary} onClick={onStart}>
+          Find my people — take the quiz
+        </button>
+      </section>
+
     </div>
   );
 }
+
+const introStyles = {
+  page: {
+    width: "100%",
+    maxWidth: 860,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 0,
+  },
+  heroSection: {
+    width: "100%",
+    textAlign: "center",
+    padding: "20px 0 80px",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+  },
+  ucBadge: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 12,
+    fontWeight: 700,
+    letterSpacing: "0.06em",
+    color: "#1A9090",
+    background: "rgba(26,144,144,0.10)",
+    borderRadius: 999,
+    padding: "6px 16px",
+    marginBottom: 28,
+    display: "inline-block",
+  },
+  heroHeadline: {
+    fontFamily: "'DM Serif Display', Georgia, serif",
+    fontSize: "clamp(36px, 6vw, 58px)",
+    fontWeight: 600,
+    lineHeight: 1.15,
+    color: "#1E2B2E",
+    marginBottom: 20,
+  },
+  heroHighlight: {
+    color: "#E8746A",
+  },
+  heroSubline: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 17,
+    lineHeight: 1.75,
+    color: "#5A6B6E",
+    maxWidth: 560,
+    marginBottom: 36,
+  },
+  heroCtas: {
+    display: "flex",
+    gap: 14,
+    flexWrap: "wrap",
+    justifyContent: "center",
+    marginBottom: 16,
+  },
+  ctaPrimary: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 16,
+    fontWeight: 700,
+    padding: "16px 36px",
+    background: "#1E2B2E",
+    color: "#fff",
+    border: "none",
+    borderRadius: 10,
+    cursor: "pointer",
+  },
+  ctaSecondary: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 16,
+    fontWeight: 600,
+    padding: "16px 32px",
+    background: "transparent",
+    color: "#1E2B2E",
+    border: "2px solid #1E2B2E",
+    borderRadius: 10,
+    cursor: "pointer",
+  },
+  heroMeta: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 12.5,
+    color: "#5A6B6E",
+    letterSpacing: "0.04em",
+  },
+  sectionEyebrow: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 11,
+    fontWeight: 700,
+    letterSpacing: "0.18em",
+    color: "#1A9090",
+    marginBottom: 12,
+    textAlign: "center",
+  },
+  sectionHeading: {
+    fontFamily: "'DM Serif Display', Georgia, serif",
+    fontSize: "clamp(24px, 4vw, 34px)",
+    fontWeight: 600,
+    color: "#1E2B2E",
+    textAlign: "center",
+    marginBottom: 40,
+    lineHeight: 1.25,
+  },
+  howSection: {
+    width: "100%",
+    padding: "72px 0",
+    borderTop: "1px solid #E2E5E4",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+  },
+  stepsRow: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+    gap: 20,
+    width: "100%",
+  },
+  stepCard: {
+    background: "#FFFFFF",
+    border: "1.5px solid #E2E5E4",
+    borderRadius: 20,
+    padding: "32px 28px",
+    display: "flex",
+    flexDirection: "column",
+    gap: 14,
+  },
+  stepNum: {
+    fontFamily: "'DM Serif Display', Georgia, serif",
+    fontSize: 40,
+    fontWeight: 700,
+    color: "#E8746A",
+    lineHeight: 1,
+  },
+  stepTitle: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 16,
+    fontWeight: 700,
+    color: "#1E2B2E",
+    lineHeight: 1.35,
+  },
+  stepBody: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 14,
+    lineHeight: 1.7,
+    color: "#5A6B6E",
+  },
+  pathsSection: {
+    width: "100%",
+    padding: "72px 0",
+    borderTop: "1px solid #E2E5E4",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+  },
+  pathsRow: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+    gap: 20,
+    width: "100%",
+  },
+  pathCardLeft: {
+    background: "#1E2B2E",
+    borderRadius: 24,
+    padding: "40px 36px",
+    display: "flex",
+    flexDirection: "column",
+    gap: 16,
+  },
+  pathCardRight: {
+    background: "#FFFFFF",
+    border: "1.5px solid #E2E5E4",
+    borderRadius: 24,
+    padding: "40px 36px",
+    display: "flex",
+    flexDirection: "column",
+    gap: 16,
+  },
+  pathEmoji: {
+    fontSize: 36,
+  },
+  pathTitle: {
+    fontFamily: "'DM Serif Display', Georgia, serif",
+    fontSize: 22,
+    fontWeight: 600,
+    color: "#F7F6F2",
+    lineHeight: 1.3,
+  },
+  pathTitleDark: {
+    fontFamily: "'DM Serif Display', Georgia, serif",
+    fontSize: 22,
+    fontWeight: 600,
+    color: "#1E2B2E",
+    lineHeight: 1.3,
+  },
+  pathBody: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 14.5,
+    lineHeight: 1.7,
+    color: "rgba(247,246,242,0.75)",
+  },
+  pathBodyDark: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 14.5,
+    lineHeight: 1.7,
+    color: "#5A6B6E",
+  },
+  pathChecklist: {
+    listStyle: "none",
+    padding: 0,
+    display: "flex",
+    flexDirection: "column",
+    gap: 8,
+    fontSize: 13.5,
+    color: "rgba(247,246,242,0.65)",
+    fontFamily: "'Inter', sans-serif",
+    fontWeight: 500,
+  },
+  pathChecklistDark: {
+    listStyle: "none",
+    padding: 0,
+    display: "flex",
+    flexDirection: "column",
+    gap: 8,
+    fontSize: 13.5,
+    color: "#5A6B6E",
+    fontFamily: "'Inter', sans-serif",
+    fontWeight: 500,
+  },
+  pathBtnPrimary: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 15,
+    fontWeight: 700,
+    padding: "15px 0",
+    background: "#E8746A",
+    color: "#fff",
+    border: "none",
+    borderRadius: 10,
+    cursor: "pointer",
+    marginTop: 8,
+    width: "100%",
+  },
+  pathBtnSecondary: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 15,
+    fontWeight: 700,
+    padding: "15px 0",
+    background: "transparent",
+    color: "#1E2B2E",
+    border: "2px solid #1E2B2E",
+    borderRadius: 10,
+    cursor: "pointer",
+    marginTop: 8,
+    width: "100%",
+  },
+  trustSection: {
+    width: "100%",
+    padding: "72px 0",
+    borderTop: "1px solid #E2E5E4",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 52,
+  },
+  trustGrid: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: 0,
+    justifyContent: "center",
+    width: "100%",
+    background: "#FFFFFF",
+    border: "1.5px solid #E2E5E4",
+    borderRadius: 20,
+    overflow: "hidden",
+  },
+  trustStat: {
+    flex: 1,
+    minWidth: 140,
+    padding: "32px 24px",
+    textAlign: "center",
+    display: "flex",
+    flexDirection: "column",
+    gap: 6,
+  },
+  trustStatNum: {
+    fontFamily: "'DM Serif Display', Georgia, serif",
+    fontSize: 42,
+    fontWeight: 700,
+    color: "#E8746A",
+    lineHeight: 1,
+  },
+  trustStatLabel: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 13,
+    color: "#5A6B6E",
+    lineHeight: 1.4,
+  },
+  trustDivider: {
+    width: 1,
+    background: "#E2E5E4",
+    alignSelf: "stretch",
+  },
+  quotesRow: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+    gap: 16,
+    width: "100%",
+  },
+  quoteCard: {
+    background: "#FFFFFF",
+    border: "1.5px solid #E2E5E4",
+    borderRadius: 16,
+    padding: "24px 22px",
+    display: "flex",
+    flexDirection: "column",
+    gap: 12,
+  },
+  quoteText: {
+    fontFamily: "'DM Serif Display', Georgia, serif",
+    fontSize: 15,
+    lineHeight: 1.65,
+    color: "#1E2B2E",
+    fontStyle: "italic",
+  },
+  quoteName: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 12,
+    fontWeight: 600,
+    color: "#5A6B6E",
+    letterSpacing: "0.04em",
+  },
+  archetypeSection: {
+    width: "100%",
+    padding: "72px 0",
+    borderTop: "1px solid #E2E5E4",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+  },
+  archetypeSubline: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 15,
+    color: "#5A6B6E",
+    marginBottom: 36,
+    marginTop: -24,
+  },
+  archetypeGrid: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: 12,
+    justifyContent: "center",
+    marginBottom: 36,
+    width: "100%",
+  },
+  archetypeChip: {
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+    background: "#FFFFFF",
+    border: "1.5px solid #E2E5E4",
+    borderRadius: 14,
+    padding: "14px 20px",
+    cursor: "pointer",
+    minWidth: 180,
+    flex: "0 1 auto",
+  },
+  archetypeChipActive: {
+    borderColor: "#1A9090",
+    boxShadow: "0 0 0 3px rgba(26,144,144,0.12)",
+    background: "rgba(26,144,144,0.04)",
+  },
+  archetypeChipEmoji: {
+    fontSize: 26,
+    flexShrink: 0,
+  },
+  archetypeChipName: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 13.5,
+    fontWeight: 700,
+    color: "#1E2B2E",
+    lineHeight: 1.3,
+  },
+  archetypeChipTagline: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 11.5,
+    color: "#1A9090",
+    lineHeight: 1.4,
+    marginTop: 3,
+    fontWeight: 500,
+  },
+  archetypeCta: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 15,
+    fontWeight: 700,
+    color: "#1A9090",
+    background: "rgba(26,144,144,0.08)",
+    border: "1.5px solid #1A9090",
+    borderRadius: 10,
+    padding: "14px 32px",
+    cursor: "pointer",
+  },
+  finalCtaSection: {
+    width: "100%",
+    padding: "72px 40px",
+    borderTop: "1px solid #E2E5E4",
+    background: "#1E2B2E",
+    borderRadius: 24,
+    marginBottom: 40,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    textAlign: "center",
+    gap: 20,
+  },
+  finalCtaHeading: {
+    fontFamily: "'DM Serif Display', Georgia, serif",
+    fontSize: "clamp(26px, 4vw, 38px)",
+    fontWeight: 600,
+    color: "#F7F6F2",
+    lineHeight: 1.25,
+  },
+  finalCtaBody: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 15.5,
+    lineHeight: 1.7,
+    color: "rgba(247,246,242,0.70)",
+    maxWidth: 480,
+  },
+};
  
 /* ---------------------------------------------
    QUIZ
