@@ -2513,38 +2513,251 @@ function PostedConfirmation({ onBrowse, onTakeQuiz }) {
 /* ---------------------------------------------
    FOOTER
 --------------------------------------------- */
- 
+
 function Footer() {
+  const [privacyOpen, setPrivacyOpen] = useState(false);
+
   return (
-    <footer style={styles.footer}>
-      <div style={styles.footerInner}>
-        <div style={styles.footerLeft}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-            <Logo size={20} />
-            <span style={styles.footerBrand}>FlatMatch</span>
+    <footer style={footerStyles.footer}>
+
+      {/* ── COMMUNITY STRIP ── */}
+      <div style={footerStyles.communityStrip}>
+        <div style={footerStyles.communityInner}>
+          <div style={footerStyles.communityLeft}>
+            <div style={footerStyles.betaBadge}>🚧 Early development</div>
+            <h3 style={footerStyles.communityHeading}>
+              FlatMatch only works if students use it.
+            </h3>
+            <p style={footerStyles.communityBody}>
+              This is a free tool built by UC students, for UC students. We're just getting started — the more people who post and take the quiz, the more useful it becomes for everyone. If this helped you, please share it.
+            </p>
+            <div style={footerStyles.shareNudge}>
+              📲 Send it to your halls group chat
+            </div>
           </div>
-          <p style={styles.footerTagline}>Built for UC students. Find people, not just a room.</p>
-        </div>
-        <div style={styles.footerLinks}>
-          <div style={styles.footerCol}>
-            <div style={styles.footerColHead}>How it works</div>
-            <div style={styles.footerColItem}>Post your listing in under a minute</div>
-            <div style={styles.footerColItem}>Take the quiz to get your archetype</div>
-            <div style={styles.footerColItem}>See listings ranked by compatibility</div>
-          </div>
-          <div style={styles.footerCol}>
-            <div style={styles.footerColHead}>Privacy</div>
-            <div style={styles.footerColItem}>Your contact info is only shown when someone requests to connect</div>
-            <div style={styles.footerColItem}>No account required</div>
+          <div style={footerStyles.communityRight}>
+            
+              href="https://instagram.com/flatmatch_nz"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={footerStyles.instaBtn}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+                <circle cx="12" cy="12" r="4"/>
+                <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
+              </svg>
+              @flatmatch_nz
+            </a>
+            <p style={footerStyles.communityNote}>
+              Built by UC students · Not affiliated with the University of Canterbury
+            </p>
           </div>
         </div>
       </div>
-      <div style={styles.footerBottom}>
-        <span>© 2026 FlatMatch · Made for UC students in Ōtautahi</span>
+
+      {/* ── PRIVACY SECTION ── */}
+      <div style={footerStyles.privacySection}>
+        <button
+          style={footerStyles.privacyToggle}
+          onClick={() => setPrivacyOpen(o => !o)}
+        >
+          <span>Privacy & data</span>
+          <span>{privacyOpen ? "▴" : "▾"}</span>
+        </button>
+        {privacyOpen && (
+          <div style={footerStyles.privacyContent}>
+            <div style={footerStyles.privacyGrid}>
+              <div style={footerStyles.privacyItem}>
+                <div style={footerStyles.privacyItemTitle}>What we store</div>
+                <div style={footerStyles.privacyItemBody}>
+                  Only active listings. When a listing is marked as filled and deleted, it is gone permanently — we don't keep it anywhere.
+                </div>
+              </div>
+              <div style={footerStyles.privacyItem}>
+                <div style={footerStyles.privacyItemTitle}>Your quiz answers</div>
+                <div style={footerStyles.privacyItemBody}>
+                  Saved only on your own device. We never see them. Clear your browser data and they're gone.
+                </div>
+              </div>
+              <div style={footerStyles.privacyItem}>
+                <div style={footerStyles.privacyItemTitle}>Be careful what you share</div>
+                <div style={footerStyles.privacyItemBody}>
+                  Your listing is visible to anyone on FlatMatch. We recommend using an Instagram handle or a spare email in your contact field — not your personal phone number.
+                </div>
+              </div>
+              <div style={footerStyles.privacyItem}>
+                <div style={footerStyles.privacyItemTitle}>We don't sell your data</div>
+                <div style={footerStyles.privacyItemBody}>
+                  We don't share your information with third parties, run ads, or require an account. This is a student project — keeping it simple and honest is the whole point.
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* ── BOTTOM BAR ── */}
+      <div style={footerStyles.bottomBar}>
+        <span>© 2026 FlatMatch · Made for UC students in Ōtautahi · Free forever</span>
+      </div>
+
     </footer>
   );
 }
+
+const footerStyles = {
+  footer: {
+    width: "100%",
+    borderTop: "1px solid #dde3f0",
+    marginTop: 60,
+  },
+  communityStrip: {
+    background: "#2d3f7c",
+    width: "100%",
+  },
+  communityInner: {
+    maxWidth: 860,
+    margin: "0 auto",
+    padding: "52px 24px",
+    display: "flex",
+    gap: 48,
+    flexWrap: "wrap",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+  },
+  communityLeft: {
+    flex: 2,
+    minWidth: 280,
+    display: "flex",
+    flexDirection: "column",
+    gap: 16,
+  },
+  communityRight: {
+    flex: 1,
+    minWidth: 200,
+    display: "flex",
+    flexDirection: "column",
+    gap: 16,
+    alignItems: "flex-start",
+  },
+  betaBadge: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 11,
+    fontWeight: 700,
+    letterSpacing: "0.08em",
+    color: "#a78bfa",
+    background: "rgba(167,139,250,0.15)",
+    borderRadius: 999,
+    padding: "4px 12px",
+    display: "inline-block",
+  },
+  communityHeading: {
+    fontFamily: "'DM Serif Display', Georgia, serif",
+    fontSize: "clamp(20px, 3vw, 26px)",
+    fontWeight: 600,
+    color: "#fff",
+    lineHeight: 1.3,
+  },
+  communityBody: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 15,
+    lineHeight: 1.75,
+    color: "rgba(255,255,255,0.75)",
+    maxWidth: 460,
+  },
+  shareNudge: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 14,
+    fontWeight: 700,
+    color: "#fff",
+    background: "rgba(255,255,255,0.10)",
+    border: "1.5px solid rgba(255,255,255,0.2)",
+    borderRadius: 10,
+    padding: "12px 20px",
+    display: "inline-block",
+  },
+  instaBtn: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 14,
+    fontWeight: 700,
+    color: "#fff",
+    background: "#7C5CBF",
+    border: "none",
+    borderRadius: 10,
+    padding: "12px 20px",
+    textDecoration: "none",
+    cursor: "pointer",
+  },
+  communityNote: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 12,
+    color: "rgba(255,255,255,0.45)",
+    lineHeight: 1.6,
+  },
+  privacySection: {
+    maxWidth: 860,
+    margin: "0 auto",
+    padding: "0 24px",
+    width: "100%",
+    boxSizing: "border-box",
+  },
+  privacyToggle: {
+    width: "100%",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 13,
+    fontWeight: 600,
+    color: "#4a5568",
+    background: "none",
+    border: "none",
+    borderBottom: "1px solid #dde3f0",
+    padding: "18px 0",
+    cursor: "pointer",
+    textAlign: "left",
+  },
+  privacyContent: {
+    paddingTop: 24,
+    paddingBottom: 32,
+  },
+  privacyGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+    gap: 24,
+  },
+  privacyItem: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 8,
+  },
+  privacyItemTitle: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 13,
+    fontWeight: 700,
+    color: "#1a2540",
+  },
+  privacyItemBody: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 13,
+    lineHeight: 1.65,
+    color: "#718096",
+  },
+  bottomBar: {
+    maxWidth: 860,
+    margin: "0 auto",
+    padding: "20px 24px",
+    borderTop: "1px solid #dde3f0",
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 12,
+    color: "#a0aec0",
+    textAlign: "center",
+  },
+};
  
 const globalCSS = `
   * { box-sizing: border-box; margin: 0; padding: 0; }
