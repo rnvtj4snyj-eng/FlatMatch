@@ -876,26 +876,26 @@ function Intro({ onStart, onPost }) {
 
       {/* ── 1. HERO ── */}
       <section style={introStyles.heroSection}>
-        <div style={introStyles.ucBadge}>🎓 Built for UC Canterbury students</div>
+        <div style={introStyles.ucBadge}>🎓 UC Canterbury students only · Christchurch</div>
         <h1 style={introStyles.heroHeadline}>
-          One place for every<br />
-          <span style={introStyles.heroHighlight}>Christchurch flat search.</span>
+          Find flatmates who actually<br />
+          <span style={introStyles.heroHighlight}>live like you do.</span>
         </h1>
         <p style={introStyles.heroSubline}>
-          Stop scrolling TradeMe, Facebook groups, and Messenger threads at the same time.
-          FlatMatch brings together people who have rooms and people who need them —
-          and matches you by vibe, not just availability.
+          Not just who has a room. Not just who's nearby. FlatMatch ranks every
+          listing by how well your habits, schedule, and vibe line up — before
+          you message anyone.
         </p>
-        <div style={introStyles.heroCtas}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 16, width: "100%", maxWidth: 580, margin: "8px 0 24px" }}>
           <button style={introStyles.ctaPrimary} onClick={onStart}>
-            Find a flat — take the quiz
+            🔍 Find my people — take the quiz
           </button>
           <button style={introStyles.ctaSecondary} onClick={onPost}>
-            Post a listing
+            🏠 Post our listing
           </button>
         </div>
         <p style={introStyles.heroMeta}>
-          Free · No account needed · Christchurch only · Takes 3 minutes
+          Free · No account · Takes 3 minutes · See your match % before you message
         </p>
       </section>
 
@@ -1077,7 +1077,7 @@ function Intro({ onStart, onPost }) {
 const introStyles = {
   page: {
     width: "100%",
-    maxWidth: 860,
+    maxWidth: "100%",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
@@ -1086,7 +1086,7 @@ const introStyles = {
   heroSection: {
     width: "100%",
     textAlign: "center",
-    padding: "20px 0 80px",
+    padding: "60px 24px 80px",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
@@ -1177,7 +1177,7 @@ const introStyles = {
   },
   problemSection: {
     width: "100%",
-    padding: "72px 0",
+    padding: "72px 24px",
     borderTop: "1px solid #dde3f0",
   },
   problemGrid: {
@@ -1262,7 +1262,7 @@ const introStyles = {
   },
   howSection: {
     width: "100%",
-    padding: "72px 0",
+    padding: "72px 24px",
     borderTop: "1px solid #dde3f0",
     display: "flex",
     flexDirection: "column",
@@ -1305,7 +1305,7 @@ const introStyles = {
   },
   pathsSection: {
     width: "100%",
-    padding: "72px 0",
+    padding: "72px 24px",
     borderTop: "1px solid #dde3f0",
     display: "flex",
     flexDirection: "column",
@@ -1413,7 +1413,7 @@ const introStyles = {
   },
   archetypeSection: {
     width: "100%",
-    padding: "72px 0",
+    padding: "72px 24px",
     borderTop: "1px solid #dde3f0",
     display: "flex",
     flexDirection: "column",
@@ -2986,7 +2986,7 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    padding: "100px 20px 60px",
+    padding: "100px 0 60px",
   },
   navbar: {
     position: "fixed",
