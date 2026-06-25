@@ -2868,7 +2868,8 @@ const footerStyles = {
  
 const globalCSS = `
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { -webkit-font-smoothing: antialiased; }
+  body { -webkit-font-smoothing: antialiased; margin: 0; padding: 0; width: 100%; overflow-x: hidden; }
+  #root { width: 100%; }
  
   @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600;700&display=swap');
  
