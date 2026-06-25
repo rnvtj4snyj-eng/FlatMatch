@@ -2724,7 +2724,7 @@ const footerStyles = {
     width: "100%",
   },
   communityInner: {
-    maxWidth: 860,
+    maxWidth: "100%",
     margin: "0 auto",
     padding: "52px 24px",
     display: "flex",
@@ -3002,7 +3002,7 @@ const styles = {
   },
   navInner: {
     width: "100%",
-    maxWidth: 900,
+    maxWidth: "100%",
     margin: "0 auto",
     padding: "0 24px",
     display: "flex",
@@ -3312,11 +3312,12 @@ const styles = {
     transition: "border-color 0.15s ease, transform 0.1s ease",
   },
   resultsWrap: {
-    maxWidth: 860,
+    maxWidth: "100%",
     width: "100%",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
+    padding: "0 24px",
   },
   archetypeCard: {
     width: "100%",
@@ -3654,9 +3655,10 @@ const styles = {
     padding: "10px 18px",
     display: "inline-block",
   },
-  formWrap: {
+ formWrap: {
     maxWidth: 720,
     width: "100%",
+    padding: "0 24px",
   },
   h2: {
     fontFamily: FONT_DISPLAY,
