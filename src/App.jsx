@@ -867,54 +867,228 @@ const metricsStyles = {
 /* ---------------------------------------------
    INTRO
 --------------------------------------------- */
- 
+ const NZ_INSTITUTIONS = [
+  { id: "uc", name: "University of Canterbury", short: "UC Canterbury", city: "Christchurch" },
+  { id: "otago", name: "University of Otago", short: "Otago", city: "Dunedin" },
+  { id: "vuw", name: "Victoria — Te Herenga Waka", short: "Victoria", city: "Wellington" },
+  { id: "auckland", name: "University of Auckland", short: "Auckland", city: "Auckland" },
+  { id: "aut", name: "AUT", short: "AUT", city: "Auckland" },
+  { id: "massey", name: "Massey University", short: "Massey", city: "Palmerston North" },
+  { id: "lincoln", name: "Lincoln University", short: "Lincoln", city: "Christchurch" },
+  { id: "waikato", name: "University of Waikato", short: "Waikato", city: "Hamilton" },
+];
+
+function InstitutionSelector({ selected, onChange }) {
+  const [open, setOpen] = useState(false);
+  const ref = React.useRef(null);
+  const current = NZ_INSTITUTIONS.find(i => i.id === selected) || NZ_INSTITUTIONS[0];
+
+  useEffect(() => {
+    function handleClick(e) {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  return (
+    <div ref={ref} style={{ position: "relative", display: "inline-block" }}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        style={{
+          fontFamily: "'Inter', sans-serif",
+          fontSize: 13,
+          fontWeight: 600,
+          color: "#4B6BB7",
+          background: "rgba(75,107,183,0.08)",
+          border: "1.5px solid rgba(75,107,183,0.25)",
+          borderRadius: 8,
+          padding: "6px 12px",
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          gap: 6,
+        }}
+      >
+        {current.short} {open ? "▴" : "▾"}
+      </button>
+      {open && (
+        <div style={{
+          position: "absolute",
+          top: "calc(100% + 6px)",
+          left: "50%",
+          transform: "translateX(-50%)",
+          background: "#fff",
+          border: "1.5px solid #dde3f0",
+          borderRadius: 12,
+          boxShadow: "0 8px 24px rgba(35,54,58,0.12)",
+          zIndex: 200,
+          minWidth: 240,
+          overflow: "hidden",
+        }}>
+          {NZ_INSTITUTIONS.map(inst => (
+            <button
+              key={inst.id}
+              onClick={() => { onChange(inst.id); setOpen(false); }}
+              style={{
+                width: "100%",
+                padding: "11px 16px",
+                background: inst.id === selected ? "rgba(75,107,183,0.06)" : "transparent",
+                border: "none",
+                cursor: "pointer",
+                textAlign: "left",
+                fontFamily: "'Inter', sans-serif",
+                fontSize: 13,
+                fontWeight: inst.id === selected ? 700 : 500,
+                color: inst.id === selected ? "#2d3f7c" : "#1a2540",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <span>{inst.name}</span>
+              <span style={{ fontSize: 11, color: "#718096" }}>{inst.city}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Intro({ onStart, onPost }) {
   const [activeArchetype, setActiveArchetype] = useState(null);
+  const [institution, setInstitution] = useState(() => {
+    return localStorage.getItem("fm_institution") || "uc";
+  });
+
+  function handleInstitutionChange(id) {
+    setInstitution(id);
+    localStorage.setItem("fm_institution", id);
+  }
+
+  const currentInst = NZ_INSTITUTIONS.find(i => i.id === institution) || NZ_INSTITUTIONS[0];
 
   return (
     <div style={introStyles.page}>
 
-      {/* ── 1. HERO ── */}
-      <section style={introStyles.heroSection}>
-        <div style={introStyles.ucBadge}>🎓 UC Canterbury students only · Christchurch</div>
-        <h1 style={introStyles.heroHeadline}>
-          Find flatmates who actually<br />
-          <span style={introStyles.heroHighlight}>live like you do.</span>
-        </h1>
-        <p style={introStyles.heroSubline}>
-          Not just who has a room. Not just who's nearby. FlatMatch ranks every
-          listing by how well your habits, schedule, and vibe line up — before
-          you message anyone.
-        </p>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 16, width: "100%", maxWidth: 580, margin: "8px 0 24px" }}>
-          <button style={introStyles.ctaPrimary} onClick={onStart}>
-            🔍 Find my people — take the quiz
-          </button>
-          <button style={introStyles.ctaSecondary} onClick={onPost}>
-            🏠 Post our listing
-          </button>
+      {/* ── 1. HOOK HEADER ── */}
+      <section style={introStyles.hookSection}>
+        <div style={introStyles.badgeRow}>
+          <span style={introStyles.nzBadge}>🎓 NZ Students · Free forever</span>
+          <InstitutionSelector selected={institution} onChange={handleInstitutionChange} />
         </div>
-        <p style={introStyles.heroMeta}>
-          Free · No account · Takes 3 minutes · See your match % before you message
+        <h1 style={introStyles.hookHeadline}>
+          Find flatmates who<br />
+          <span style={introStyles.hookHighlight}>match your vibe.</span>
+        </h1>
+        <p style={introStyles.hookSubline}>
+          Not just who has a room. FlatMatch ranks every listing by how well
+          your habits, schedule, and lifestyle actually line up — before you
+          message anyone.
         </p>
       </section>
 
-      {/* ── METRICS STRIP ── */}
-      <MetricsStrip />
+      {/* ── 2. QUIZ NUDGE BANNER ── */}
+      <section style={introStyles.quizBanner}>
+        <div style={introStyles.quizBannerLeft}>
+          <div style={introStyles.quizBannerEmoji}>✦</div>
+          <div>
+            <div style={introStyles.quizBannerTitle}>
+              Take the 3-minute quiz to unlock your match % for every listing
+            </div>
+            <div style={introStyles.quizBannerSub}>
+              17 questions about how you actually live — sleep schedule, tidiness,
+              social life, study habits. You get a flatting archetype and a
+              compatibility score against every listing below.
+            </div>
+          </div>
+        </div>
+        <button style={introStyles.quizBannerBtn} onClick={onStart}>
+          Take the quiz →
+        </button>
+      </section>
 
-      {/* ── 2. THE PROBLEM ── */}
+      {/* ── 3. LISTINGS PREVIEW ── */}
+      <section style={introStyles.listingsSection}>
+        <div style={introStyles.listingsHeader}>
+          <h2 style={introStyles.listingsHeading}>
+            Browse listings
+            <span style={introStyles.listingsCity}> · {currentInst.city}</span>
+          </h2>
+          <p style={introStyles.listingsSub}>
+            Groups with rooms, solo searchers, people forming new flats — all in one place.
+          </p>
+        </div>
+
+        {/* POST A LISTING CARD */}
+        <div style={introStyles.postCard}>
+          <div style={introStyles.postCardLeft}>
+            <span style={introStyles.postCardEmoji}>🏠</span>
+            <div>
+              <div style={introStyles.postCardTitle}>Have a room or forming a group?</div>
+              <div style={introStyles.postCardSub}>
+                Post your listing — reach every {currentInst.short} student searching right now. Free, takes 2 minutes.
+              </div>
+            </div>
+          </div>
+          <button style={introStyles.postCardBtn} onClick={onPost}>
+            Post a listing →
+          </button>
+        </div>
+
+        {/* BLURRED SAMPLE LISTINGS */}
+        <div style={introStyles.listingsPreview}>
+          {SAMPLE_LISTINGS.slice(0, 3).map((listing) => (
+            <div key={listing.id} style={introStyles.previewCard}>
+              <div style={introStyles.previewCardTop}>
+                <div style={{
+                  width: 36, height: 36, borderRadius: "50%",
+                  background: "#2d3f7c", color: "#fff",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 13, fontWeight: 700, flexShrink: 0,
+                }}>
+                  {listing.title[0]}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={introStyles.previewCardTitle}>{listing.title}</div>
+                  <div style={introStyles.previewCardMeta}>
+                    {listing.area} · {listing.budget} · Move in {listing.moveIn}
+                  </div>
+                </div>
+                <div style={introStyles.previewMatchBlur}>
+                  <div style={introStyles.previewMatchInner}>??%</div>
+                  <div style={introStyles.previewMatchLabel}>Take quiz to unlock</div>
+                </div>
+              </div>
+              <p style={introStyles.previewCardBio}>{listing.bio}</p>
+              <button style={introStyles.previewTakeQuiz} onClick={onStart}>
+                Take quiz to see your match % →
+              </button>
+            </div>
+          ))}
+          <button style={introStyles.seeAllBtn} onClick={onStart}>
+            Take the quiz to see all listings ranked by compatibility →
+          </button>
+        </div>
+      </section>
+
+      {/* ── 4. METRICS STRIP ── */}
+      <div style={{ width: "100%", padding: "0 24px 72px" }}>
+        <MetricsStrip />
+      </div>
+
+      {/* ── 5. THE PROBLEM ── */}
       <section style={introStyles.problemSection}>
         <div style={introStyles.problemGrid}>
           <div style={introStyles.problemLeft}>
             <div style={introStyles.sectionEyebrow}>THE OLD WAY</div>
-            <h2 style={introStyles.problemHeading}>Finding a flat is a mess.</h2>
+            <h2 style={introStyles.problemHeading}>Flat hunting is a mess.</h2>
             <div style={introStyles.problemList}>
               {[
-                "Posting in 5 different Facebook groups and getting ghosted",
-                "TradeMe listings with no info about who actually lives there",
-                "Messaging 10 people and realising you're totally different vibes",
-                "Groups formed in halls with no way to find one more person",
-                "No way to know if you'll actually get along until it's too late",
+                "Posting in five Facebook groups and getting ghosted",
+                "Messaging people with no idea if you'd actually get along",
+                "Moving in and realising three weeks later it's the wrong vibe",
               ].map((item, i) => (
                 <div key={i} style={introStyles.problemItem}>
                   <span style={introStyles.problemX}>✕</span>
@@ -925,14 +1099,12 @@ function Intro({ onStart, onPost }) {
           </div>
           <div style={introStyles.problemRight}>
             <div style={introStyles.sectionEyebrow}>THE FLATMATCH WAY</div>
-            <h2 style={introStyles.problemHeadingLight}>One place. Right people.</h2>
+            <h2 style={introStyles.problemHeadingLight}>Know before you message.</h2>
             <div style={introStyles.problemList}>
               {[
-                "One listing reaches everyone looking — no reposting",
-                "Profiles show who lives there and what the vibe actually is",
-                "Quiz matching means you filter by compatibility before messaging",
-                "Groups and solo searchers both post in the same place",
-                "Know your match % before you even reach out",
+                "Quiz matching shows your compatibility before any awkward texts",
+                "Every listing ranked by how well your habits actually line up",
+                "Groups and solo searchers all in one place — no tab switching",
               ].map((item, i) => (
                 <div key={i} style={introStyles.solutionItem}>
                   <span style={introStyles.solutionCheck}>✓</span>
@@ -944,86 +1116,12 @@ function Intro({ onStart, onPost }) {
         </div>
       </section>
 
-      {/* ── 3. HOW IT WORKS ── */}
-      <section style={introStyles.howSection}>
-        <div style={introStyles.sectionEyebrow}>HOW IT WORKS</div>
-        <h2 style={introStyles.sectionHeading}>Simple. Fast. Actually useful.</h2>
-        <div style={introStyles.stepsRow}>
-          {[
-            {
-              num: "1",
-              title: "Post or take the quiz",
-              body: "Have a room? Post your listing in 2 minutes. Looking to join a flat? Take a 3-minute quiz about how you actually live.",
-            },
-            {
-              num: "2",
-              title: "Everything's in one feed",
-              body: "Groups with rooms, solo searchers, people forming new flats — all in one place, no tab switching.",
-            },
-            {
-              num: "3",
-              title: "Match % tells you who's worth messaging",
-              body: "Your quiz answers get scored against every listing. Higher match = closer habits. Message the ones that make sense.",
-            },
-          ].map((step) => (
-            <div key={step.num} style={introStyles.stepCard}>
-              <div style={introStyles.stepNum}>{step.num}</div>
-              <h3 style={introStyles.stepTitle}>{step.title}</h3>
-              <p style={introStyles.stepBody}>{step.body}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── 4. TWO PATHS ── */}
-      <section style={introStyles.pathsSection}>
-        <div style={introStyles.sectionEyebrow}>GET STARTED</div>
-        <h2 style={introStyles.sectionHeading}>Where do you sit right now?</h2>
-        <div style={introStyles.pathsRow}>
-          <div style={introStyles.pathCardLeft}>
-            <span style={introStyles.pathEmoji}>🔍</span>
-            <h3 style={introStyles.pathTitle}>I'm looking to join a flat</h3>
-            <p style={introStyles.pathBody}>
-              Take the quiz, get your flatting archetype, and see every
-              listing in Christchurch ranked by how well your habits line up.
-              No more cold messaging randoms.
-            </p>
-            <ul style={introStyles.pathChecklist}>
-              <li>✓ Takes 3 minutes</li>
-              <li>✓ See match % before you message</li>
-              <li>✓ Groups and rooms all in one place</li>
-            </ul>
-            <button style={introStyles.pathBtnPrimary} onClick={onStart}>
-              Match me with a flat
-            </button>
-          </div>
-
-          <div style={introStyles.pathCardRight}>
-            <span style={introStyles.pathEmoji}>🏠</span>
-            <h3 style={introStyles.pathTitleDark}>We have a room or we're forming a group</h3>
-            <p style={introStyles.pathBodyDark}>
-              Post once and reach every UC student looking right now —
-              solo searchers, groups forming, people moving to Christchurch.
-              Set your vibe tags and the right people find you.
-            </p>
-            <ul style={introStyles.pathChecklistDark}>
-              <li>✓ Free to post</li>
-              <li>✓ One listing, all searchers</li>
-              <li>✓ Contact only shared when someone requests</li>
-            </ul>
-            <button style={introStyles.pathBtnSecondary} onClick={onPost}>
-              Post our listing
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* ── 5. ARCHETYPE TEASER ── */}
+      {/* ── 6. ARCHETYPE TEASER ── */}
       <section style={introStyles.archetypeSection}>
         <div style={introStyles.sectionEyebrow}>YOUR FLATTING ARCHETYPE</div>
         <h2 style={introStyles.sectionHeading}>The quiz figures out your flatting style.</h2>
         <p style={introStyles.archetypeSubline}>
-          Hover each archetype — one of these is probably you.
+          Hover each one — one of these is probably you.
         </p>
         <div style={introStyles.archetypeGrid}>
           {ARCHETYPES.map((a) => (
@@ -1051,14 +1149,14 @@ function Intro({ onStart, onPost }) {
         </button>
       </section>
 
-      {/* ── 6. FINAL CTA ── */}
+      {/* ── 7. FINAL CTA ── */}
       <section style={introStyles.finalCtaSection}>
         <h2 style={introStyles.finalCtaHeading}>
           Flatting season moves fast.<br />Don't leave it to chance.
         </h2>
         <p style={introStyles.finalCtaBody}>
-          Most flats near UC fill up by mid-January. Post your listing or
-          take the quiz now — everything's in one place, and it takes minutes.
+          Most flats near {currentInst.short} fill up by mid-January. Take the quiz now —
+          see every listing ranked by how well you'd actually live together.
         </p>
         <div style={introStyles.finalCtaBtns}>
           <button style={introStyles.finalCtaBtnPrimary} onClick={onStart}>
@@ -1083,15 +1181,23 @@ const introStyles = {
     alignItems: "center",
     gap: 0,
   },
-  heroSection: {
+  hookSection: {
     width: "100%",
     textAlign: "center",
-    padding: "60px 24px 80px",
+    padding: "60px 24px 48px",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
   },
-  ucBadge: {
+  badgeRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 24,
+    flexWrap: "wrap",
+    justifyContent: "center",
+  },
+  nzBadge: {
     fontFamily: "'Inter', sans-serif",
     fontSize: 12,
     fontWeight: 700,
@@ -1100,62 +1206,235 @@ const introStyles = {
     background: "rgba(75,107,183,0.10)",
     borderRadius: 999,
     padding: "6px 16px",
-    marginBottom: 28,
     display: "inline-block",
   },
-  heroHeadline: {
+  hookHeadline: {
     fontFamily: "'DM Serif Display', Georgia, serif",
-    fontSize: "clamp(36px, 6vw, 56px)",
+    fontSize: "clamp(38px, 6vw, 60px)",
     fontWeight: 600,
-    lineHeight: 1.15,
+    lineHeight: 1.1,
     color: "#1a2540",
     marginBottom: 20,
   },
-  heroHighlight: {
+  hookHighlight: {
     color: "#7C5CBF",
   },
-  heroSubline: {
+  hookSubline: {
     fontFamily: "'Inter', sans-serif",
     fontSize: 17,
     lineHeight: 1.75,
     color: "#4a5568",
-    maxWidth: 580,
-    marginBottom: 36,
+    maxWidth: 520,
+    marginBottom: 0,
   },
-  heroCtas: {
+  quizBanner: {
+    width: "100%",
+    background: "#1a2540",
+    padding: "24px 32px",
     display: "flex",
-    gap: 14,
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 24,
     flexWrap: "wrap",
-    justifyContent: "center",
-    marginBottom: 16,
   },
-  ctaPrimary: {
+  quizBannerLeft: {
+    display: "flex",
+    alignItems: "flex-start",
+    gap: 16,
+    flex: 1,
+    minWidth: 260,
+  },
+  quizBannerEmoji: {
+    fontSize: 22,
+    color: "#7C5CBF",
+    flexShrink: 0,
+    marginTop: 2,
+  },
+  quizBannerTitle: {
     fontFamily: "'Inter', sans-serif",
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: 700,
-    padding: "16px 36px",
-    background: "#2d3f7c",
+    color: "#fff",
+    marginBottom: 6,
+    lineHeight: 1.4,
+  },
+  quizBannerSub: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 13,
+    color: "rgba(255,255,255,0.60)",
+    lineHeight: 1.6,
+  },
+  quizBannerBtn: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 14,
+    fontWeight: 700,
+    padding: "13px 28px",
+    background: "#7C5CBF",
     color: "#fff",
     border: "none",
     borderRadius: 10,
     cursor: "pointer",
+    whiteSpace: "nowrap",
+    flexShrink: 0,
   },
-  ctaSecondary: {
-    fontFamily: "'Inter', sans-serif",
-    fontSize: 16,
+  listingsSection: {
+    width: "100%",
+    padding: "48px 24px",
+    borderTop: "1px solid #dde3f0",
+  },
+  listingsHeader: {
+    marginBottom: 24,
+  },
+  listingsHeading: {
+    fontFamily: "'DM Serif Display', Georgia, serif",
+    fontSize: "clamp(22px, 3vw, 28px)",
     fontWeight: 600,
-    padding: "16px 32px",
-    background: "transparent",
-    color: "#2d3f7c",
-    border: "2px solid #2d3f7c",
+    color: "#1a2540",
+    marginBottom: 6,
+  },
+  listingsCity: {
+    color: "#7C5CBF",
+  },
+  listingsSub: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 14,
+    color: "#718096",
+  },
+  postCard: {
+    width: "100%",
+    background: "#f8f7ff",
+    border: "1.5px dashed #7C5CBF",
+    borderRadius: 16,
+    padding: "20px 24px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 20,
+    marginBottom: 16,
+    flexWrap: "wrap",
+  },
+  postCardLeft: {
+    display: "flex",
+    alignItems: "center",
+    gap: 14,
+    flex: 1,
+    minWidth: 200,
+  },
+  postCardEmoji: {
+    fontSize: 28,
+    flexShrink: 0,
+  },
+  postCardTitle: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 15,
+    fontWeight: 700,
+    color: "#1a2540",
+    marginBottom: 4,
+  },
+  postCardSub: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 13,
+    color: "#718096",
+    lineHeight: 1.5,
+  },
+  postCardBtn: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 13,
+    fontWeight: 700,
+    padding: "11px 22px",
+    background: "#7C5CBF",
+    color: "#fff",
+    border: "none",
     borderRadius: 10,
     cursor: "pointer",
+    whiteSpace: "nowrap",
+    flexShrink: 0,
   },
-  heroMeta: {
+  listingsPreview: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 12,
+  },
+  previewCard: {
+    background: "#fff",
+    border: "1.5px solid #dde3f0",
+    borderRadius: 16,
+    padding: "20px 22px",
+  },
+  previewCardTop: {
+    display: "flex",
+    alignItems: "flex-start",
+    gap: 12,
+    marginBottom: 10,
+  },
+  previewCardTitle: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 15,
+    fontWeight: 600,
+    color: "#1a2540",
+    marginBottom: 3,
+  },
+  previewCardMeta: {
     fontFamily: "'Inter', sans-serif",
     fontSize: 12.5,
     color: "#718096",
-    letterSpacing: "0.04em",
+  },
+  previewMatchBlur: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 3,
+    flexShrink: 0,
+  },
+  previewMatchInner: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 14,
+    fontWeight: 700,
+    color: "#1A6B2E",
+    background: "#D4EDD4",
+    borderRadius: 8,
+    padding: "6px 14px",
+    filter: "blur(4px)",
+    userSelect: "none",
+  },
+  previewMatchLabel: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 10,
+    color: "#718096",
+    textAlign: "center",
+    maxWidth: 80,
+    lineHeight: 1.3,
+  },
+  previewCardBio: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 13.5,
+    lineHeight: 1.65,
+    color: "#4a5568",
+    marginBottom: 12,
+  },
+  previewTakeQuiz: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 12.5,
+    fontWeight: 600,
+    color: "#7C5CBF",
+    background: "rgba(124,92,191,0.07)",
+    border: "1.5px solid #7C5CBF",
+    borderRadius: 8,
+    padding: "8px 16px",
+    cursor: "pointer",
+  },
+  seeAllBtn: {
+    width: "100%",
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 14,
+    fontWeight: 700,
+    padding: "16px",
+    background: "#1a2540",
+    color: "#fff",
+    border: "none",
+    borderRadius: 12,
+    cursor: "pointer",
+    marginTop: 4,
   },
   sectionEyebrow: {
     fontFamily: "'Inter', sans-serif",
@@ -1260,157 +1539,6 @@ const introStyles = {
     lineHeight: 1.6,
     color: "rgba(255,255,255,0.85)",
   },
-  howSection: {
-    width: "100%",
-    padding: "72px 24px",
-    borderTop: "1px solid #dde3f0",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-  },
-  stepsRow: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-    gap: 20,
-    width: "100%",
-  },
-  stepCard: {
-    background: "#fff",
-    border: "1.5px solid #dde3f0",
-    borderRadius: 20,
-    padding: "32px 28px",
-    display: "flex",
-    flexDirection: "column",
-    gap: 14,
-  },
-  stepNum: {
-    fontFamily: "'DM Serif Display', Georgia, serif",
-    fontSize: 40,
-    fontWeight: 700,
-    color: "#7C5CBF",
-    lineHeight: 1,
-  },
-  stepTitle: {
-    fontFamily: "'Inter', sans-serif",
-    fontSize: 16,
-    fontWeight: 700,
-    color: "#1a2540",
-    lineHeight: 1.35,
-  },
-  stepBody: {
-    fontFamily: "'Inter', sans-serif",
-    fontSize: 14,
-    lineHeight: 1.7,
-    color: "#4a5568",
-  },
-  pathsSection: {
-    width: "100%",
-    padding: "72px 24px",
-    borderTop: "1px solid #dde3f0",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-  },
-  pathsRow: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-    gap: 20,
-    width: "100%",
-  },
-  pathCardLeft: {
-    background: "#2d3f7c",
-    borderRadius: 24,
-    padding: "40px 36px",
-    display: "flex",
-    flexDirection: "column",
-    gap: 16,
-  },
-  pathCardRight: {
-    background: "#fff",
-    border: "1.5px solid #dde3f0",
-    borderRadius: 24,
-    padding: "40px 36px",
-    display: "flex",
-    flexDirection: "column",
-    gap: 16,
-  },
-  pathEmoji: {
-    fontSize: 36,
-  },
-  pathTitle: {
-    fontFamily: "'DM Serif Display', Georgia, serif",
-    fontSize: 22,
-    fontWeight: 600,
-    color: "#fff",
-    lineHeight: 1.3,
-  },
-  pathTitleDark: {
-    fontFamily: "'DM Serif Display', Georgia, serif",
-    fontSize: 22,
-    fontWeight: 600,
-    color: "#1a2540",
-    lineHeight: 1.3,
-  },
-  pathBody: {
-    fontFamily: "'Inter', sans-serif",
-    fontSize: 14.5,
-    lineHeight: 1.7,
-    color: "rgba(255,255,255,0.75)",
-  },
-  pathBodyDark: {
-    fontFamily: "'Inter', sans-serif",
-    fontSize: 14.5,
-    lineHeight: 1.7,
-    color: "#4a5568",
-  },
-  pathChecklist: {
-    listStyle: "none",
-    padding: 0,
-    display: "flex",
-    flexDirection: "column",
-    gap: 8,
-    fontSize: 13.5,
-    color: "rgba(255,255,255,0.65)",
-    fontFamily: "'Inter', sans-serif",
-    fontWeight: 500,
-  },
-  pathChecklistDark: {
-    listStyle: "none",
-    padding: 0,
-    display: "flex",
-    flexDirection: "column",
-    gap: 8,
-    fontSize: 13.5,
-    color: "#718096",
-    fontFamily: "'Inter', sans-serif",
-    fontWeight: 500,
-  },
-  pathBtnPrimary: {
-    fontFamily: "'Inter', sans-serif",
-    fontSize: 15,
-    fontWeight: 700,
-    padding: "15px 0",
-    background: "#7C5CBF",
-    color: "#fff",
-    border: "none",
-    borderRadius: 10,
-    cursor: "pointer",
-    marginTop: 8,
-    width: "100%",
-  },
-  pathBtnSecondary: {
-    fontFamily: "'Inter', sans-serif",
-    fontSize: 15,
-    fontWeight: 700,
-    padding: "15px 0",
-    background: "transparent",
-    color: "#2d3f7c",
-    border: "2px solid #2d3f7c",
-    borderRadius: 10,
-    cursor: "pointer",
-    marginTop: 8,
-    width: "100%",
-  },
   archetypeSection: {
     width: "100%",
     padding: "72px 24px",
@@ -1486,8 +1614,7 @@ const introStyles = {
     width: "100%",
     padding: "72px 40px",
     background: "#2d3f7c",
-    borderRadius: 24,
-    marginBottom: 40,
+    marginBottom: 0,
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
@@ -2636,7 +2763,7 @@ function Footer() {
               FlatMatch only works if students use it.
             </h3>
             <p style={footerStyles.communityBody}>
-              This is a free tool built by UC students, for UC students. We're just getting started — the more people who post and take the quiz, the more useful it becomes for everyone. If this helped you, please share it.
+              FlatMatch is a free tool built for NZ students. We're just getting started — the more people who post and take the quiz, the more useful it becomes for everyone. If this helped you, please share it.
             </p>
             <div style={footerStyles.shareNudge}>
               📲 Send it to your halls group chat
@@ -2706,7 +2833,7 @@ function Footer() {
 
       {/* ── BOTTOM BAR ── */}
       <div style={footerStyles.bottomBar}>
-        <span>© 2026 FlatMatch · Made for UC students in Ōtautahi · Free forever</span>
+        <span>© 2026 FlatMatch · Made for NZ students</span>
       </div>
 
     </footer>
