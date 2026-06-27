@@ -557,7 +557,7 @@ function NavBar({ onHome, onPost, onSeek, onSaved }) {
         </button>
         <div style={styles.navLinks}>
           <button className="fm-nav-link" style={styles.navSaved} onClick={onSaved}>Saved</button>
-          <button className="fm-nav-link" style={styles.navQuiz} onClick={onSeek}>Take the quiz</button>
+          
           <button className="fm-nav-cta" style={styles.navCta} onClick={onPost}>Post a listing</button>
         </div>
       </div>
@@ -1042,29 +1042,34 @@ function Intro({ onStart, onPost }) {
           {SAMPLE_LISTINGS.filter(l => !l.institution || l.institution === institution).slice(0, 3).map((listing) => (
             <div key={listing.id} style={introStyles.previewCard}>
               <div style={introStyles.previewCardTop}>
+                {listing.photo ? (
+                <img
+                  src={listing.photo}
+                  alt="Flat"
+                  style={{
+                    width: 52, height: 52, borderRadius: 10,
+                    objectFit: "cover", flexShrink: 0,
+                    border: "1.5px solid #dde3f0",
+                  }}
+                />
+              ) : (
                 <div style={{
-                  width: 36, height: 36, borderRadius: "50%",
+                  width: 52, height: 52, borderRadius: 10,
                   background: "#2d3f7c", color: "#fff",
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 13, fontWeight: 700, flexShrink: 0,
+                  fontSize: 15, fontWeight: 700, flexShrink: 0,
                 }}>
                   {listing.title[0]}
                 </div>
+              )}
                 <div style={{ flex: 1 }}>
                   <div style={introStyles.previewCardTitle}>{listing.title}</div>
                   <div style={introStyles.previewCardMeta}>
                     {listing.area} · {listing.budget} · Move in {listing.moveIn}
                   </div>
                 </div>
-                <div style={introStyles.previewMatchBlur}>
-                  <div style={introStyles.previewMatchInner}>??%</div>
-                  <div style={introStyles.previewMatchLabel}>Take quiz to unlock</div>
-                </div>
               </div>
               <p style={introStyles.previewCardBio}>{listing.bio}</p>
-              <button style={introStyles.previewTakeQuiz} onClick={onStart}>
-                Take quiz to see your match % →
-              </button>
             </div>
           ))}
           <button style={introStyles.seeAllBtn} onClick={onStart}>
@@ -2968,7 +2973,7 @@ const footerStyles = {
     lineHeight: 1.6,
   },
   privacySection: {
-    maxWidth: 860,
+    maxWidth: 1100,
     margin: "0 auto",
     padding: "0 24px",
     width: "100%",
