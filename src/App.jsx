@@ -992,27 +992,7 @@ function Intro({ onStart, onPost }) {
         </p>
       </section>
 
-      {/* ── 2. QUIZ NUDGE BANNER ── */}
-      <section style={introStyles.quizBanner}>
-        <div style={introStyles.quizBannerLeft}>
-          <div style={introStyles.quizBannerEmoji}>✦</div>
-          <div>
-            <div style={introStyles.quizBannerTitle}>
-              Take the 3-minute quiz to unlock your match % for every listing
-            </div>
-            <div style={introStyles.quizBannerSub}>
-              17 questions about how you actually live: sleep schedule, tidiness,
-              social life, study habits. You get a flatting archetype and a
-              compatibility score against every listing below.
-            </div>
-          </div>
-        </div>
-        <button style={introStyles.quizBannerBtn} onClick={onStart}>
-          Take the quiz →
-        </button>
-      </section>
-
-      {/* ── 3. LISTINGS PREVIEW ── */}
+      {/* ── 2. LISTINGS PREVIEW ── */}
       <section style={introStyles.listingsSection}>
         <div style={introStyles.listingsHeader}>
           <h2 style={introStyles.listingsHeading}>
@@ -1022,22 +1002,6 @@ function Intro({ onStart, onPost }) {
           <p style={introStyles.listingsSub}>
             Groups with rooms, solo searchers, people forming new flats — all in one place.
           </p>
-        </div>
-
-        {/* POST A LISTING CARD */}
-        <div style={introStyles.postCard}>
-          <div style={introStyles.postCardLeft}>
-            <span style={introStyles.postCardEmoji}>🏠</span>
-            <div>
-              <div style={introStyles.postCardTitle}>Have a room or forming a group?</div>
-              <div style={introStyles.postCardSub}>
-                Post your listing — reach every {currentInst.short} student searching right now. Free, takes 2 minutes.
-              </div>
-            </div>
-          </div>
-          <button style={introStyles.postCardBtn} onClick={onPost}>
-            Post a listing →
-          </button>
         </div>
 
         {/* BLURRED SAMPLE LISTINGS */}
@@ -1078,6 +1042,46 @@ function Intro({ onStart, onPost }) {
           <button style={introStyles.seeAllBtn} onClick={onStart}>
             Take the quiz to see all listings ranked by compatibility →
           </button>
+        </div>
+
+        {/* ── QUIZ NUDGE BANNER ── */}
+        <div style={{ marginTop: 24 }}>
+          <section style={introStyles.quizBanner}>
+            <div style={introStyles.quizBannerLeft}>
+              <div style={introStyles.quizBannerEmoji}>✦</div>
+              <div>
+                <div style={introStyles.quizBannerTitle}>
+                  Take the 3-minute quiz to unlock your match % for every listing
+                </div>
+                <div style={introStyles.quizBannerSub}>
+                  17 questions about how you actually live: sleep schedule, tidiness,
+                  social life, study habits. You get a flatting archetype and a
+                  compatibility score against every listing below.
+                </div>
+              </div>
+            </div>
+            <button style={introStyles.quizBannerBtn} onClick={onStart}>
+              Take the quiz →
+            </button>
+          </section>
+        </div>
+
+        {/* POST A LISTING CARD */}
+        <div style={{ marginTop: 24 }}>
+          <div style={introStyles.postCard}>
+            <div style={introStyles.postCardLeft}>
+              <span style={introStyles.postCardEmoji}>🏠</span>
+              <div>
+                <div style={introStyles.postCardTitle}>Have a room or forming a group?</div>
+                <div style={introStyles.postCardSub}>
+                  Post your listing — reach every {currentInst.short} student searching right now. Free, takes 2 minutes.
+                </div>
+              </div>
+            </div>
+            <button style={introStyles.postCardBtn} onClick={onPost}>
+              Post a listing →
+            </button>
+          </div>
         </div>
       </section>
 
@@ -3368,6 +3372,9 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
+    margin: "0 auto",
+    padding: "60px 24px",
+    alignSelf: "center",
   },
   eyebrow: {
     fontFamily: FONT_BODY,
