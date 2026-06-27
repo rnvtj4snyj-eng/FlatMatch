@@ -623,6 +623,9 @@ export default function App() {
     try {
       const record = await createListing(listing);
       setUserListings((prev) => [record, ...prev]);
+      const tokens = JSON.parse(localStorage.getItem('fm_tokens') || '{}');
+      tokens[record.id] = true;
+      localStorage.setItem('fm_tokens', JSON.stringify(tokens));
       setStage("posted");
       try {
         const current = await window.storage.get("metric:total_listings", true);
@@ -2973,7 +2976,7 @@ const footerStyles = {
     lineHeight: 1.6,
   },
   privacySection: {
-    maxWidth: 1100,
+    maxWidth: 1400,
     margin: "0 auto",
     padding: "0 24px",
     width: "100%",
@@ -3426,8 +3429,11 @@ const styles = {
     marginTop: 24,
   },
   quizWrap: {
-    maxWidth: 680,
+    maxWidth: 860,
     width: "100%",
+    padding: "40px 24px",
+    margin: "0 auto",
+    alignSelf: "center",
   },
   progressRow: {
     display: "flex",
@@ -3491,12 +3497,14 @@ const styles = {
     transition: "border-color 0.15s ease, transform 0.1s ease",
   },
   resultsWrap: {
-    maxWidth: "100%",
+    maxWidth: 1400,
     width: "100%",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    padding: "0 24px",
+    padding: "40px 24px",
+    margin: "0 auto",
+    alignSelf: "center",
   },
   archetypeCard: {
     width: "100%",
@@ -3835,9 +3843,11 @@ const styles = {
     display: "inline-block",
   },
  formWrap: {
-    maxWidth: 720,
+    maxWidth: 960,
     width: "100%",
-    padding: "0 24px",
+    padding: "40px 24px",
+    margin: "0 auto",
+    alignSelf: "center",
   },
   h2: {
     fontFamily: FONT_DISPLAY,
