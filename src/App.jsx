@@ -310,10 +310,11 @@ function determineArchetype(tagTotals) {
 --------------------------------------------- */
  
 const SAMPLE_LISTINGS = [
-  {
+ {
     id: "g1",
+    institution: "uc",
     type: "group",
-    title: "2 looking for 2 more",
+    title: "2 looking for 2 more", 
     people: 2,
     spotsNeeded: 2,
     suburb: "Riccarton",
@@ -546,7 +547,7 @@ function FindAFlatDropdown({ onSeek, onBrowse }) {
   );
 }
  
-function NavBar({ onHome, onPost, onSeek, onSaved, onBrowse }) {
+function NavBar({ onHome, onPost, onSeek, onSaved }) {
   return (
     <nav style={styles.navbar}>
       <div style={styles.navInner}>
@@ -556,8 +557,8 @@ function NavBar({ onHome, onPost, onSeek, onSaved, onBrowse }) {
         </button>
         <div style={styles.navLinks}>
           <button className="fm-nav-link" style={styles.navSaved} onClick={onSaved}>Saved</button>
-          <FindAFlatDropdown onSeek={onSeek} onBrowse={onBrowse} />
-          <button className="fm-nav-cta" style={styles.navCta} onClick={onPost}>Post a spot</button>
+          <button className="fm-nav-link" style={styles.navQuiz} onClick={onSeek}>Take the quiz</button>
+          <button className="fm-nav-cta" style={styles.navCta} onClick={onPost}>Post a listing</button>
         </div>
       </div>
     </nav>
@@ -687,7 +688,6 @@ export default function App() {
         onPost={() => setStage("post")}
         onSeek={() => { setAnswers({}); setCurrentQ(0); setStage("quiz"); }}
         onSaved={() => setStage("saved")}
-        onBrowse={() => setStage("result")}
       />
  
       {stage === "intro" && (
@@ -975,16 +975,16 @@ function Intro({ onStart, onPost }) {
       {/* ── 1. HOOK HEADER ── */}
       <section style={introStyles.hookSection}>
         <div style={introStyles.badgeRow}>
-          <span style={introStyles.nzBadge}>🎓 NZ Students · Free forever</span>
+          <span style={introStyles.nzBadge}>🎓 NZ Students</span>
           <InstitutionSelector selected={institution} onChange={handleInstitutionChange} />
         </div>
         <h1 style={introStyles.hookHeadline}>
-          Find flatmates who<br />
-          <span style={introStyles.hookHighlight}>match your vibe.</span>
+          Flatting season moves fast.<br />
+          <span style={introStyles.hookHighlight}>Don't leave it to chance.</span>
         </h1>
         <p style={introStyles.hookSubline}>
-          Not just who has a room. FlatMatch ranks every listing by how well
-          your habits, schedule, and lifestyle actually line up — before you
+          Most flats near {currentInst.short} fill up by mid-January. FlatMatch ranks
+          every listing by how well your habits and lifestyle line up, before you
           message anyone.
         </p>
       </section>
@@ -998,7 +998,7 @@ function Intro({ onStart, onPost }) {
               Take the 3-minute quiz to unlock your match % for every listing
             </div>
             <div style={introStyles.quizBannerSub}>
-              17 questions about how you actually live — sleep schedule, tidiness,
+              17 questions about how you actually live: sleep schedule, tidiness,
               social life, study habits. You get a flatting archetype and a
               compatibility score against every listing below.
             </div>
@@ -1039,7 +1039,7 @@ function Intro({ onStart, onPost }) {
 
         {/* BLURRED SAMPLE LISTINGS */}
         <div style={introStyles.listingsPreview}>
-          {SAMPLE_LISTINGS.slice(0, 3).map((listing) => (
+          {SAMPLE_LISTINGS.filter(l => !l.institution || l.institution === institution).slice(0, 3).map((listing) => (
             <div key={listing.id} style={introStyles.previewCard}>
               <div style={introStyles.previewCardTop}>
                 <div style={{
@@ -1155,8 +1155,8 @@ function Intro({ onStart, onPost }) {
           Flatting season moves fast.<br />Don't leave it to chance.
         </h2>
         <p style={introStyles.finalCtaBody}>
-          Most flats near {currentInst.short} fill up by mid-January. Take the quiz now —
-          see every listing ranked by how well you'd actually live together.
+          Most flats near {currentInst.short} fill up by mid-January. Take the quiz now
+          and see every listing ranked by how well you'd actually live together.
         </p>
         <div style={introStyles.finalCtaBtns}>
           <button style={introStyles.finalCtaBtnPrimary} onClick={onStart}>
@@ -1173,14 +1173,14 @@ function Intro({ onStart, onPost }) {
 }
 
 const introStyles = {
-  page: {
+page: {
     width: "100%",
     maxWidth: "100%",
     display: "flex",
     flexDirection: "column",
-    alignItems: "center",
+    alignItems: "stretch",
     gap: 0,
-  },
+  },  
   hookSection: {
     width: "100%",
     textAlign: "center",
@@ -1188,6 +1188,9 @@ const introStyles = {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
+    maxWidth: 860,
+    margin: "0 auto",
+    alignSelf: "center",
   },
   badgeRow: {
     display: "flex",
@@ -1281,6 +1284,10 @@ const introStyles = {
     width: "100%",
     padding: "48px 24px",
     borderTop: "1px solid #dde3f0",
+    maxWidth: 860,
+    margin: "0 auto",
+    alignSelf: "center",
+    boxSizing: "border-box",
   },
   listingsHeader: {
     marginBottom: 24,
@@ -1458,6 +1465,10 @@ const introStyles = {
     width: "100%",
     padding: "72px 24px",
     borderTop: "1px solid #dde3f0",
+    maxWidth: 860,
+    margin: "0 auto",
+    alignSelf: "center",
+    boxSizing: "border-box",
   },
   problemGrid: {
     display: "grid",
@@ -1546,6 +1557,10 @@ const introStyles = {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
+    maxWidth: 860,
+    margin: "0 auto",
+    alignSelf: "center",
+    boxSizing: "border-box",
   },
   archetypeSubline: {
     fontFamily: "'Inter', sans-serif",
@@ -2367,6 +2382,7 @@ function emptyForm() {
     bio: "",
     contact: "",
     selectedTags: [],
+    institution: localStorage.getItem("fm_institution") || "uc",
   };
 }
  
@@ -2475,8 +2491,9 @@ function PostForm({ onSubmit, onCancel, error }) {
       moveIn: form.moveIn.trim(),
       bio: form.bio.trim(),
       contact: form.contact.trim(),
-      tags,
+     tags,
       photo: photo || null,
+      institution: form.institution, 
     });
     setSubmitting(false);
   }
@@ -2685,6 +2702,19 @@ function PostForm({ onSubmit, onCancel, error }) {
           </div>
         </div>
  
+        <div style={styles.fieldGroup}>
+          <label style={styles.label}>Your university or polytechnic</label>
+          <select
+            style={styles.input}
+            value={form.institution}
+            onChange={(e) => update("institution", e.target.value)}
+          >
+            {NZ_INSTITUTIONS.map(i => (
+              <option key={i.id} value={i.id}>{i.name}</option>
+            ))}
+          </select>
+        </div>
+
         <div style={styles.fieldGroup}>
           <label style={styles.label}>Contact (email, Instagram, phone — your call)</label>
           <input
@@ -3113,8 +3143,8 @@ const styles = {
     fontFamily: FONT_BODY,
     display: "flex",
     flexDirection: "column",
-    alignItems: "center",
-    padding: "100px 0 60px",
+    alignItems: "stretch",
+    padding: "64px 0 0",
   },
   navbar: {
     position: "fixed",
@@ -3191,6 +3221,17 @@ const styles = {
     padding: "8px 16px",
     borderRadius: 8,
     transition: "background 0.15s ease, color 0.15s ease",
+  },
+  navQuiz: {
+    fontFamily: FONT_BODY,
+    fontSize: 14,
+    fontWeight: 600,
+    color: COLORS.teal,
+    background: `${COLORS.teal}12`,
+    border: `1.5px solid ${COLORS.teal}`,
+    cursor: "pointer",
+    padding: "8px 16px",
+    borderRadius: 8,
   },
   navDropdownBtn: {
     fontFamily: FONT_BODY,
