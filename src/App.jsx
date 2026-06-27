@@ -1074,7 +1074,7 @@ function Intro({ onStart, onPost }) {
       </section>
 
       {/* ── 4. METRICS STRIP ── */}
-      <div style={{ width: "100%", padding: "0 24px 72px" }}>
+      <div style={{ width: "100%", maxWidth: 860, padding: "0 24px 72px", alignSelf: "center", margin: "0 auto" }}>
         <MetricsStrip />
       </div>
 
@@ -1232,7 +1232,11 @@ page: {
   },
   quizBanner: {
     width: "100%",
+    maxWidth: 860,
+    alignSelf: "center",
     background: "#1a2540",
+    borderRadius: 20,
+    margin: "0 auto 0",
     padding: "24px 32px",
     display: "flex",
     alignItems: "center",
@@ -1463,8 +1467,7 @@ page: {
   },
   problemSection: {
     width: "100%",
-    padding: "72px 24px",
-    borderTop: "1px solid #dde3f0",
+    padding: "48px 24px 72px",
     maxWidth: 860,
     margin: "0 auto",
     alignSelf: "center",
@@ -1626,10 +1629,12 @@ page: {
     cursor: "pointer",
   },
   finalCtaSection: {
-    width: "100%",
-    padding: "72px 40px",
+    width: "calc(100% - 48px)",
+    maxWidth: 860,
+    margin: "0 auto 72px",
+    padding: "64px 40px",
     background: "#2d3f7c",
-    marginBottom: 0,
+    borderRadius: 24,
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
