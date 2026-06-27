@@ -845,23 +845,23 @@ const metricsStyles = {
     marginBottom: 72,
   },
   stat: {
-    padding: "28px 20px",
+    padding: "52px 32px",
     textAlign: "center",
     borderRight: "1px solid #dde3f0",
     display: "flex",
     flexDirection: "column",
-    gap: 6,
+    gap: 10,
   },
   num: {
     fontFamily: "'DM Serif Display', Georgia, serif",
-    fontSize: 38,
+    fontSize: 64,
     fontWeight: 700,
     color: "#2d3f7c",
     lineHeight: 1,
   },
   label: {
     fontFamily: "'Inter', sans-serif",
-    fontSize: 12,
+    fontSize: 14,
     color: "#718096",
     lineHeight: 1.4,
   },
@@ -1004,6 +1004,28 @@ function Intro({ onStart, onPost }) {
           </p>
         </div>
 
+        {/* ── QUIZ NUDGE BANNER ── */}
+        <div style={{ marginBottom: 20 }}>
+          <section style={introStyles.quizBanner}>
+            <div style={introStyles.quizBannerLeft}>
+              <div style={introStyles.quizBannerEmoji}>✦</div>
+              <div>
+                <div style={introStyles.quizBannerTitle}>
+                  Take the 3-minute quiz to unlock your match % for every listing
+                </div>
+                <div style={introStyles.quizBannerSub}>
+                  17 questions about how you actually live: sleep schedule, tidiness,
+                  social life, study habits. You get a flatting archetype and a
+                  compatibility score against every listing below.
+                </div>
+              </div>
+            </div>
+            <button style={introStyles.quizBannerBtn} onClick={onStart}>
+              Take the quiz →
+            </button>
+          </section>
+        </div>
+
         {/* BLURRED SAMPLE LISTINGS */}
         <div style={introStyles.listingsPreview}>
           {SAMPLE_LISTINGS.filter(l => !l.institution || l.institution === institution).slice(0, 3).map((listing) => (
@@ -1039,35 +1061,11 @@ function Intro({ onStart, onPost }) {
               <p style={introStyles.previewCardBio}>{listing.bio}</p>
             </div>
           ))}
-          <button style={introStyles.seeAllBtn} onClick={onStart}>
-            Take the quiz to see all listings ranked by compatibility →
-          </button>
-        </div>
-
-        {/* ── QUIZ NUDGE BANNER ── */}
-        <div style={{ marginTop: 24 }}>
-          <section style={introStyles.quizBanner}>
-            <div style={introStyles.quizBannerLeft}>
-              <div style={introStyles.quizBannerEmoji}>✦</div>
-              <div>
-                <div style={introStyles.quizBannerTitle}>
-                  Take the 3-minute quiz to unlock your match % for every listing
-                </div>
-                <div style={introStyles.quizBannerSub}>
-                  17 questions about how you actually live: sleep schedule, tidiness,
-                  social life, study habits. You get a flatting archetype and a
-                  compatibility score against every listing below.
-                </div>
-              </div>
-            </div>
-            <button style={introStyles.quizBannerBtn} onClick={onStart}>
-              Take the quiz →
-            </button>
-          </section>
+           
         </div>
 
         {/* POST A LISTING CARD */}
-        <div style={{ marginTop: 24 }}>
+        <div style={{ marginTop: 20 }}>
           <div style={introStyles.postCard}>
             <div style={introStyles.postCardLeft}>
               <span style={introStyles.postCardEmoji}>🏠</span>
