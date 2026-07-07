@@ -326,7 +326,7 @@ const SAMPLE_LISTINGS = [
     tags: { chill: 3, quiet: 1, tidy: 1 },
   },
   {
-    id: "g2",
+    id: "g2", institution: "uc",
     type: "group",
     title: "3 looking for 1 more",
     people: 3,
@@ -340,7 +340,7 @@ const SAMPLE_LISTINGS = [
     tags: { social: 3, night: 1, chill: 1 },
   },
   {
-    id: "g3",
+    id: "g3", institution: "uc",
     type: "group",
     title: "1 looking to form a group of 4",
     people: 1,
@@ -354,7 +354,7 @@ const SAMPLE_LISTINGS = [
     tags: { early: 3, tidy: 2, quiet: 1 },
   },
   {
-    id: "g4",
+    id: "g4", institution: "uc",
     type: "group",
     title: "2 looking for 1-2 more",
     people: 2,
@@ -368,7 +368,7 @@ const SAMPLE_LISTINGS = [
     tags: { budget: 3, chill: 1 },
   },
   {
-    id: "g5",
+    id: "g5", institution: "uc",
     type: "group",
     title: "3 looking for 1 more",
     people: 3,
@@ -382,7 +382,7 @@ const SAMPLE_LISTINGS = [
     tags: { tidy: 3, social: 1 },
   },
   {
-    id: "s1",
+    id: "s1", institution: "uc",
     type: "solo",
     title: "Solo looking to join a group",
     people: 1,
@@ -396,7 +396,7 @@ const SAMPLE_LISTINGS = [
     tags: { quiet: 2, tidy: 1, chill: 1 },
   },
   {
-    id: "s2",
+    id: "s2", institution: "uc",
     type: "solo",
     title: "Solo looking to join a group",
     people: 1,
@@ -410,7 +410,7 @@ const SAMPLE_LISTINGS = [
     tags: { social: 2, night: 2 },
   },
   {
-    id: "s3",
+    id: "s3", institution: "uc",
     type: "solo",
     title: "Solo looking to join a group",
     people: 1,
@@ -581,7 +581,20 @@ export default function App() {
   const [loadingListings, setLoadingListings] = useState(true);
   const [postError, setPostError] = useState(null);
   const [sessionContact, setSessionContact] = useState(null);
-  const [savedListings, setSavedListings] = useState([]);
+  const [savedListings, setSavedListings] = useState(() => {
+    try {
+      const saved = localStorage.getItem("fm_saved");
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
+  const [institution, setInstitution] = useState(() => {
+    return localStorage.getItem("fm_institution") || "uc";
+  });
+
+  function handleInstitutionChange(id) {
+    setInstitution(id);
+    localStorage.setItem("fm_institution", id);
+  }
  
   const tagTotals = useMemo(() => scoreToTags(answers), [answers]);
   const archetype = useMemo(() => determineArchetype(tagTotals), [tagTotals]);
@@ -593,12 +606,13 @@ export default function App() {
  
   const ranked = useMemo(() => {
     return allListings
+      .filter((listing) => !listing.institution || listing.institution === institution)
       .map((listing) => ({
         ...listing,
         score: compatibilityScore(tagTotals, listing.tags),
       }))
       .sort((a, b) => b.score - a.score);
-  }, [tagTotals, allListings]);
+  }, [tagTotals, allListings, institution]);
  
   async function loadListings() {
     setLoadingListings(true);
@@ -640,11 +654,13 @@ export default function App() {
   }
  
   function onSave(listingId) {
-    setSavedListings((prev) =>
-      prev.includes(listingId)
+    setSavedListings((prev) => {
+      const next = prev.includes(listingId)
         ? prev.filter((id) => id !== listingId)
-        : [...prev, listingId]
-    );
+        : [...prev, listingId];
+      localStorage.setItem("fm_saved", JSON.stringify(next));
+      return next;
+    });
   }
  
   async function markFilled(listingId) {
@@ -697,6 +713,8 @@ export default function App() {
         <Intro
           onStart={() => setStage("quiz")}
           onPost={() => setStage("post")}
+          institution={institution}
+          onInstitutionChange={handleInstitutionChange}
         />
       )}
  
@@ -959,17 +977,8 @@ function InstitutionSelector({ selected, onChange }) {
   );
 }
 
-function Intro({ onStart, onPost }) {
+function Intro({ onStart, onPost, institution, onInstitutionChange }) {
   const [activeArchetype, setActiveArchetype] = useState(null);
-  const [institution, setInstitution] = useState(() => {
-    return localStorage.getItem("fm_institution") || "uc";
-  });
-
-  function handleInstitutionChange(id) {
-    setInstitution(id);
-    localStorage.setItem("fm_institution", id);
-  }
-
   const currentInst = NZ_INSTITUTIONS.find(i => i.id === institution) || NZ_INSTITUTIONS[0];
 
   return (
@@ -979,7 +988,7 @@ function Intro({ onStart, onPost }) {
       <section style={introStyles.hookSection}>
         <div style={introStyles.badgeRow}>
           <span style={introStyles.nzBadge}>🎓 NZ Students</span>
-          <InstitutionSelector selected={institution} onChange={handleInstitutionChange} />
+          <InstitutionSelector selected={institution} onChange={onInstitutionChange} />
         </div>
         <h1 style={introStyles.hookHeadline}>
           Flatting season moves fast.<br />
