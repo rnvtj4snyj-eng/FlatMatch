@@ -5,27 +5,108 @@ import { fetchListings, createListing, markListingFilled } from "./listingsServi
    LOCATION DATA
 --------------------------------------------- */
  
-// Approx distance from UC's Ilam campus, in km (rough driving/cycling distance)
-const UC_SUBURBS = [
-  { name: "Ilam", distanceKm: 0.5 },
-  { name: "Upper Riccarton", distanceKm: 2 },
-  { name: "Riccarton", distanceKm: 3 },
-  { name: "Fendalton", distanceKm: 3.5 },
-  { name: "Bishopdale", distanceKm: 4 },
-  { name: "Avonhead", distanceKm: 4 },
-  { name: "Merivale", distanceKm: 5 },
-  { name: "Addington", distanceKm: 5.5 },
-  { name: "Sydenham", distanceKm: 6 },
-  { name: "Hornby", distanceKm: 8 },
-  { name: "Halswell", distanceKm: 8 },
-  { name: "Central City", distanceKm: 6.5 },
-  { name: "Sumner", distanceKm: 12 },
-  { name: "New Brighton", distanceKm: 12 },
-  { name: "Other / not sure yet", distanceKm: null },
-];
- 
-function suburbDistance(suburbName) {
-  const match = UC_SUBURBS.find((s) => s.name === suburbName);
+const NZ_CITIES = {
+  christchurch: {
+    label: "Christchurch",
+    suburbs: [
+      { name: "Ilam", distanceKm: 0.5 },
+      { name: "Upper Riccarton", distanceKm: 2 },
+      { name: "Riccarton", distanceKm: 3 },
+      { name: "Fendalton", distanceKm: 3.5 },
+      { name: "Bishopdale", distanceKm: 4 },
+      { name: "Avonhead", distanceKm: 4 },
+      { name: "Merivale", distanceKm: 5 },
+      { name: "Addington", distanceKm: 5.5 },
+      { name: "Sydenham", distanceKm: 6 },
+      { name: "Hornby", distanceKm: 8 },
+      { name: "Halswell", distanceKm: 8 },
+      { name: "Central City", distanceKm: 6.5 },
+      { name: "Sumner", distanceKm: 12 },
+      { name: "New Brighton", distanceKm: 12 },
+      { name: "Other / not sure yet", distanceKm: null },
+    ],
+  },
+  dunedin: {
+    label: "Dunedin",
+    suburbs: [
+      { name: "North Dunedin", distanceKm: 0.5 },
+      { name: "Roslyn", distanceKm: 1.5 },
+      { name: "Mornington", distanceKm: 2 },
+      { name: "South Dunedin", distanceKm: 2.5 },
+      { name: "Caversham", distanceKm: 3 },
+      { name: "Wakari", distanceKm: 3 },
+      { name: "Maori Hill", distanceKm: 2 },
+      { name: "Other / not sure yet", distanceKm: null },
+    ],
+  },
+  wellington: {
+    label: "Wellington",
+    suburbs: [
+      { name: "Kelburn", distanceKm: 0.5 },
+      { name: "Aro Valley", distanceKm: 1 },
+      { name: "Newtown", distanceKm: 2 },
+      { name: "Mount Cook", distanceKm: 1.5 },
+      { name: "Island Bay", distanceKm: 4 },
+      { name: "Karori", distanceKm: 3 },
+      { name: "Johnsonville", distanceKm: 7 },
+      { name: "Other / not sure yet", distanceKm: null },
+    ],
+  },
+  auckland: {
+    label: "Auckland",
+    suburbs: [
+      { name: "City Centre", distanceKm: 0.5 },
+      { name: "Grafton", distanceKm: 1 },
+      { name: "Parnell", distanceKm: 2 },
+      { name: "Newmarket", distanceKm: 2.5 },
+      { name: "Ponsonby", distanceKm: 2 },
+      { name: "Mount Eden", distanceKm: 3 },
+      { name: "Epsom", distanceKm: 4 },
+      { name: "Other / not sure yet", distanceKm: null },
+    ],
+  },
+  palmerston_north: {
+    label: "Palmerston North",
+    suburbs: [
+      { name: "Fitzherbert", distanceKm: 0.5 },
+      { name: "Hokowhitu", distanceKm: 1.5 },
+      { name: "Roslyn", distanceKm: 2 },
+      { name: "Awapuni", distanceKm: 3 },
+      { name: "Other / not sure yet", distanceKm: null },
+    ],
+  },
+  hamilton: {
+    label: "Hamilton",
+    suburbs: [
+      { name: "Hillcrest", distanceKm: 0.5 },
+      { name: "Dinsdale", distanceKm: 2 },
+      { name: "Chartwell", distanceKm: 3 },
+      { name: "Frankton", distanceKm: 4 },
+      { name: "Other / not sure yet", distanceKm: null },
+    ],
+  },
+};
+
+const UC_SUBURBS = NZ_CITIES.christchurch.suburbs;
+
+function cityFromInstitution(institutionId) {
+  const map = {
+    uc: "christchurch",
+    lincoln: "christchurch",
+    otago: "dunedin",
+    vuw: "wellington",
+    auckland: "auckland",
+    aut: "auckland",
+    massey: "palmerston_north",
+    waikato: "hamilton",
+  };
+  return map[institutionId] || "christchurch";
+}
+
+function suburbDistance(suburbName, city = "christchurch") {
+  const cityData = NZ_CITIES[city];
+  if (!cityData) return null;
+  const match = cityData.suburbs.find((s) => s.name === suburbName);
   return match ? match.distanceKm : null;
 }
  
@@ -2392,6 +2473,7 @@ const NZ_TAG_OPTIONS = [
 ];
  
 function emptyForm() {
+  const institution = localStorage.getItem("fm_institution") || "uc";
   return {
     listingType: "room",
     postType: "group",
@@ -2400,13 +2482,14 @@ function emptyForm() {
     spotsNeeded: "1",
     groupSize: "2",
     groupSeeking: "1",
+    city: cityFromInstitution(institution),
     suburb: "",
     budget: "",
     moveIn: "",
     bio: "",
     contact: "",
     selectedTags: [],
-    institution: localStorage.getItem("fm_institution") || "uc",
+    institution,
   };
 }
  
@@ -2510,7 +2593,8 @@ function PostForm({ onSubmit, onCancel, error }) {
       spotsNeeded,
       suburb: form.suburb,
       area: form.suburb,
-      distanceKm: suburbDistance(form.suburb),
+      distanceKm: suburbDistance(form.suburb, form.city),
+      city: form.city,
       budget: form.budget.trim(),
       moveIn: form.moveIn.trim(),
       bio: form.bio.trim(),
@@ -2628,21 +2712,32 @@ function PostForm({ onSubmit, onCancel, error }) {
           </>
         )}
  
+        <div style={styles.fieldGroup}>
+          <label style={styles.label}>Which city?</label>
+          <select
+            style={styles.input}
+            value={form.city}
+            onChange={(e) => { update("city", e.target.value); update("suburb", ""); }}
+          >
+            {Object.entries(NZ_CITIES).map(([key, val]) => (
+              <option key={key} value={key}>{val.label}</option>
+            ))}
+          </select>
+        </div>
+
         <div style={styles.fieldRow}>
           <div style={styles.fieldGroup}>
-            <label style={styles.label}>Where are you looking?</label>
+            <label style={styles.label}>Which suburb?</label>
             <select
               style={styles.input}
               value={form.suburb}
               onChange={(e) => update("suburb", e.target.value)}
             >
-              <option value="" disabled>
-                Select a suburb
-              </option>
-              {UC_SUBURBS.map((s) => (
+              <option value="" disabled>Select a suburb</option>
+              {(NZ_CITIES[form.city]?.suburbs || []).map((s) => (
                 <option key={s.name} value={s.name}>
                   {s.name}
-                  {s.distanceKm != null ? ` (~${s.distanceKm}km from UC)` : ""}
+                  {s.distanceKm != null ? ` (~${s.distanceKm}km from campus)` : ""}
                 </option>
               ))}
             </select>
