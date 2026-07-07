@@ -393,7 +393,6 @@ function determineArchetype(tagTotals) {
 const SAMPLE_LISTINGS = [
  {
     id: "g1",
-    institution: "uc",
     type: "group",
     title: "2 looking for 2 more", 
     people: 2,
@@ -407,7 +406,7 @@ const SAMPLE_LISTINGS = [
     tags: { chill: 3, quiet: 1, tidy: 1 },
   },
   {
-    id: "g2", institution: "uc",
+    id: "g2",
     type: "group",
     title: "3 looking for 1 more",
     people: 3,
@@ -421,7 +420,7 @@ const SAMPLE_LISTINGS = [
     tags: { social: 3, night: 1, chill: 1 },
   },
   {
-    id: "g3", institution: "uc",
+    id: "g3",
     type: "group",
     title: "1 looking to form a group of 4",
     people: 1,
@@ -435,7 +434,7 @@ const SAMPLE_LISTINGS = [
     tags: { early: 3, tidy: 2, quiet: 1 },
   },
   {
-    id: "g4", institution: "uc",
+    id: "g4",
     type: "group",
     title: "2 looking for 1-2 more",
     people: 2,
@@ -449,7 +448,7 @@ const SAMPLE_LISTINGS = [
     tags: { budget: 3, chill: 1 },
   },
   {
-    id: "g5", institution: "uc",
+    id: "g5",
     type: "group",
     title: "3 looking for 1 more",
     people: 3,
@@ -463,7 +462,7 @@ const SAMPLE_LISTINGS = [
     tags: { tidy: 3, social: 1 },
   },
   {
-    id: "s1", institution: "uc",
+    id: "s1",
     type: "solo",
     title: "Solo looking to join a group",
     people: 1,
@@ -477,7 +476,7 @@ const SAMPLE_LISTINGS = [
     tags: { quiet: 2, tidy: 1, chill: 1 },
   },
   {
-    id: "s2", institution: "uc",
+    id: "s2",
     type: "solo",
     title: "Solo looking to join a group",
     people: 1,
@@ -491,7 +490,7 @@ const SAMPLE_LISTINGS = [
     tags: { social: 2, night: 2 },
   },
   {
-    id: "s3", institution: "uc",
+    id: "s3",
     type: "solo",
     title: "Solo looking to join a group",
     people: 1,
@@ -594,41 +593,9 @@ function LogoLockup({ size = 40, align = "center" }) {
    NAV BAR
 --------------------------------------------- */
  
-function FindAFlatDropdown({ onSeek, onBrowse }) {
-  const [open, setOpen] = useState(false);
-  const ref = React.useRef(null);
+
  
-  useEffect(() => {
-    function handleClick(e) {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
- 
-  return (
-    <div ref={ref} style={{ position: "relative" }}>
-      <button style={styles.navDropdownBtn} onClick={() => setOpen(o => !o)}>
-        Find a flat {open ? "▴" : "▾"}
-      </button>
-      {open && (
-        <div style={styles.navDropdown}>
-          <button style={styles.navDropdownItem} onClick={() => { setOpen(false); onSeek(); }}>
-            <div style={styles.navDropdownLabel}>Take the quiz</div>
-            <div style={styles.navDropdownSub}>Get matched by compatibility</div>
-          </button>
-          <div style={styles.navDropdownDivider} />
-          <button style={styles.navDropdownItem} onClick={() => { setOpen(false); onBrowse(); }}>
-            <div style={styles.navDropdownLabel}>Browse listings</div>
-            <div style={styles.navDropdownSub}>See everything without the quiz</div>
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
- 
-function NavBar({ onHome, onPost, onSeek, onSaved }) {
+function NavBar({ onHome, onPost, onSaved }) {
   return (
     <nav style={styles.navbar}>
       <div style={styles.navInner}>
@@ -786,7 +753,6 @@ export default function App() {
       <NavBar
         onHome={restart}
         onPost={() => setStage("post")}
-        onSeek={() => { setAnswers({}); setCurrentQ(0); setStage("quiz"); }}
         onSaved={() => setStage("saved")}
       />
  
@@ -1955,7 +1921,13 @@ function Results({ archetype, ranked, onRestart, onPost, loadingListings, onMark
     for (const l of ranked) {
       if (l.suburb) set.add(l.suburb);
     }
-    return UC_SUBURBS.filter((s) => set.has(s.name));
+    const allSuburbs = Object.values(NZ_CITIES).flatMap((c) => c.suburbs);
+    const seen = new Set();
+    return allSuburbs.filter((s) => {
+      if (!set.has(s.name) || seen.has(s.name)) return false;
+      seen.add(s.name);
+      return true;
+    });
   }, [ranked]);
  
   const filtered = useMemo(() => {
@@ -2041,7 +2013,7 @@ function Results({ archetype, ranked, onRestart, onPost, loadingListings, onMark
               {availableSuburbs.map((s) => (
                 <option key={s.name} value={s.name}>
                   {s.name}
-                  {s.distanceKm != null ? ` (~${s.distanceKm}km from UC)` : ""}
+                  {s.distanceKm != null ? ` (~${s.distanceKm}km from campus)` : ""}
                 </option>
               ))}
             </select>
@@ -2379,7 +2351,7 @@ function ListingCard({ listing, onMarkFilled, sessionContact, onSave, savedListi
           </div>
           <div style={styles.cardMeta}>
             {listing.area} · {listing.budget} · Move in {listing.moveIn}
-            {listing.distanceKm != null ? ` · ~${listing.distanceKm}km from UC` : ""}
+            {listing.distanceKm != null ? ` · ~${listing.distanceKm}km from campus` : ""}
           </div>
           <div style={styles.cardPostedDate}>{timeAgo(listing.renewedAt || listing.createdAt)}<ViewCount listingId={listing.id} /></div>
         </div>
@@ -3210,7 +3182,7 @@ const globalCSS = `
     transition: background 0.15s ease, color 0.15s ease, transform 0.12s ease;
   }
   .fm-request-btn:hover {
-    background: #E8746A;
+    background: #1A9090;
     color: #fff;
     transform: translateY(-1px);
   }
@@ -3323,7 +3295,7 @@ const styles = {
     fontSize: 14,
     fontWeight: 600,
     color: "#fff",
-    background: COLORS.coral,
+    background: "#7C5CBF",
     border: "none",
     cursor: "pointer",
     padding: "8px 18px",
@@ -3575,7 +3547,7 @@ const styles = {
   },
   progressBarInner: {
     height: "100%",
-    background: COLORS.coral,
+    background: "#7C5CBF",
     borderRadius: 100,
     transition: "width 0.3s ease",
   },
@@ -3639,7 +3611,7 @@ const styles = {
     fontSize: "clamp(24px, 4vw, 36px)",
     fontWeight: 700,
     marginBottom: 10,
-    color: COLORS.coral,
+    color: "#A78BFA",
   },
   archetypeTagline: {
     fontSize: 16,
@@ -3763,8 +3735,8 @@ const styles = {
     fontWeight: 600,
     padding: "10px 22px",
     background: "transparent",
-    color: COLORS.coral,
-    border: `1.5px solid ${COLORS.coral}`,
+    color: COLORS.teal,
+    border: `1.5px solid ${COLORS.teal}`,
     borderRadius: 8,
     cursor: "pointer",
   },
@@ -4054,8 +4026,8 @@ const styles = {
     fontWeight: 600,
     padding: "12px 18px",
     borderRadius: 8,
-    border: `1.5px solid ${COLORS.coral}`,
-    background: COLORS.coral,
+    border: "1.5px solid #7C5CBF",
+    background: "#7C5CBF",
     color: "#FFFFFF",
     cursor: "pointer",
   },
