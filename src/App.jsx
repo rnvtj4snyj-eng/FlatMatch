@@ -2447,13 +2447,9 @@ const NZ_TAG_OPTIONS = [
 function emptyForm() {
   const institution = localStorage.getItem("fm_institution") || "uc";
   return {
-    listingType: "room",
-    postType: "group",
     title: "",
     people: "1",
     spotsNeeded: "1",
-    groupSize: "2",
-    groupSeeking: "1",
     city: cityFromInstitution(institution),
     suburb: "",
     budget: "",
@@ -2542,24 +2538,14 @@ function PostForm({ onSubmit, onCancel, error }) {
       tags[key] = 2;
     }
  
-    let title = "";
-    let people = 1;
-    let spotsNeeded = 1;
- 
-    if (form.listingType === "room") {
-      people = parseInt(form.people, 10) || 1;
-      spotsNeeded = parseInt(form.spotsNeeded, 10) || 1;
-      title = form.title.trim() || `${people} looking for ${spotsNeeded} more`;
-    } else {
-      people = parseInt(form.groupSize, 10) || 2;
-      spotsNeeded = parseInt(form.groupSeeking, 10) || 1;
-      title = `${people} looking for ${spotsNeeded} more`;
-    }
+    const people = parseInt(form.people, 10) || 1;
+    const spotsNeeded = parseInt(form.spotsNeeded, 10) || 1;
+    const title = form.title.trim() || `${people} looking for ${spotsNeeded} more`;
  
     setSubmitting(true);
     await onSubmit({
-      listingType: form.listingType,
-      type: form.postType || "group",
+      listingType: "room",
+      type: "group",
       title,
       people,
       spotsNeeded,
@@ -2587,102 +2573,41 @@ function PostForm({ onSubmit, onCancel, error }) {
       </p>
  
       <form onSubmit={handleSubmit} style={styles.form}>
-        <div style={styles.fieldGroup}>
-          <label style={styles.label}>What are you posting?</label>
-          <div style={styles.toggleRow}>
-            <button
-              type="button"
-              style={form.listingType === "room" ? styles.toggleBtnActive : styles.toggleBtn}
-              onClick={() => update("listingType", "room")}
-            >
-              A room in our flat
-            </button>
-            <button
-              type="button"
-              style={form.listingType === "group" ? styles.toggleBtnActive : styles.toggleBtn}
-              onClick={() => update("listingType", "group")}
-            >
-              Our group is looking
-            </button>
+        <div style={styles.fieldRow}>
+          <div style={styles.fieldGroup}>
+            <label style={styles.label}>How many people are you currently?</label>
+            <input
+              style={styles.input}
+              type="number"
+              min="1"
+              max="10"
+              value={form.people}
+              onChange={(e) => update("people", e.target.value)}
+            />
+          </div>
+          <div style={styles.fieldGroup}>
+            <label style={styles.label}>How many spots open?</label>
+            <input
+              style={styles.input}
+              type="number"
+              min="1"
+              max="10"
+              value={form.spotsNeeded}
+              onChange={(e) => update("spotsNeeded", e.target.value)}
+            />
           </div>
         </div>
- 
-        {form.listingType === "room" && (
-          <>
-            <div style={styles.fieldRow}>
-              <div style={styles.fieldGroup}>
-                <label style={styles.label}>How many people are you currently?</label>
-                <input
-                  style={styles.input}
-                  type="number"
-                  min="1"
-                  max="10"
-                  value={form.people}
-                  onChange={(e) => update("people", e.target.value)}
-                />
-              </div>
-              <div style={styles.fieldGroup}>
-                <label style={styles.label}>How many spots open?</label>
-                <input
-                  style={styles.input}
-                  type="number"
-                  min="1"
-                  max="10"
-                  value={form.spotsNeeded}
-                  onChange={(e) => update("spotsNeeded", e.target.value)}
-                />
-              </div>
-            </div>
- 
-            <div style={styles.fieldGroup}>
-              <label style={styles.label}>Listing title (optional)</label>
-              <input
-                style={styles.input}
-                type="text"
-                placeholder="e.g. 2 looking for 2 chill flatmates"
-                value={form.title}
-                onChange={(e) => update("title", e.target.value)}
-              />
-            </div>
-          </>
-        )}
- 
-        {form.listingType === "group" && (
-          <>
-            <div style={styles.fieldRow}>
-              <div style={styles.fieldGroup}>
-                <label style={styles.label}>How many are in your group?</label>
-                <input
-                  style={styles.input}
-                  type="number"
-                  min="1"
-                  max="5"
-                  value={form.groupSize}
-                  onChange={(e) => update("groupSize", e.target.value)}
-                />
-              </div>
-              <div style={styles.fieldGroup}>
-                <label style={styles.label}>How many more are you looking for?</label>
-                <div style={styles.toggleRow}>
-                  <button
-                    type="button"
-                    style={form.groupSeeking === "1" ? styles.toggleBtnActive : styles.toggleBtn}
-                    onClick={() => update("groupSeeking", "1")}
-                  >
-                    1 person
-                  </button>
-                  <button
-                    type="button"
-                    style={form.groupSeeking === "2" ? styles.toggleBtnActive : styles.toggleBtn}
-                    onClick={() => update("groupSeeking", "2")}
-                  >
-                    2 people
-                  </button>
-                </div>
-              </div>
-            </div>
-          </>
-        )}
+
+        <div style={styles.fieldGroup}>
+          <label style={styles.label}>Listing title (optional)</label>
+          <input
+            style={styles.input}
+            type="text"
+            placeholder="e.g. 2 looking for 2 chill flatmates"
+            value={form.title}
+            onChange={(e) => update("title", e.target.value)}
+          />
+        </div>
  
         <div style={styles.fieldGroup}>
           <label style={styles.label}>Which city?</label>
