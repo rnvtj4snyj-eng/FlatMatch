@@ -667,7 +667,7 @@ export default function App() {
   async function loadListings() {
     setLoadingListings(true);
     try {
-      const listings = await fetchListings();
+      const listings = await fetchListings(institution);
       setUserListings(listings);
     } catch (err) {
       console.error("Failed to load listings:", err);
@@ -679,7 +679,7 @@ export default function App() {
  
   useEffect(() => {
     loadListings();
-  }, []);
+  }, [institution]);
  
   async function submitListing(listing) {
     setPostError(null);
@@ -1234,25 +1234,6 @@ function Intro({ onStart, onPost, institution, onInstitutionChange, userListings
         <button style={introStyles.archetypeCta} onClick={onStart}>
           Take the quiz to find yours →
         </button>
-      </section>
-
-      {/* ── 7. FINAL CTA ── */}
-      <section style={introStyles.finalCtaSection}>
-        <h2 style={introStyles.finalCtaHeading}>
-          Flatting season moves fast.<br />Don't leave it to chance.
-        </h2>
-        <p style={introStyles.finalCtaBody}>
-          Most flats near {currentInst.short} fill up by mid-January. Take the quiz now
-          and see every listing ranked by how well you'd actually live together.
-        </p>
-        <div style={introStyles.finalCtaBtns}>
-          <button style={introStyles.finalCtaBtnPrimary} onClick={onStart}>
-            Take the quiz
-          </button>
-          <button style={introStyles.finalCtaBtnSecondary} onClick={onPost}>
-            Post a listing
-          </button>
-        </div>
       </section>
 
     </div>

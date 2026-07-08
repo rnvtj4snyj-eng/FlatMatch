@@ -1,11 +1,17 @@
 import { supabase } from './supabaseClient'
 
-export async function fetchListings() {
-  const { data, error } = await supabase
+export async function fetchListings(institutionId = null) {
+  let query = supabase
     .from('listings')
     .select('*')
     .gt('expires_at', new Date().toISOString())
     .order('created_at', { ascending: false })
+
+  if (institutionId) {
+    query = query.eq('institution', institutionId)
+  }
+
+  const { data, error } = await query
 
   if (error) throw error
 
@@ -28,6 +34,7 @@ export async function fetchListings() {
     tags: l.tags,
     photo: l.photo_url,
     status: l.status,
+    institution: l.institution || null,
     updates: l.updates || [],
     createdAt: new Date(l.created_at).getTime(),
     renewedAt: new Date(l.renewed_at).getTime(),
@@ -77,6 +84,7 @@ export async function createListing(listing) {
       tags: listing.tags,
       photo_url: photoUrl,
       status: 'looking',
+      institution: listing.institution || null,
       delete_token: deleteToken,
     })
     .select()
