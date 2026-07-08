@@ -92,15 +92,16 @@ export async function createListing(listing) {
     ...listing,
     id: data.id,
     photo: photoUrl,
+    deleteToken,
     createdAt: new Date(data.created_at).getTime(),
     renewedAt: new Date(data.renewed_at).getTime(),
     expiresAt: new Date(data.expires_at).getTime(),
   }
 }
 
-export async function markListingFilled(listingId) {
+export async function markListingFilled(listingId, tokenOverride) {
   const saved = JSON.parse(localStorage.getItem('fm_tokens') || '{}')
-  const token = saved[listingId]
+  const token = tokenOverride || saved[listingId]
   if (!token) throw new Error('Not authorised')
 
   const { error } = await supabase

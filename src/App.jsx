@@ -652,6 +652,8 @@ export default function App() {
     [userListings]
   );
  
+  console.log('DEBUG userListings:', userListings);
+  console.log('DEBUG institution:', institution);
   const ranked = useMemo(() => {
     return allListings
       .filter((listing) => !listing.institution || listing.institution === institution)
@@ -762,6 +764,8 @@ export default function App() {
           onPost={() => setStage("post")}
           institution={institution}
           onInstitutionChange={handleInstitutionChange}
+          userListings={userListings}
+          loadingListings={loadingListings}
         />
       )}
  
@@ -1024,9 +1028,10 @@ function InstitutionSelector({ selected, onChange }) {
   );
 }
 
-function Intro({ onStart, onPost, institution, onInstitutionChange }) {
+function Intro({ onStart, onPost, institution, onInstitutionChange, userListings, loadingListings }) {
   const [activeArchetype, setActiveArchetype] = useState(null);
   const currentInst = NZ_INSTITUTIONS.find(i => i.id === institution) || NZ_INSTITUTIONS[0];
+  const realListings = (userListings || []).filter(l => !l.institution || l.institution === institution);
 
   return (
     <div style={introStyles.page}>
@@ -1080,42 +1085,47 @@ function Intro({ onStart, onPost, institution, onInstitutionChange }) {
           </p>
         </div>
 
-        {/* BLURRED SAMPLE LISTINGS */}
+        {/* REAL LISTINGS */}
         <div style={introStyles.listingsPreview}>
-          {SAMPLE_LISTINGS.filter(l => !l.institution || l.institution === institution).slice(0, 3).map((listing) => (
-            <div key={listing.id} style={introStyles.previewCard}>
-              <div style={introStyles.previewCardTop}>
-                {listing.photo ? (
-                <img
-                  src={listing.photo}
-                  alt="Flat"
-                  style={{
-                    width: 52, height: 52, borderRadius: 10,
-                    objectFit: "cover", flexShrink: 0,
-                    border: "1.5px solid #dde3f0",
-                  }}
-                />
-              ) : (
-                <div style={{
-                  width: 52, height: 52, borderRadius: 10,
-                  background: "#2d3f7c", color: "#fff",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 15, fontWeight: 700, flexShrink: 0,
-                }}>
-                  {listing.title[0]}
-                </div>
-              )}
-                <div style={{ flex: 1 }}>
-                  <div style={introStyles.previewCardTitle}>{listing.title}</div>
-                  <div style={introStyles.previewCardMeta}>
-                    {listing.area} · {listing.budget} · Move in {listing.moveIn}
+          {loadingListings ? (
+            <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, color: "#718096" }}>Loading listings…</p>
+          ) : realListings.length === 0 ? (
+            <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, color: "#718096" }}>No listings yet for {currentInst.short} — be the first to post one.</p>
+          ) : (
+            realListings.slice(0, 3).map((listing) => (
+              <div key={listing.id} style={introStyles.previewCard}>
+                <div style={introStyles.previewCardTop}>
+                  {listing.photo ? (
+                    <img
+                      src={listing.photo}
+                      alt="Flat"
+                      style={{
+                        width: 52, height: 52, borderRadius: 10,
+                        objectFit: "cover", flexShrink: 0,
+                        border: "1.5px solid #dde3f0",
+                      }}
+                    />
+                  ) : (
+                    <div style={{
+                      width: 52, height: 52, borderRadius: 10,
+                      background: "#2d3f7c", color: "#fff",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontSize: 15, fontWeight: 700, flexShrink: 0,
+                    }}>
+                      {listing.title[0]}
+                    </div>
+                  )}
+                  <div style={{ flex: 1 }}>
+                    <div style={introStyles.previewCardTitle}>{listing.title}</div>
+                    <div style={introStyles.previewCardMeta}>
+                      {listing.area} · {listing.budget} · Move in {listing.moveIn}
+                    </div>
                   </div>
                 </div>
+                <p style={introStyles.previewCardBio}>{listing.bio}</p>
               </div>
-              <p style={introStyles.previewCardBio}>{listing.bio}</p>
-            </div>
-          ))}
-           
+            ))
+          )}
         </div>
 
         {/* POST A LISTING CARD */}
@@ -1317,7 +1327,7 @@ page: {
   },
   quizBannerEmoji: {
     fontSize: 22,
-    color: "#7C5CBF",
+    color: "#FFD66B",
     flexShrink: 0,
     marginTop: 2,
   },
