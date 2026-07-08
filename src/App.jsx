@@ -936,7 +936,7 @@ const metricsStyles = {
    INTRO
 --------------------------------------------- */
  const NZ_INSTITUTIONS = [
-  { id: "uc", name: "University of Canterbury", short: "UC Canterbury", city: "Christchurch" },
+  { id: "uc", name: "University of Canterbury", short: "UC", city: "Christchurch" },
   { id: "otago", name: "University of Otago", short: "Otago", city: "Dunedin" },
   { id: "vuw", name: "Victoria — Te Herenga Waka", short: "Victoria", city: "Wellington" },
   { id: "auckland", name: "University of Auckland", short: "Auckland", city: "Auckland" },
@@ -1067,12 +1067,10 @@ function Intro({ onStart, onPost, institution, onInstitutionChange }) {
               <div style={introStyles.quizBannerEmoji}>✦</div>
               <div>
                 <div style={introStyles.quizBannerTitle}>
-                  Take the 3-minute quiz to unlock your match % for every listing
+                  The wrong flatmate can ruin your year. Join the {currentInst.short} students who looked before they leased.
                 </div>
                 <div style={introStyles.quizBannerSub}>
-                  17 questions about how you actually live: sleep schedule, tidiness,
-                  social life, study habits. You get a flatting archetype and a
-                  compatibility score against every listing below.
+                  Take the quiz to find the perfect student flat for you.
                 </div>
               </div>
             </div>
