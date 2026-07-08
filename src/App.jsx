@@ -688,7 +688,7 @@ export default function App() {
       const record = await createListing(listing);
       setUserListings((prev) => [record, ...prev]);
       const tokens = JSON.parse(localStorage.getItem('fm_tokens') || '{}');
-      tokens[record.id] = true;
+      tokens[record.id] = record.deleteToken;
       localStorage.setItem('fm_tokens', JSON.stringify(tokens));
       setStage("posted");
       try {
