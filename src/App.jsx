@@ -766,6 +766,7 @@ export default function App() {
           onInstitutionChange={handleInstitutionChange}
           userListings={userListings}
           loadingListings={loadingListings}
+          onMarkFilled={markFilled}
         />
       )}
  
@@ -1028,7 +1029,7 @@ function InstitutionSelector({ selected, onChange }) {
   );
 }
 
-function Intro({ onStart, onPost, institution, onInstitutionChange, userListings, loadingListings }) {
+function Intro({ onStart, onPost, institution, onInstitutionChange, userListings, loadingListings, onMarkFilled }) {
   const [activeArchetype, setActiveArchetype] = useState(null);
   const currentInst = NZ_INSTITUTIONS.find(i => i.id === institution) || NZ_INSTITUTIONS[0];
   const realListings = (userListings || []).filter(l => !l.institution || l.institution === institution);
@@ -1092,7 +1093,10 @@ function Intro({ onStart, onPost, institution, onInstitutionChange, userListings
           ) : realListings.length === 0 ? (
             <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, color: "#718096" }}>No listings yet for {currentInst.short} — be the first to post one.</p>
           ) : (
-            realListings.slice(0, 3).map((listing) => (
+            realListings.slice(0, 3).map((listing) => {
+              const tokens = JSON.parse(localStorage.getItem('fm_tokens') || '{}');
+              const isOwner = !!tokens[listing.id];
+              return (
               <div key={listing.id} style={introStyles.previewCard}>
                 <div style={introStyles.previewCardTop}>
                   {listing.photo ? (
@@ -1123,8 +1127,17 @@ function Intro({ onStart, onPost, institution, onInstitutionChange, userListings
                   </div>
                 </div>
                 <p style={introStyles.previewCardBio}>{listing.bio}</p>
+                {isOwner && (
+                  <button
+                    style={styles.markFilledBtn}
+                    onClick={() => onMarkFilled && onMarkFilled(listing.id)}
+                  >
+                    ✓ Mark as filled — remove listing
+                  </button>
+                )}
               </div>
-            ))
+              );
+            })
           )}
         </div>
 
