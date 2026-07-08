@@ -1048,6 +1048,26 @@ function Intro({ onStart, onPost, institution, onInstitutionChange }) {
         </p>
       </section>
 
+      {/* ── QUIZ NUDGE BANNER ── */}
+      <div style={{ width: "100%", maxWidth: 860, margin: "0 auto", padding: "0 24px 20px", alignSelf: "center", boxSizing: "border-box" }}>
+        <section style={introStyles.quizBanner}>
+          <div style={introStyles.quizBannerLeft}>
+            <div style={introStyles.quizBannerEmoji}>✦</div>
+            <div>
+              <div style={introStyles.quizBannerTitle}>
+                The wrong flatmate can ruin your year. Join the {currentInst.short} students who looked before they leased.
+              </div>
+              <div style={introStyles.quizBannerSub}>
+                Take the quiz to find the perfect student flat for you.
+              </div>
+            </div>
+          </div>
+          <button style={introStyles.quizBannerBtn} onClick={onStart}>
+            Take the quiz →
+          </button>
+        </section>
+      </div>
+
       {/* ── 2. LISTINGS PREVIEW ── */}
       <section style={introStyles.listingsSection}>
         <div style={introStyles.listingsHeader}>
@@ -1058,26 +1078,6 @@ function Intro({ onStart, onPost, institution, onInstitutionChange }) {
           <p style={introStyles.listingsSub}>
             Groups with rooms, solo searchers, people forming new flats — all in one place.
           </p>
-        </div>
-
-        {/* ── QUIZ NUDGE BANNER ── */}
-        <div style={{ marginBottom: 20 }}>
-          <section style={introStyles.quizBanner}>
-            <div style={introStyles.quizBannerLeft}>
-              <div style={introStyles.quizBannerEmoji}>✦</div>
-              <div>
-                <div style={introStyles.quizBannerTitle}>
-                  The wrong flatmate can ruin your year. Join the {currentInst.short} students who looked before they leased.
-                </div>
-                <div style={introStyles.quizBannerSub}>
-                  Take the quiz to find the perfect student flat for you.
-                </div>
-              </div>
-            </div>
-            <button style={introStyles.quizBannerBtn} onClick={onStart}>
-              Take the quiz →
-            </button>
-          </section>
         </div>
 
         {/* BLURRED SAMPLE LISTINGS */}
@@ -1298,7 +1298,7 @@ page: {
     width: "100%",
     maxWidth: 860,
     alignSelf: "center",
-    background: "#1a2540",
+    background: "#7C5CBF",
     borderRadius: 20,
     margin: "0 auto 0",
     padding: "24px 32px",
@@ -1332,12 +1332,24 @@ page: {
   quizBannerSub: {
     fontFamily: "'Inter', sans-serif",
     fontSize: 13,
-    color: "rgba(255,255,255,0.60)",
+    color: "rgba(255,255,255,0.85)",
     lineHeight: 1.6,
   },
   quizBannerBtn: {
     fontFamily: "'Inter', sans-serif",
+    fontSize: 14,quizBannerBtn: {
+    fontFamily: "'Inter', sans-serif",
     fontSize: 14,
+    fontWeight: 700,
+    padding: "13px 28px",
+    background: "#1E2B2E",
+    color: "#fff",
+    border: "none",
+    borderRadius: 10,
+    cursor: "pointer",
+    whiteSpace: "nowrap",
+    flexShrink: 0,
+  },
     fontWeight: 700,
     padding: "13px 28px",
     background: "#7C5CBF",
