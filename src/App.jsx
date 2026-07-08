@@ -1298,7 +1298,7 @@ page: {
     width: "100%",
     maxWidth: 860,
     alignSelf: "center",
-    background: "#7C5CBF",
+    background: "#2d3f7c",
     borderRadius: 20,
     margin: "0 auto 0",
     padding: "24px 32px",
