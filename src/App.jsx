@@ -353,44 +353,53 @@ const QUESTIONS = [
 ];
 
 function buildCompatibilityProfile(answers = {}) {
-  const dimensions = {};
-  const dealBreakers = {};
-  const housingPreferences = {};
+  try {
+    const dimensions = {};
+    const dealBreakers = {};
+    const housingPreferences = {};
 
-  const dimensionTotals = {};
-  const dimensionWeights = {};
+    const dimensionTotals = {};
+    const dimensionWeights = {};
 
-  for (const question of QUESTIONS) {
-    const selectedIndex = answers[question.id];
-    const option = question.options?.[selectedIndex] || question.options?.[0];
+    for (const question of QUESTIONS) {
+      const selectedIndex = answers[question.id];
+      const option = question.options?.[selectedIndex] || question.options?.[0];
 
-    if (question.kind === "dimension") {
-      for (const dimension of question.dimensions || []) {
-        const dimensionScore = option?.scores?.[dimension.key] ?? 2;
-        const weight = dimension.weight || 1;
-        dimensionTotals[dimension.key] = (dimensionTotals[dimension.key] || 0) + (dimensionScore * weight);
-        dimensionWeights[dimension.key] = (dimensionWeights[dimension.key] || 0) + weight;
+      if (question.kind === "dimension") {
+        for (const dimension of question.dimensions || []) {
+          const dimensionScore = option?.scores?.[dimension.key] ?? 2;
+          const weight = dimension.weight || 1;
+          dimensionTotals[dimension.key] = (dimensionTotals[dimension.key] || 0) + (dimensionScore * weight);
+          dimensionWeights[dimension.key] = (dimensionWeights[dimension.key] || 0) + weight;
+        }
+      } else if (question.kind === "dealbreaker") {
+        const value = option?.value ?? option?.score ?? 3;
+        dealBreakers[question.field] = value;
+      } else if (question.kind === "housing") {
+        const value = option?.value ?? option?.score ?? 3;
+        housingPreferences[question.field] = value;
       }
-    } else if (question.kind === "dealbreaker") {
-      const value = option?.value ?? option?.score ?? 3;
-      dealBreakers[question.field] = value;
-    } else if (question.kind === "housing") {
-      const value = option?.value ?? option?.score ?? 3;
-      housingPreferences[question.field] = value;
     }
-  }
 
-  for (const dimension of COMPATIBILITY_DIMENSIONS) {
-    dimensions[dimension.key] = dimensionWeights[dimension.key]
-      ? Math.round((dimensionTotals[dimension.key] / dimensionWeights[dimension.key]) * 10) / 10
-      : 3;
-  }
+    for (const dimension of COMPATIBILITY_DIMENSIONS) {
+      dimensions[dimension.key] = dimensionWeights[dimension.key]
+        ? Math.round((dimensionTotals[dimension.key] / dimensionWeights[dimension.key]) * 10) / 10
+        : 3;
+    }
 
-  return {
-    dimensions,
-    dealBreakers,
-    housingPreferences,
-  };
+    return {
+      dimensions,
+      dealBreakers,
+      housingPreferences,
+    };
+  } catch (err) {
+    console.error("Error building compatibility profile:", err);
+    return {
+      dimensions: Object.fromEntries(COMPATIBILITY_DIMENSIONS.map(d => [d.key, 3])),
+      dealBreakers: { smoking: 'neutral', pets: 'neutral' },
+      housingPreferences: { budgetMax: 260, moveInWindow: 2, location: '' },
+    };
+  }
 }
 
 function parseBudgetValue(value) {
@@ -407,9 +416,14 @@ function getListingProfile(listing) {
 }
 
 function calculateMatchScore(userProfile, listing) {
-  const listingProfile = getListingProfile(listing);
-  const scored = scoreCompatibility(userProfile, listingProfile, DEFAULT_MATCHING_CONFIG);
-  return scored ? scored.score : 15;
+  try {
+    const listingProfile = getListingProfile(listing);
+    const scored = scoreCompatibility(userProfile, listingProfile, DEFAULT_MATCHING_CONFIG);
+    return scored ? scored.score : 15;
+  } catch (err) {
+    console.error("Error calculating match score:", err);
+    return 50;
+  }
 }
  
 /* ---------------------------------------------
