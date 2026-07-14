@@ -145,6 +145,23 @@ const QUESTION_CATEGORIES = {
   move_in: "Housing",
 };
 
+const QUESTION_TO_CATEGORY = {
+  dishes: "Home habits",
+  noise: "Home habits",
+  guests: "Living with others",
+  food: "Food & cooking",
+  study_week: "Study habits",
+  routine: "Routine",
+  bills: "Communication",
+  privacy: "Independence",
+  weekend: "Lifestyle",
+  bathroom: "Home habits",
+  smoking: "Deal-breakers",
+  pets: "Deal-breakers",
+  budget: "Housing",
+  move_in: "Housing",
+};
+
 const QUESTIONS = [
   {
     id: "dishes",
@@ -1822,7 +1839,7 @@ function Quiz({ question, questionIndex, total, onSelect, onBack }) {
       </div>
  
       <div key={question.id} className="question-anim">
-        {QUESTION_CATEGORIES[question.id] && (
+        {QUESTION_TO_CATEGORY[question.id] && (
           <div style={{
             fontFamily: FONT_BODY,
             fontSize: 11,
@@ -1832,7 +1849,7 @@ function Quiz({ question, questionIndex, total, onSelect, onBack }) {
             color: COLORS.teal,
             marginBottom: 10,
           }}>
-            {QUESTION_CATEGORIES[question.id]}
+            {QUESTION_TO_CATEGORY[question.id]}
           </div>
         )}
         <h2 style={styles.question}>{question.text}</h2>
