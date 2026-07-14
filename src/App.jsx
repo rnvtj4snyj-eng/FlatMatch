@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { fetchListings, createListing, markListingFilled } from "./listingsService";
-import { scoreCompatibility, deriveListingProfile, DEFAULT_MATCHING_CONFIG } from "./matchingEngine";
+import { scoreCompatibility, deriveListingProfile, DEFAULT_MATCHING_CONFIG } from "./matchingEngine.js";
  
 /* ---------------------------------------------
    LOCATION DATA
