@@ -1069,6 +1069,14 @@ function InstitutionSelector({ selected, onChange }) {
     </div>
   );
 }
+const ARCHETYPES = [
+  { id: "early_bird", emoji: "🌅", name: "Early Bird", tagline: "Up at dawn, in bed early" },
+  { id: "night_owl", emoji: "🌙", name: "Night Owl", tagline: "Best ideas after midnight" },
+  { id: "social_butterfly", emoji: "🎉", name: "Social Butterfly", tagline: "Flat is the hangout spot" },
+  { id: "quiet_achiever", emoji: "📚", name: "Quiet Achiever", tagline: "Headphones in, focused" },
+  { id: "clean_freak", emoji: "✨", name: "Clean Freak", tagline: "Chore roster, colour-coded" },
+  { id: "chill_flatmate", emoji: "😌", name: "Chill Flatmate", tagline: "Low-key, easy-going" },
+];
 
 function Intro({ onStart, onPost, institution, onInstitutionChange, userListings, loadingListings, onMarkFilled }) {
   const [activeArchetype, setActiveArchetype] = useState(null);
