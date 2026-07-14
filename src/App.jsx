@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { fetchListings, createListing, markListingFilled } from "./listingsService";
+import { scoreCompatibility, deriveListingProfile, DEFAULT_MATCHING_CONFIG } from "./matchingEngine";
  
 /* ---------------------------------------------
    LOCATION DATA
@@ -113,277 +114,302 @@ function suburbDistance(suburbName, city = "christchurch") {
 /* ---------------------------------------------
    QUESTIONNAIRE
 --------------------------------------------- */
- 
+
+const COMPATIBILITY_DIMENSIONS = [
+  { key: "social_lifestyle", label: "Social lifestyle", weight: 1.15 },
+  { key: "cleanliness", label: "Cleanliness", weight: 1.2 },
+  { key: "noise_tolerance", label: "Noise tolerance", weight: 1.1 },
+  { key: "study_environment", label: "Study environment", weight: 1.1 },
+  { key: "guests_hosting", label: "Guests & hosting", weight: 1.0 },
+  { key: "communication_style", label: "Communication", weight: 1.05 },
+  { key: "daily_routine", label: "Daily routine", weight: 1.0 },
+  { key: "shared_living", label: "Shared living", weight: 1.05 },
+  { key: "cooking_food", label: "Cooking & food", weight: 0.95 },
+  { key: "independence_communal", label: "Independence", weight: 1.0 },
+];
+
+const QUESTION_CATEGORIES = {
+  social_lifestyle: "Lifestyle",
+  cleanliness: "Home habits",
+  noise_tolerance: "Home habits",
+  study_environment: "Study habits",
+  guests_hosting: "Living with others",
+  communication_style: "Communication",
+  daily_routine: "Routine",
+  shared_living: "Shared living",
+  cooking_food: "Food & cooking",
+  independence_communal: "Independence",
+  smoking: "Deal-breakers",
+  pets: "Deal-breakers",
+  budget: "Housing",
+  move_in: "Housing",
+};
+
 const QUESTIONS = [
   {
-    id: "sleep",
-    text: "It's 11pm on a Tuesday. Where are you?",
-    options: [
-      { label: "Asleep. Has been for an hour.", tags: { early: 2, quiet: 1 } },
-      { label: "In bed, lights off, definitely on my phone", tags: { quiet: 2, night: 1 } },
-      { label: "On the couch with whoever's still up", tags: { social: 1, chill: 1 } },
-      { label: "Out, or there's people over and it's getting loud", tags: { social: 2, night: 1 } },
+    id: "dishes",
+    text: "The kitchen has three plates in the sink and one flatmate says, “I’ll sort it later.” What’s your move?",
+    kind: "dimension",
+    dimensions: [
+      { key: "cleanliness", weight: 1.2 },
+      { key: "communication_style", weight: 0.95 },
     ],
-  },
-  {
-    id: "weekend",
-    text: "Friday, 6pm, zero plans. What's the move?",
     options: [
-      { label: "Stay in, decompress, maybe one episode of something", tags: { quiet: 2, chill: 1 } },
-      { label: "A couple of people over, nothing crazy", tags: { social: 1, chill: 1 } },
-      { label: "Pres start at ours, see where the night goes", tags: { social: 2, night: 1 } },
-      { label: "Early night — training or something tomorrow", tags: { early: 2, quiet: 1 } },
-    ],
-  },
-  {
-    id: "cleanliness",
-    text: "The dishes from dinner are sitting in the sink. How long until that bothers you?",
-    options: [
-      { label: "Immediately. Wash as you go is a personality trait.", tags: { tidy: 2 } },
-      { label: "By the end of the day, definitely", tags: { tidy: 1, chill: 1 } },
-      { label: "A day or two is fine, it's not a crime scene", tags: { chill: 2 } },
-      { label: "Honestly I might not even notice", tags: { chill: 1, quiet: 1 } },
-    ],
-  },
-  {
-    id: "guests",
-    text: "Your flatmate's having people over. Again. How do you feel?",
-    options: [
-      { label: "Love it, more people = better flat", tags: { social: 2 } },
-      { label: "Fine, as long as I got a heads up", tags: { social: 1, tidy: 1 } },
-      { label: "Internally screaming a little — I just want quiet", tags: { quiet: 2 } },
-      { label: "Depends entirely on who's coming", tags: { tidy: 1, quiet: 1 } },
+      { label: "I’ll clean mine and send a calm nudge in the group chat", scores: { cleanliness: 4, communication_style: 4 } },
+      { label: "I clean mine, but I’m not chasing anyone", scores: { cleanliness: 3, communication_style: 3 } },
+      { label: "I wait until it’s actually annoying", scores: { cleanliness: 2, communication_style: 2 } },
+      { label: "I leave it and avoid saying anything", scores: { cleanliness: 1, communication_style: 1 } },
     ],
   },
   {
     id: "noise",
-    text: "Music/calls/gaming during the day — your honest reaction?",
+    text: "It’s 11:30pm, you’ve got a 9am start, and the flat is still loud. What’s the vibe?",
+    kind: "dimension",
+    dimensions: [
+      { key: "noise_tolerance", weight: 1.15 },
+      { key: "study_environment", weight: 1.1 },
+      { key: "daily_routine", weight: 1.0 },
+    ],
     options: [
-      { label: "Crank it, a quiet flat feels dead to me", tags: { social: 2 } },
-      { label: "All good, just maybe headphones after dark", tags: { chill: 1, tidy: 1 } },
-      { label: "I will hear you through two walls and a closed door, please don't", tags: { quiet: 2 } },
-      { label: "I'm never home to notice anyway", tags: { chill: 1 } },
+      { label: "Please keep it down — I need sleep", scores: { noise_tolerance: 1, study_environment: 4, daily_routine: 4 } },
+      { label: "A bit of noise is fine, but not all night", scores: { noise_tolerance: 2, study_environment: 3, daily_routine: 3 } },
+      { label: "I’m okay with a lively flat most of the time", scores: { noise_tolerance: 3, study_environment: 2, daily_routine: 2 } },
+      { label: "I’m not bothered by noise at all", scores: { noise_tolerance: 4, study_environment: 1, daily_routine: 1 } },
     ],
   },
   {
-    id: "morning",
-    text: "Your alarm goes off. What actually happens?",
+    id: "guests",
+    text: "Someone brings a friend over for the night and the living room suddenly becomes the main event. What do you want from your flat?",
+    kind: "dimension",
+    dimensions: [
+      { key: "guests_hosting", weight: 1.1 },
+      { key: "social_lifestyle", weight: 1.0 },
+      { key: "noise_tolerance", weight: 0.95 },
+    ],
     options: [
-      { label: "Up immediately, gym or run before anything else", tags: { early: 2 } },
-      { label: "Up at a normal time, no drama", tags: { early: 1, chill: 1 } },
-      { label: "Several snoozes, mornings aren't really my thing", tags: { night: 1, chill: 1 } },
-      { label: "What alarm. I wake up when I wake up.", tags: { chill: 1 } },
+      { label: "I like the house to be calm and low-key", scores: { guests_hosting: 1, social_lifestyle: 1, noise_tolerance: 1 } },
+      { label: "Occasional guests are fine if people give a heads-up", scores: { guests_hosting: 2, social_lifestyle: 2, noise_tolerance: 2 } },
+      { label: "I’m happy with regular visitors and a lively home", scores: { guests_hosting: 3, social_lifestyle: 3, noise_tolerance: 3 } },
+      { label: "I want people over often and the flat to feel social", scores: { guests_hosting: 4, social_lifestyle: 4, noise_tolerance: 4 } },
     ],
   },
   {
-    id: "budget_priority",
-    text: "Choosing a flat — what's the actual deciding factor?",
+    id: "food",
+    text: "You open the fridge and find a fresh meal with no name on it. What feels fair to you?",
+    kind: "dimension",
+    dimensions: [
+      { key: "cooking_food", weight: 1.1 },
+      { key: "shared_living", weight: 1.0 },
+      { key: "communication_style", weight: 0.9 },
+    ],
     options: [
-      { label: "Rent. If it's not cheap, it's not happening.", tags: { budget: 2 } },
-      { label: "Good value — not the cheapest, but not getting ripped off", tags: { budget: 1, tidy: 1 } },
-      { label: "Location. I'm not walking 40 minutes to a 9am.", tags: { social: 1 } },
-      { label: "The people, honestly. I'll live anywhere with the right crew.", tags: { social: 1, chill: 1 } },
+      { label: "I want a clear system so no one’s guessing", scores: { cooking_food: 2, shared_living: 3, communication_style: 4 } },
+      { label: "A bit of flexibility is fine", scores: { cooking_food: 3, shared_living: 3, communication_style: 3 } },
+      { label: "I’d rather people just sort it out themselves", scores: { cooking_food: 3, shared_living: 2, communication_style: 2 } },
+      { label: "I want my own space and my own food routine", scores: { cooking_food: 1, shared_living: 1, communication_style: 2 } },
     ],
   },
   {
-    id: "chores",
-    text: "Flat chores — pick your fighter.",
+    id: "study_week",
+    text: "It’s exam week and the flat is still doing its normal thing in the living room. How should the house feel?",
+    kind: "dimension",
+    dimensions: [
+      { key: "study_environment", weight: 1.2 },
+      { key: "noise_tolerance", weight: 1.05 },
+    ],
     options: [
-      { label: "Roster on the fridge, everyone sticks to it, no exceptions", tags: { tidy: 2 } },
-      { label: "Loose roster, flexible when life gets busy", tags: { tidy: 1, chill: 1 } },
-      { label: "No roster, people just sort it out organically", tags: { chill: 2 } },
-      { label: "We have a roster? News to me.", tags: { chill: 1 } },
+      { label: "Quiet hours should be respected", scores: { study_environment: 4, noise_tolerance: 1 } },
+      { label: "A calmer vibe would be nice", scores: { study_environment: 3, noise_tolerance: 2 } },
+      { label: "I can deal with it if people are still normal", scores: { study_environment: 2, noise_tolerance: 3 } },
+      { label: "The flat can stay as it is", scores: { study_environment: 1, noise_tolerance: 4 } },
     ],
   },
   {
-    id: "pets",
-    text: "A flatmate wants to get a pet. Reaction?",
+    id: "routine",
+    text: "You’ve got an early class and someone else is still up at 2am gaming or on calls. What’s your ideal flat rhythm?",
+    kind: "dimension",
+    dimensions: [
+      { key: "daily_routine", weight: 1.15 },
+      { key: "noise_tolerance", weight: 1.0 },
+      { key: "communication_style", weight: 0.9 },
+    ],
     options: [
-      { label: "Yes please, I'll basically co-parent it", tags: { social: 1, chill: 1 } },
-      { label: "Fine, as long as I'm not the one cleaning up after it", tags: { chill: 1 } },
-      { label: "Hard no — allergies, or just not my thing", tags: { tidy: 1 } },
-      { label: "Don't really care either way", tags: { chill: 1 } },
+      { label: "I want people to be considerate of morning schedules", scores: { daily_routine: 4, noise_tolerance: 1, communication_style: 3 } },
+      { label: "Slightly different routines are fine", scores: { daily_routine: 3, noise_tolerance: 2, communication_style: 3 } },
+      { label: "I’m flexible, as long as it doesn’t affect me", scores: { daily_routine: 2, noise_tolerance: 3, communication_style: 2 } },
+      { label: "I don’t really care about routine", scores: { daily_routine: 1, noise_tolerance: 4, communication_style: 1 } },
     ],
   },
   {
-    id: "study_environment",
-    text: "It's exam week. The flat's vibe should be...",
+    id: "bills",
+    text: "The power bill lands and someone says, “I never use the heater.” How do you want money stuff handled?",
+    kind: "dimension",
+    dimensions: [
+      { key: "communication_style", weight: 1.1 },
+      { key: "shared_living", weight: 1.0 },
+    ],
     options: [
-      { label: "Library mode — everyone's quiet, no exceptions", tags: { quiet: 2 } },
-      { label: "Calmer than usual, but not a vow of silence", tags: { quiet: 1, chill: 1 } },
-      { label: "Same as always — I do my studying elsewhere", tags: { social: 1, chill: 1 } },
-      { label: "Honestly the flat doesn't really change for anything", tags: { chill: 2 } },
+      { label: "Clear expectations and a simple system", scores: { communication_style: 4, shared_living: 4 } },
+      { label: "A reasonable conversation is fine", scores: { communication_style: 3, shared_living: 3 } },
+      { label: "I’d rather keep it relaxed", scores: { communication_style: 2, shared_living: 2 } },
+      { label: "I don’t want to talk about it much", scores: { communication_style: 1, shared_living: 1 } },
     ],
   },
   {
-    id: "communication",
-    text: "Something's mildly annoying you about a flatmate. What do you do?",
+    id: "privacy",
+    text: "You get home after a long day and the living room is still being used as the social centre. What feels right to you?",
+    kind: "dimension",
+    dimensions: [
+      { key: "independence_communal", weight: 1.2 },
+      { key: "shared_living", weight: 1.05 },
+      { key: "social_lifestyle", weight: 0.9 },
+    ],
     options: [
-      { label: "Bring it up early, before it becomes a thing", tags: { tidy: 1 } },
-      { label: "Mention it casually next time it comes up", tags: { chill: 1 } },
-      { label: "Let it go unless it gets actually bad", tags: { chill: 2 } },
-      { label: "Send it to the group chat (lovingly)", tags: { social: 1, tidy: 1 } },
+      { label: "I want a home that feels calm and private", scores: { independence_communal: 4, shared_living: 1, social_lifestyle: 1 } },
+      { label: "A bit of shared time is nice, but I still want space", scores: { independence_communal: 3, shared_living: 2, social_lifestyle: 2 } },
+      { label: "Shared living is fine if it’s balanced", scores: { independence_communal: 2, shared_living: 3, social_lifestyle: 3 } },
+      { label: "I want the house to feel really social and open", scores: { independence_communal: 1, shared_living: 4, social_lifestyle: 4 } },
     ],
   },
   {
-    id: "shared_meals",
-    text: "Food and cooking in the flat — dream scenario?",
+    id: "weekend",
+    text: "Your flatmate wants a full-on weekend social scene and you’d rather do a quiet night in. What’s the best version of flat life?",
+    kind: "dimension",
+    dimensions: [
+      { key: "social_lifestyle", weight: 1.1 },
+      { key: "guests_hosting", weight: 1.0 },
+      { key: "shared_living", weight: 0.95 },
+    ],
     options: [
-      { label: "We cook and eat together most of the week", tags: { social: 2 } },
-      { label: "Mostly own thing, but a shared meal now and then is nice", tags: { chill: 1 } },
-      { label: "Fully separate — my food, my fridge shelf, my business", tags: { quiet: 1, tidy: 1 } },
-      { label: "Whatever happens, happens — I'm easy", tags: { chill: 1 } },
+      { label: "We keep it mostly chill and low-key", scores: { social_lifestyle: 1, guests_hosting: 1, shared_living: 1 } },
+      { label: "A mix of quiet nights and social plans works", scores: { social_lifestyle: 2, guests_hosting: 2, shared_living: 2 } },
+      { label: "A social flat is great if people are considerate", scores: { social_lifestyle: 3, guests_hosting: 3, shared_living: 3 } },
+      { label: "I want a flat that is naturally social", scores: { social_lifestyle: 4, guests_hosting: 4, shared_living: 4 } },
     ],
   },
   {
-    id: "alcohol",
-    text: "Drinking culture at the flat — where do you sit?",
-    options: [
-      { label: "Pres regularly, it's part of the flat identity", tags: { social: 2, night: 1 } },
-      { label: "Drink sometimes, nothing too messy", tags: { social: 1, chill: 1 } },
-      { label: "Mostly sober flat and honestly I prefer that", tags: { quiet: 1, early: 1 } },
-      { label: "Don't mind, just not a school night thing every week", tags: { chill: 1 } },
+    id: "bathroom",
+    text: "You walk into the bathroom and it looks like a storm hit it. How much does that bother you?",
+    kind: "dimension",
+    dimensions: [
+      { key: "cleanliness", weight: 1.15 },
+      { key: "communication_style", weight: 0.95 },
     ],
-  },
-  {
-    id: "decor",
-    text: "The living room. What's the dream?",
     options: [
-      { label: "Properly done up — plants, fairy lights, looks like a home", tags: { tidy: 1, social: 1 } },
-      { label: "Clean and functional, doesn't need to be Pinterest", tags: { tidy: 1 } },
-      { label: "Don't really care, my room is where I actually live", tags: { quiet: 1, chill: 1 } },
-      { label: "A bit chaotic and lived-in is honestly the vibe", tags: { social: 1, chill: 1 } },
-    ],
-  },
-  {
-    id: "commitment",
-    text: "How are you feeling about next year's flat situation?",
-    options: [
-      { label: "Want a proper crew I'm locking in with long-term", tags: { tidy: 1 } },
-      { label: "Keen to meet new people, expand the circle a bit", tags: { social: 2 } },
-      { label: "Just need it sorted — not too precious about who", tags: { budget: 1, chill: 1 } },
-      { label: "Want people on a similar schedule so it's easy", tags: { early: 1, tidy: 1 } },
+      { label: "It bothers me a lot and I’d want it sorted", scores: { cleanliness: 4, communication_style: 4 } },
+      { label: "It’s annoying, but I’d probably just clean it", scores: { cleanliness: 3, communication_style: 3 } },
+      { label: "I can live with it for a bit", scores: { cleanliness: 2, communication_style: 2 } },
+      { label: "I’m pretty relaxed about that kind of thing", scores: { cleanliness: 1, communication_style: 1 } },
     ],
   },
   {
     id: "smoking",
-    text: "Smoking or vaping at the flat — what's the policy?",
+    text: "What’s your comfort level with smoking or vaping in the flat?",
+    kind: "dealbreaker",
+    field: "smoking",
     options: [
-      { label: "Totally normal here, no issue at all", tags: { social: 1, chill: 1 } },
-      { label: "Outside only, that's the unwritten rule", tags: { tidy: 1, chill: 1 } },
-      { label: "Would rather the flat was smoke-free entirely", tags: { quiet: 1, tidy: 1 } },
-      { label: "No strong opinion either way", tags: { chill: 1 } },
+      { label: "No smoking at all", value: "smoke_free" },
+      { label: "Outside only is fine", value: "outside_only" },
+      { label: "Smoking is acceptable", value: "smoking_ok" },
+      { label: "Any smoking is fine", value: "any" },
     ],
   },
   {
-    id: "schedule_overlap",
-    text: "Your ideal flatmates' daily routines, compared to yours?",
+    id: "pets",
+    text: "How do you feel about pets?",
+    kind: "dealbreaker",
+    field: "pets",
     options: [
-      { label: "Pretty similar — overlapping schedules just make life easier", tags: { early: 1, tidy: 1 } },
-      { label: "Different is fine, means less queueing for the bathroom", tags: { chill: 1, quiet: 1 } },
-      { label: "Doesn't matter, everyone's out doing their own thing anyway", tags: { social: 1, chill: 1 } },
-      { label: "Never really thought about it", tags: { chill: 1 } },
+      { label: "Absolutely no pets", value: "no_pets" },
+      { label: "Small pets are okay", value: "small_pets" },
+      { label: "Pets are generally fine", value: "pets_ok" },
+      { label: "I’d love pets", value: "pet_friendly" },
+    ],
+  },
+  {
+    id: "budget",
+    text: "What rent level feels comfortable for you?",
+    kind: "housing",
+    field: "budgetMax",
+    options: [
+      { label: "Under $180pw", score: 180 },
+      { label: "$180–220pw", score: 220 },
+      { label: "$220–260pw", score: 260 },
+      { label: "$260pw or more", score: 320 },
+    ],
+  },
+  {
+    id: "move_in",
+    text: "When do you need to move in?",
+    kind: "housing",
+    field: "moveInWindow",
+    options: [
+      { label: "Now", score: 0 },
+      { label: "This month", score: 1 },
+      { label: "Next month", score: 2 },
+      { label: "Next semester", score: 3 },
     ],
   },
 ];
- 
-/* ---------------------------------------------
-   ARCHETYPES
---------------------------------------------- */
- 
-const ARCHETYPES = [
-  {
-    id: "homebody_circle",
-    emoji: "🏡",
-    name: "The Homebody Circle",
-    tagline: "Cosy nights in, good food, and a flat that feels like home.",
-    description:
-      "Your ideal flat has a warm, lived-in living room, regular shared dinners, and people who actually hang out together rather than just passing in the hallway. Nights in with a show or a board game beat going out most of the time.",
-    dominant: ["chill", "tidy"],
-  },
-  {
-    id: "social_hub",
-    emoji: "🎉",
-    name: "The Social Hub",
-    tagline: "The flat where people end up, most nights.",
-    description:
-      "Your ideal flat has an open door — people drift in and out, pres happen at yours sometimes, and there's always someone around. You don't mind a bit of noise if it means the place feels alive.",
-    dominant: ["social", "night"],
-  },
-  {
-    id: "study_first",
-    emoji: "📚",
-    name: "Study First",
-    tagline: "Calm flat, respected quiet hours, good for getting things done.",
-    description:
-      "You like a flat that takes study seriously — quiet during the week, considerate about noise, and people who get that exam season changes the vibe. Doesn't mean boring, just calm when it counts.",
-    dominant: ["quiet", "early"],
-  },
-  {
-    id: "wellness_routine",
-    emoji: "🌅",
-    name: "Wellness & Routine",
-    tagline: "Early starts, healthy habits, and a flat that supports them.",
-    description:
-      "Gym, runs, good sleep, maybe a shared meal-prep Sunday — routine matters to you, and you'd love flatmates on a similar wavelength. A flat that makes healthy habits easier, not harder.",
-    dominant: ["early", "tidy"],
-  },
-  {
-    id: "easy_going",
-    emoji: "😌",
-    name: "Easy Going Crew",
-    tagline: "No rosters, no drama, just vibes.",
-    description:
-      "You're low-maintenance and prefer flats that don't overthink things. Chores get done eventually, plans are loose, and as long as everyone's reasonable, the small stuff doesn't matter.",
-    dominant: ["chill"],
-  },
-  {
-    id: "house_proud",
-    emoji: "✨",
-    name: "House Proud",
-    tagline: "A flat that feels decorated, organised, and cared for.",
-    description:
-      "Shared spaces matter to you — a nice living room, a kitchen that works, maybe some plants or fairy lights. You like a flat with a clear chore system and flatmates who care about how the place looks and feels.",
-    dominant: ["tidy", "social"],
-  },
-  {
-    id: "budget_first",
-    emoji: "💸",
-    name: "Budget First",
-    tagline: "Rent's the priority — everything else is negotiable.",
-    description:
-      "You're practical about flatting. Keeping costs down matters more than having a perfectly matched social scene, and you're flexible on most other things to make that happen.",
-    dominant: ["budget"],
-  },
-];
- 
-function scoreToTags(answers) {
-  const tagTotals = {};
-  for (const qId in answers) {
-    const q = QUESTIONS.find((x) => x.id === qId);
-    const opt = q.options[answers[qId]];
-    for (const [tag, val] of Object.entries(opt.tags)) {
-      tagTotals[tag] = (tagTotals[tag] || 0) + val;
+
+function buildCompatibilityProfile(answers = {}) {
+  const dimensions = {};
+  const dealBreakers = {};
+  const housingPreferences = {};
+
+  const dimensionTotals = {};
+  const dimensionWeights = {};
+
+  for (const question of QUESTIONS) {
+    const selectedIndex = answers[question.id];
+    const option = question.options?.[selectedIndex] || question.options?.[0];
+
+    if (question.kind === "dimension") {
+      for (const dimension of question.dimensions || []) {
+        const dimensionScore = option?.scores?.[dimension.key] ?? 2;
+        const weight = dimension.weight || 1;
+        dimensionTotals[dimension.key] = (dimensionTotals[dimension.key] || 0) + (dimensionScore * weight);
+        dimensionWeights[dimension.key] = (dimensionWeights[dimension.key] || 0) + weight;
+      }
+    } else if (question.kind === "dealbreaker") {
+      const value = option?.value ?? option?.score ?? 3;
+      dealBreakers[question.field] = value;
+    } else if (question.kind === "housing") {
+      const value = option?.value ?? option?.score ?? 3;
+      housingPreferences[question.field] = value;
     }
   }
-  return tagTotals;
+
+  for (const dimension of COMPATIBILITY_DIMENSIONS) {
+    dimensions[dimension.key] = dimensionWeights[dimension.key]
+      ? Math.round((dimensionTotals[dimension.key] / dimensionWeights[dimension.key]) * 10) / 10
+      : 3;
+  }
+
+  return {
+    dimensions,
+    dealBreakers,
+    housingPreferences,
+  };
 }
- 
-function determineArchetype(tagTotals) {
-  let best = ARCHETYPES[0];
-  let bestScore = -Infinity;
-  for (const archetype of ARCHETYPES) {
-    let score = 0;
-    for (const tag of archetype.dominant) {
-      score += tagTotals[tag] || 0;
-    }
-    score = score / archetype.dominant.length;
-    if (score > bestScore) {
-      bestScore = score;
-      best = archetype;
-    }
-  }
-  return best;
+
+function parseBudgetValue(value) {
+  if (typeof value === "number") return value;
+  if (!value) return 260;
+  const matches = String(value).match(/\d+/g);
+  if (!matches) return 260;
+  const nums = matches.map(Number);
+  return Math.max(...nums);
+}
+
+function getListingProfile(listing) {
+  return deriveListingProfile(listing);
+}
+
+function calculateMatchScore(userProfile, listing) {
+  const listingProfile = getListingProfile(listing);
+  const scored = scoreCompatibility(userProfile, listingProfile, DEFAULT_MATCHING_CONFIG);
+  return scored ? scored.score : 15;
 }
  
 /* ---------------------------------------------
@@ -505,21 +531,10 @@ const SAMPLE_LISTINGS = [
   },
 ];
  
-function compatibilityScore(userTags, listingTags) {
-  const allTags = new Set([...Object.keys(userTags), ...Object.keys(listingTags)]);
-  let dot = 0;
-  let userMag = 0;
-  let listingMag = 0;
-  for (const tag of allTags) {
-    const u = userTags[tag] || 0;
-    const l = listingTags[tag] || 0;
-    dot += u * l;
-    userMag += u * u;
-    listingMag += l * l;
-  }
-  if (userMag === 0 || listingMag === 0) return 50;
-  const cosine = dot / (Math.sqrt(userMag) * Math.sqrt(listingMag));
-  return Math.round(40 + cosine * 59);
+function compatibilityScore(userProfile, listing) {
+  const listingProfile = deriveListingProfile(listing);
+  const scored = scoreCompatibility(userProfile, listingProfile, DEFAULT_MATCHING_CONFIG);
+  return scored ? scored.score : 15;
 }
  
 /* ---------------------------------------------
@@ -644,25 +659,22 @@ export default function App() {
     localStorage.setItem("fm_institution", id);
   }
  
-  const tagTotals = useMemo(() => scoreToTags(answers), [answers]);
-  const archetype = useMemo(() => determineArchetype(tagTotals), [tagTotals]);
+  const profile = useMemo(() => buildCompatibilityProfile(answers), [answers]);
  
   const allListings = useMemo(
     () => [...userListings, ...SAMPLE_LISTINGS],
     [userListings]
   );
  
-  console.log('DEBUG userListings:', userListings);
-  console.log('DEBUG institution:', institution);
   const ranked = useMemo(() => {
     return allListings
       .filter((listing) => !listing.institution || listing.institution === institution)
       .map((listing) => ({
         ...listing,
-        score: compatibilityScore(tagTotals, listing.tags),
+        score: calculateMatchScore(profile, listing),
       }))
       .sort((a, b) => b.score - a.score);
-  }, [tagTotals, allListings, institution]);
+  }, [profile, allListings, institution]);
  
   async function loadListings() {
     setLoadingListings(true);
@@ -784,14 +796,13 @@ export default function App() {
  
       {stage === "saved" && (
         <Results
-          archetype={archetype}
+          profile={profile}
           ranked={ranked.filter((l) => savedListings.includes(l.id))}
           onRestart={restart}
           onPost={() => setStage("post")}
           loadingListings={loadingListings}
           onMarkFilled={markFilled}
           sessionContact={sessionContact}
-          tagTotals={tagTotals}
           onSave={onSave}
           savedListings={savedListings}
           isSavedView={true}
@@ -801,14 +812,13 @@ export default function App() {
  
       {stage === "result" && (
         <Results
-          archetype={archetype}
+          profile={profile}
           ranked={ranked}
           onRestart={restart}
           onPost={() => setStage("post")}
           loadingListings={loadingListings}
           onMarkFilled={markFilled}
           sessionContact={sessionContact}
-          tagTotals={tagTotals}
           onSave={onSave}
           savedListings={savedListings}
           hasQuizzed={hasQuizzed}
@@ -1769,28 +1779,6 @@ page: {
    QUIZ
 --------------------------------------------- */
  
-const QUESTION_CATEGORIES = {
-  year: "About you",
-  degree: "About you",
-  sleep: "Daily rhythm",
-  morning: "Daily rhythm",
-  scheduleoverlap: "Daily rhythm",
-  weekend: "Social life",
-  guests: "Social life",
-  alcohol: "Social life",
-  noise: "Flat vibe",
-  cleanliness: "Flat vibe",
-  chores: "Flat vibe",
-  decor: "Flat vibe",
-  pets: "Flat vibe",
-  communication: "Flat vibe",
-  smoking: "Flat vibe",
-  studyenvironment: "Study habits",
-  budgetpriority: "Priorities",
-  commitment: "Priorities",
-  sharedmeals: "Food & cooking",
-};
- 
 function Quiz({ question, questionIndex, total, onSelect, onBack }) {
   return (
     <div style={styles.quizWrap}>
@@ -1917,8 +1905,8 @@ function HowMatchingWorks() {
         How does matching work? ↗
       </button>
       {open && (
-        <div style={{ position: "absolute", right: 0, top: 28, background: "#fff", border: `1px solid ${COLORS.border}`, borderRadius: 12, padding: "14px 16px", width: 260, zIndex: 10, boxShadow: "0 4px 16px rgba(35,54,58,0.10)", fontSize: 13, color: COLORS.inkSoft, lineHeight: 1.6 }}>
-          Your quiz answers are turned into a vibe profile. Each listing has its own tags. We compare the two using cosine similarity — the closer the match, the higher the % score.
+        <div style={{ position: "absolute", right: 0, top: 28, background: "#fff", border: `1px solid ${COLORS.border}`, borderRadius: 12, padding: "14px 16px", width: 280, zIndex: 10, boxShadow: "0 4px 16px rgba(35,54,58,0.10)", fontSize: 13, color: COLORS.inkSoft, lineHeight: 1.6 }}>
+          FlatMatch now scores real living fit across deal-breakers, practical compatibility dimensions, and housing fit. The result is a more useful match score than a personality label.
           <button onClick={() => setOpen(false)} style={{ display: "block", marginTop: 8, fontSize: 12, color: COLORS.teal, background: "none", border: "none", cursor: "pointer" }}>Close</button>
         </div>
       )}
@@ -1926,7 +1914,7 @@ function HowMatchingWorks() {
   );
 }
  
-function Results({ archetype, ranked, onRestart, onPost, loadingListings, onMarkFilled, sessionContact, tagTotals, onSave, savedListings, isSavedView, hasQuizzed }) {
+function Results({ profile, ranked, onRestart, onPost, loadingListings, onMarkFilled, sessionContact, onSave, savedListings, isSavedView, hasQuizzed }) {
   const [suburbFilter, setSuburbFilter] = useState("all");
   const [sortBy, setSortBy] = useState("match");
  
@@ -1970,17 +1958,17 @@ function Results({ archetype, ranked, onRestart, onPost, loadingListings, onMark
       </div>
       {!isSavedView && hasQuizzed && (
         <div className="stamp-anim" style={styles.archetypeCard}>
-          <div style={styles.archetypeEyebrow}>YOUR FLATTING ARCHETYPE</div>
+          <div style={styles.archetypeEyebrow}>YOUR LIVING PROFILE</div>
           <div style={{ display: "flex", alignItems: "flex-start", gap: 20, flexWrap: "wrap" }}>
-            <div style={{ fontSize: 52, lineHeight: 1, flexShrink: 0 }}>{archetype.emoji}</div>
+            <div style={{ fontSize: 52, lineHeight: 1, flexShrink: 0 }}>🏠</div>
             <div style={{ flex: 1 }}>
-              <h1 style={styles.archetypeName}>{archetype.name}</h1>
-              <p style={styles.archetypeTagline}>{archetype.tagline}</p>
-              <p style={styles.archetypeDescription}>{archetype.description}</p>
+              <h1 style={styles.archetypeName}>Practical compatibility profile</h1>
+              <p style={styles.archetypeTagline}>Your answers are now being compared across real living habits instead of personality labels.</p>
+              <p style={styles.archetypeDescription}>We rank homes by deal-breakers, compatibility dimensions, and housing fit so you can see how likely a flat is to work in real life.</p>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 16 }}>
-                {Object.entries(tagTotals).sort((a,b) => b[1]-a[1]).slice(0,3).map(([tag]) => (
-                  <span key={tag} style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", background: "rgba(255,255,255,0.12)", color: COLORS.paper, borderRadius: 8, padding: "4px 12px" }}>
-                    {tag}
+                {Object.entries(profile?.dimensions || {}).sort((a,b) => b[1]-a[1]).slice(0,4).map(([key, value]) => (
+                  <span key={key} style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", background: "rgba(255,255,255,0.12)", color: COLORS.paper, borderRadius: 8, padding: "4px 12px" }}>
+                    {key.replace(/_/g, " ")} · {value}/4
                   </span>
                 ))}
               </div>
@@ -1992,8 +1980,8 @@ function Results({ archetype, ranked, onRestart, onPost, loadingListings, onMark
         <div style={styles.noQuizPrompt}>
           <span style={{ fontSize: 28 }}>🏡</span>
           <div>
-            <div style={{ fontWeight: 700, fontSize: 15, color: COLORS.ink, marginBottom: 4 }}>Take the quiz to see your archetype</div>
-            <div style={{ fontSize: 13, color: COLORS.inkSoft }}>Get personalised match scores based on how you actually live</div>
+            <div style={{ fontWeight: 700, fontSize: 15, color: COLORS.ink, marginBottom: 4 }}>Take the quiz to see your living profile</div>
+            <div style={{ fontSize: 13, color: COLORS.inkSoft }}>Get personalised match scores based on real flatmate habits and practical fit</div>
           </div>
           <button style={styles.primaryBtn} onClick={onRestart}>Take the quiz</button>
         </div>
