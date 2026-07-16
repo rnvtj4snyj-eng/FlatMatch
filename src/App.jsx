@@ -2631,6 +2631,7 @@ function PostForm({ onSubmit, onCancel, error }) {
   const [fullQuizOpen, setFullQuizOpen] = useState(false);
   const [miniQuizAnswers, setMiniQuizAnswers] = useState({});
   const [fullQuizAnswers, setFullQuizAnswers] = useState({});
+  const [step, setStep] = useState(1);
  
   function handlePhotoUpload(e) {
     const file = e.target.files[0];
@@ -2667,10 +2668,10 @@ function PostForm({ onSubmit, onCancel, error }) {
     setFullQuizAnswers((prev) => ({ ...prev, [questionId]: value }));
   }
 
-  async function handleSubmit(e) {
+  function handleNext(e) {
     e.preventDefault();
     setValidationError(null);
- 
+
     if (!form.suburb || !form.budget.trim() || !form.moveIn.trim() || !form.bio.trim() || !form.contact.trim()) {
       setValidationError("Please fill in all fields so people know what they're looking at.");
       return;
@@ -2679,7 +2680,21 @@ function PostForm({ onSubmit, onCancel, error }) {
       setValidationError("Pick at least one vibe tag — it's how matching works.");
       return;
     }
- 
+
+    setStep(2);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setValidationError(null);
+
+    const miniQuizComplete = MINI_QUIZ_QUESTIONS.every((q) => miniQuizAnswers[q.id] != null);
+    if (!miniQuizComplete) {
+      setValidationError("Please answer every question so people get an accurate match.");
+      return;
+    }
+
     const tags = {};
     for (const key of form.selectedTags) {
       tags[key] = 2;
@@ -2742,7 +2757,9 @@ function PostForm({ onSubmit, onCancel, error }) {
         A couple of minutes now means people who'd actually fit can find you.
       </p>
  
-      <form onSubmit={handleSubmit} style={styles.form}>
+      <form onSubmit={step === 1 ? handleNext : handleSubmit} style={styles.form}>
+        {step === 1 && (
+        <>
         <div style={styles.fieldRow}>
           <div style={styles.fieldGroup}>
             <label style={styles.label}>How many people are in your flat?</label>
@@ -2887,17 +2904,62 @@ function PostForm({ onSubmit, onCancel, error }) {
             ))}
           </div>
         </div>
- 
+
         <div style={styles.fieldGroup}>
-          <label style={styles.label}>Quick flat match quiz</label>
-          <div style={{ border: "1px solid #dde3f0", borderRadius: 16, padding: 16, background: "#fcfdff" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-              <strong style={{ fontSize: 14, color: COLORS.ink }}>Help people match to your flat</strong>
-              <button type="button" onClick={() => setMiniQuizOpen((prev) => !prev)} style={{ border: "none", background: "transparent", color: COLORS.teal, fontWeight: 700, cursor: "pointer" }}>
-                {miniQuizOpen ? "Hide" : "Show"}
-              </button>
-            </div>
-            {miniQuizOpen && (
+          <label style={styles.label}>Your university or polytechnic</label>
+          <select
+            style={styles.input}
+            value={form.institution}
+            onChange={(e) => update("institution", e.target.value)}
+          >
+            {NZ_INSTITUTIONS.map(i => (
+              <option key={i.id} value={i.id}>{i.name}</option>
+            ))}
+          </select>
+        </div>
+
+        <div style={styles.fieldGroup}>
+          <label style={styles.label}>Contact (email, Instagram, phone — your call)</label>
+          <input
+            style={styles.input}
+            type="text"
+            placeholder="e.g. @yourhandle or email"
+            value={form.contact}
+            onChange={(e) => update("contact", e.target.value)}
+          />
+        </div>
+
+        {(validationError || error) && (
+          <div style={styles.formError}>{validationError || error}</div>
+        )}
+
+        <div style={styles.formActions}>
+          <button type="submit" style={styles.primaryBtn}>
+            Next: compatibility quiz →
+          </button>
+          <button type="button" style={styles.secondaryBtn} onClick={onCancel}>
+            Cancel
+          </button>
+        </div>
+        </>
+        )}
+
+        {step === 2 && (
+        <div>
+          <button
+            type="button"
+            onClick={() => { setValidationError(null); setStep(1); }}
+            style={{ border: "none", background: "transparent", color: COLORS.inkSoft, fontSize: 13, fontWeight: 600, cursor: "pointer", marginBottom: 18, padding: 0 }}
+          >
+            ← Back
+          </button>
+
+          <div style={styles.fieldGroup}>
+            <div style={{ border: "1px solid #eef2f7", borderRadius: 16, padding: 16, background: "#fcfdff" }}>
+              <strong style={{ fontSize: 16, color: COLORS.ink, display: "block", marginBottom: 4 }}>Your flat's compatibility quiz</strong>
+              <p style={{ fontSize: 13, color: COLORS.inkSoft, marginBottom: 16, lineHeight: 1.6 }}>
+                Every question here feeds straight into how well you're matched with searchers — answer honestly for the best matches.
+              </p>
               <div style={{ display: "grid", gap: 12 }}>
                 {MINI_QUIZ_QUESTIONS.map((q) => (
                   <div key={q.id} style={{ border: "1px solid #eef2f7", borderRadius: 12, padding: 10, background: "#fff" }}>
@@ -2925,21 +2987,29 @@ function PostForm({ onSubmit, onCancel, error }) {
                   </div>
                 ))}
               </div>
-            )}
+            </div>
           </div>
-        </div>
 
-        <div style={styles.fieldGroup}>
-          <label style={styles.label}>Want a more accurate match? Take the full compatibility quiz</label>
-          <div style={{ border: "1px solid #dde3f0", borderRadius: 16, padding: 16, background: "#fcfdff" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-              <span style={{ fontSize: 13, color: COLORS.inkSoft }}>This is optional and takes about 2 minutes.</span>
-              <button type="button" onClick={() => setFullQuizOpen((prev) => !prev)} style={{ border: "none", background: "transparent", color: COLORS.teal, fontWeight: 700, cursor: "pointer" }}>
-                {fullQuizOpen ? "Hide" : "Expand"}
+          <div style={styles.fieldGroup}>
+            <div style={{ border: "1.5px dashed #7C5CBF", borderRadius: 16, padding: "16px 18px", background: "#f8f7ff", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: "#1a2540", marginBottom: 4 }}>
+                  Want even sharper matches? ✦
+                </div>
+                <div style={{ fontSize: 12.5, color: COLORS.inkSoft, lineHeight: 1.5 }}>
+                  Take the full compatibility quiz — 2 extra minutes, better matches for everyone who finds your listing.
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setFullQuizOpen((prev) => !prev)}
+                style={{ fontFamily: FONT_BODY, fontSize: 13, fontWeight: 700, color: "#fff", background: "#7C5CBF", border: "none", borderRadius: 10, padding: "10px 18px", cursor: "pointer", whiteSpace: "nowrap" }}
+              >
+                {fullQuizOpen ? "Hide" : "Take full quiz"}
               </button>
             </div>
             {fullQuizOpen && (
-              <div style={{ display: "grid", gap: 12 }}>
+              <div style={{ display: "grid", gap: 12, marginTop: 12 }}>
                 {QUESTIONS.map((q) => (
                   <div key={q.id} style={{ border: "1px solid #eef2f7", borderRadius: 12, padding: 10, background: "#fff" }}>
                     <div style={{ fontSize: 12, color: COLORS.inkSoft, marginBottom: 8 }}>{q.text}</div>
@@ -2968,44 +3038,21 @@ function PostForm({ onSubmit, onCancel, error }) {
               </div>
             )}
           </div>
-        </div>
 
-        <div style={styles.fieldGroup}>
-          <label style={styles.label}>Your university or polytechnic</label>
-          <select
-            style={styles.input}
-            value={form.institution}
-            onChange={(e) => update("institution", e.target.value)}
-          >
-            {NZ_INSTITUTIONS.map(i => (
-              <option key={i.id} value={i.id}>{i.name}</option>
-            ))}
-          </select>
-        </div>
+          {(validationError || error) && (
+            <div style={styles.formError}>{validationError || error}</div>
+          )}
 
-        <div style={styles.fieldGroup}>
-          <label style={styles.label}>Contact (email, Instagram, phone — your call)</label>
-          <input
-            style={styles.input}
-            type="text"
-            placeholder="e.g. @yourhandle or email"
-            value={form.contact}
-            onChange={(e) => update("contact", e.target.value)}
-          />
+          <div style={styles.formActions}>
+            <button type="submit" style={styles.primaryBtn} disabled={submitting}>
+              {submitting ? "Posting…" : "Post listing"}
+            </button>
+            <button type="button" style={styles.secondaryBtn} onClick={onCancel}>
+              Cancel
+            </button>
+          </div>
         </div>
- 
-        {(validationError || error) && (
-          <div style={styles.formError}>{validationError || error}</div>
         )}
- 
-        <div style={styles.formActions}>
-          <button type="submit" style={styles.primaryBtn} disabled={submitting}>
-            {submitting ? "Posting…" : "Post listing"}
-          </button>
-          <button type="button" style={styles.secondaryBtn} onClick={onCancel}>
-            Cancel
-          </button>
-        </div>
       </form>
  
       <p style={styles.shareNote}>
