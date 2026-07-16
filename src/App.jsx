@@ -2636,10 +2636,31 @@ function PostForm({ onSubmit, onCancel, error }) {
   function handlePhotoUpload(e) {
     const file = e.target.files[0];
     if (!file) return;
+
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+    if (!allowedTypes.includes(file.type)) {
+      setValidationError("Please upload a JPG, PNG, or WEBP image — other formats (like HEIC or GIF) aren't supported yet.");
+      e.target.value = "";
+      return;
+    }
+
     const reader = new FileReader();
+    reader.onerror = () => {
+      setValidationError("That image couldn't be loaded — try a different file.");
+      e.target.value = "";
+    };
     reader.onloadend = () => {
-      setPhoto(reader.result);
-      setPhotoPreview(reader.result);
+      const img = new Image();
+      img.onload = () => {
+        setValidationError(null);
+        setPhoto(reader.result);
+        setPhotoPreview(reader.result);
+      };
+      img.onerror = () => {
+        setValidationError("That image couldn't be loaded — try a different file.");
+        e.target.value = "";
+      };
+      img.src = reader.result;
     };
     reader.readAsDataURL(file);
   }
@@ -2879,7 +2900,7 @@ function PostForm({ onSubmit, onCancel, error }) {
                 <span style={{ fontSize: 28 }}>📷</span>
                 <span style={{ fontSize: 13, color: COLORS.inkSoft }}>Add a photo of your flat or crew</span>
                 <span style={{ fontSize: 11, color: COLORS.inkSoft, opacity: 0.8 }}>Makes your listing stand out</span>
-                <input id="photo-input" type="file" accept="image/*" style={{ display: "none" }} onChange={handlePhotoUpload} />
+                <input id="photo-input" type="file" accept="image/jpeg,image/png,image/webp" style={{ display: "none" }} onChange={handlePhotoUpload} />
               </label>
             )}
           </div>
@@ -2946,13 +2967,35 @@ function PostForm({ onSubmit, onCancel, error }) {
 
         {step === 2 && (
         <div>
-          <button
-            type="button"
-            onClick={() => { setValidationError(null); setStep(1); }}
-            style={{ border: "none", background: "transparent", color: COLORS.inkSoft, fontSize: 13, fontWeight: 600, cursor: "pointer", marginBottom: 18, padding: 0 }}
-          >
-            ← Back
-          </button>
+          <div style={{ display: "flex", alignItems: "center", marginBottom: 18 }}>
+            <button
+              type="button"
+              onClick={() => { setValidationError(null); setStep(1); }}
+              style={{ border: "none", background: "transparent", color: COLORS.inkSoft, fontSize: 13, fontWeight: 600, cursor: "pointer", padding: 0 }}
+            >
+              ← Back
+            </button>
+          </div>
+
+          <div style={styles.fieldGroup}>
+            <button
+              type="button"
+              onClick={() => { setStep(3); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+              style={{ width: "100%", textAlign: "left", border: "1.5px dashed #7C5CBF", borderRadius: 16, padding: "16px 18px", background: "#f8f7ff", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16, flexWrap: "wrap", cursor: "pointer" }}
+            >
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: "#1a2540", marginBottom: 4 }}>
+                  Want even sharper matches? ✦
+                </div>
+                <div style={{ fontSize: 12.5, color: COLORS.inkSoft, lineHeight: 1.5 }}>
+                  Take the full compatibility quiz — 2 extra minutes, better matches for everyone who finds your listing.
+                </div>
+              </div>
+              <span style={{ fontFamily: FONT_BODY, fontSize: 13, fontWeight: 700, color: "#fff", background: "#7C5CBF", borderRadius: 10, padding: "10px 18px", whiteSpace: "nowrap" }}>
+                Take full quiz →
+              </span>
+            </button>
+          </div>
 
           <div style={styles.fieldGroup}>
             <div style={{ border: "1px solid #eef2f7", borderRadius: 16, padding: 16, background: "#fcfdff" }}>
@@ -2990,53 +3033,65 @@ function PostForm({ onSubmit, onCancel, error }) {
             </div>
           </div>
 
+          {(validationError || error) && (
+            <div style={styles.formError}>{validationError || error}</div>
+          )}
+
+          <div style={styles.formActions}>
+            <button type="submit" style={styles.primaryBtn} disabled={submitting}>
+              {submitting ? "Posting…" : "Post listing"}
+            </button>
+            <button type="button" style={styles.secondaryBtn} onClick={onCancel}>
+              Cancel
+            </button>
+          </div>
+        </div>
+        )}
+
+        {step === 3 && (
+        <div>
+          <div style={{ display: "flex", alignItems: "center", marginBottom: 18 }}>
+            <button
+              type="button"
+              onClick={() => { setValidationError(null); setStep(2); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+              style={{ border: "none", background: "transparent", color: COLORS.inkSoft, fontSize: 13, fontWeight: 600, cursor: "pointer", padding: 0 }}
+            >
+              ← Back
+            </button>
+          </div>
+
           <div style={styles.fieldGroup}>
-            <div style={{ border: "1.5px dashed #7C5CBF", borderRadius: 16, padding: "16px 18px", background: "#f8f7ff", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
-              <div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: "#1a2540", marginBottom: 4 }}>
-                  Want even sharper matches? ✦
-                </div>
-                <div style={{ fontSize: 12.5, color: COLORS.inkSoft, lineHeight: 1.5 }}>
-                  Take the full compatibility quiz — 2 extra minutes, better matches for everyone who finds your listing.
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setFullQuizOpen((prev) => !prev)}
-                style={{ fontFamily: FONT_BODY, fontSize: 13, fontWeight: 700, color: "#fff", background: "#7C5CBF", border: "none", borderRadius: 10, padding: "10px 18px", cursor: "pointer", whiteSpace: "nowrap" }}
-              >
-                {fullQuizOpen ? "Hide" : "Take full quiz"}
-              </button>
-            </div>
-            {fullQuizOpen && (
-              <div style={{ display: "grid", gap: 12, marginTop: 12 }}>
-                {QUESTIONS.map((q) => (
-                  <div key={q.id} style={{ border: "1px solid #eef2f7", borderRadius: 12, padding: 10, background: "#fff" }}>
-                    <div style={{ fontSize: 12, color: COLORS.inkSoft, marginBottom: 8 }}>{q.text}</div>
-                    <div style={{ display: "grid", gap: 8 }}>
-                      {q.options.map((opt, idx) => (
-                        <button
-                          key={`${q.id}-${idx}`}
-                          type="button"
-                          onClick={() => updateFullQuiz(q.id, idx)}
-                          style={{
-                            textAlign: "left",
-                            padding: "10px 12px",
-                            borderRadius: 10,
-                            border: fullQuizAnswers[q.id] === idx ? "1px solid #2d3f7c" : "1px solid #e7ebf2",
-                            background: fullQuizAnswers[q.id] === idx ? "#f4f7ff" : "#fff",
-                            cursor: "pointer",
-                            color: COLORS.ink,
-                          }}
-                        >
-                          {opt.label}
-                        </button>
-                      ))}
-                    </div>
+            <strong style={{ fontSize: 16, color: COLORS.ink, display: "block", marginBottom: 4 }}>Full compatibility quiz</strong>
+            <p style={{ fontSize: 13, color: COLORS.inkSoft, marginBottom: 16, lineHeight: 1.6 }}>
+              This is optional — but the more you answer, the sharper your matches will be for people browsing your listing.
+            </p>
+            <div style={{ display: "grid", gap: 12 }}>
+              {QUESTIONS.map((q) => (
+                <div key={q.id} style={{ border: "1px solid #eef2f7", borderRadius: 12, padding: 10, background: "#fff" }}>
+                  <div style={{ fontSize: 12, color: COLORS.inkSoft, marginBottom: 8 }}>{q.text}</div>
+                  <div style={{ display: "grid", gap: 8 }}>
+                    {q.options.map((opt, idx) => (
+                      <button
+                        key={`${q.id}-${idx}`}
+                        type="button"
+                        onClick={() => updateFullQuiz(q.id, idx)}
+                        style={{
+                          textAlign: "left",
+                          padding: "10px 12px",
+                          borderRadius: 10,
+                          border: fullQuizAnswers[q.id] === idx ? "1px solid #2d3f7c" : "1px solid #e7ebf2",
+                          background: fullQuizAnswers[q.id] === idx ? "#f4f7ff" : "#fff",
+                          cursor: "pointer",
+                          color: COLORS.ink,
+                        }}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
                   </div>
-                ))}
-              </div>
-            )}
+                </div>
+              ))}
+            </div>
           </div>
 
           {(validationError || error) && (
