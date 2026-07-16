@@ -92,36 +92,16 @@ export async function createListing(listing) {
     delete_token: deleteToken,
   }
 
-  let data
-  let error
-
-  try {
-    ;({ data, error } = await supabase
-      .from('listings')
-      .insert(payload)
-      .select()
-      .single())
-  } catch (insertError) {
-    error = insertError
-  }
+  const { data, error } = await supabase
+    .from('listings')
+    .insert(payload)
+    .select()
+    .single()
 
   if (error) {
-    const fallbackPayload = { ...payload }
-    delete fallbackPayload.mini_quiz_profile
-    delete fallbackPayload.full_quiz_profile
-    delete fallbackPayload.deal_breakers
-
-    const fallbackResult = await supabase
-      .from('listings')
-      .insert(fallbackPayload)
-      .select()
-      .single()
-
-    data = fallbackResult.data
-    error = fallbackResult.error
+    console.error('Failed to save listing:', error)
+    throw error
   }
-
-  if (error) throw error
 
   const saved = JSON.parse(localStorage.getItem('fm_tokens') || '{}')
   saved[data.id] = deleteToken
