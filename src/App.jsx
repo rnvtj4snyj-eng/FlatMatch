@@ -154,7 +154,7 @@ const QUESTION_TO_CATEGORY = {
   routine: "Routine",
   bills: "Communication",
   privacy: "Independence",
-  weekend: "Lifestyle",
+  hosting: "Living with others",
   bathroom: "Home habits",
   smoking: "Deal-breakers",
   pets: "Deal-breakers",
@@ -165,22 +165,22 @@ const QUESTION_TO_CATEGORY = {
 const QUESTIONS = [
   {
     id: "dishes",
-    text: "The kitchen has three plates in the sink and one flatmate says, “I’ll sort it later.” What’s your move?",
+    text: "How particular are you about a clean kitchen?",
     kind: "dimension",
     dimensions: [
       { key: "cleanliness", weight: 1.2 },
       { key: "communication_style", weight: 0.95 },
     ],
     options: [
-      { label: "I’ll clean mine and send a calm nudge in the group chat", scores: { cleanliness: 4, communication_style: 4 } },
-      { label: "I clean mine, but I’m not chasing anyone", scores: { cleanliness: 3, communication_style: 3 } },
-      { label: "I wait until it’s actually annoying", scores: { cleanliness: 2, communication_style: 2 } },
-      { label: "I leave it and avoid saying anything", scores: { cleanliness: 1, communication_style: 1 } },
+      { label: "Very, I like it spotless", scores: { cleanliness: 4, communication_style: 3 } },
+      { label: "Fairly, but I'm not fussy about it", scores: { cleanliness: 3, communication_style: 3 } },
+      { label: "Not overly, a bit of mess doesn't bother me", scores: { cleanliness: 2, communication_style: 2 } },
+      { label: "Not at all, mess doesn't really register", scores: { cleanliness: 1, communication_style: 2 } },
     ],
   },
   {
     id: "noise",
-    text: "It’s 11:30pm, you’ve got a 9am start, and the flat is still loud. What’s the vibe?",
+    text: "You have an early start and your flatmates have friends over. How do you feel?",
     kind: "dimension",
     dimensions: [
       { key: "noise_tolerance", weight: 1.15 },
@@ -188,31 +188,31 @@ const QUESTIONS = [
       { key: "daily_routine", weight: 1.0 },
     ],
     options: [
-      { label: "Please keep it down — I need sleep", scores: { noise_tolerance: 1, study_environment: 4, daily_routine: 4 } },
+      { label: "Please keep it down, I need sleep", scores: { noise_tolerance: 1, study_environment: 4, daily_routine: 4 } },
       { label: "A bit of noise is fine, but not all night", scores: { noise_tolerance: 2, study_environment: 3, daily_routine: 3 } },
       { label: "I’m okay with a lively flat most of the time", scores: { noise_tolerance: 3, study_environment: 2, daily_routine: 2 } },
       { label: "I’m not bothered by noise at all", scores: { noise_tolerance: 4, study_environment: 1, daily_routine: 1 } },
     ],
   },
   {
-    id: "guests",
-    text: "Someone brings a friend over for the night and the living room suddenly becomes the main event. What do you want from your flat?",
-    kind: "dimension",
-    dimensions: [
-      { key: "guests_hosting", weight: 1.1 },
-      { key: "social_lifestyle", weight: 1.0 },
-      { key: "noise_tolerance", weight: 0.95 },
-    ],
-    options: [
-      { label: "I like the house to be calm and low-key", scores: { guests_hosting: 1, social_lifestyle: 1, noise_tolerance: 1 } },
-      { label: "Occasional guests are fine if people give a heads-up", scores: { guests_hosting: 2, social_lifestyle: 2, noise_tolerance: 2 } },
-      { label: "I’m happy with regular visitors and a lively home", scores: { guests_hosting: 3, social_lifestyle: 3, noise_tolerance: 3 } },
-      { label: "I want people over often and the flat to feel social", scores: { guests_hosting: 4, social_lifestyle: 4, noise_tolerance: 4 } },
-    ],
+  id: "guests",
+  text: "How do you feel about flatmates having a partner over regularly?",
+  kind: "dimension",
+  dimensions: [
+    { key: "guests_hosting", weight: 1.1 },
+    { key: "social_lifestyle", weight: 1.0 },
+    { key: "noise_tolerance", weight: 0.95 },
+  ],
+  options: [
+    { label: "Not keen, I'd want a conversation about boundaries", scores: { guests_hosting: 1, social_lifestyle: 1, noise_tolerance: 1 } },
+    { label: "Fine occasionally, but not as a regular thing", scores: { guests_hosting: 2, social_lifestyle: 2, noise_tolerance: 2 } },
+    { label: "Doesn't bother me if they're easy to have around", scores: { guests_hosting: 3, social_lifestyle: 3, noise_tolerance: 3 } },
+    { label: "All good, more the merrier, honestly", scores: { guests_hosting: 4, social_lifestyle: 4, noise_tolerance: 4 } },
+  ],
   },
   {
     id: "food",
-    text: "You open the fridge and find a fresh meal with no name on it. What feels fair to you?",
+    text: "How do you want the flat to be setup for cooking meals?",
     kind: "dimension",
     dimensions: [
       { key: "cooking_food", weight: 1.1 },
@@ -220,15 +220,15 @@ const QUESTIONS = [
       { key: "communication_style", weight: 0.9 },
     ],
     options: [
-      { label: "I want a clear system so no one’s guessing", scores: { cooking_food: 2, shared_living: 3, communication_style: 4 } },
-      { label: "A bit of flexibility is fine", scores: { cooking_food: 3, shared_living: 3, communication_style: 3 } },
-      { label: "I’d rather people just sort it out themselves", scores: { cooking_food: 3, shared_living: 2, communication_style: 2 } },
-      { label: "I want my own space and my own food routine", scores: { cooking_food: 1, shared_living: 1, communication_style: 2 } },
+      { label: "Everyone cooks together and we eat as a flat", scores: { cooking_food: 4, shared_living: 4, communication_style: 4 } },
+      { label: "Shared dinners sometimes, but no pressure either way", scores: { cooking_food: 3, shared_living: 3, communication_style: 3 } },
+      { label: "Mostly everyone does their own thing", scores: { cooking_food: 2, shared_living: 2, communication_style: 2 } },
+      { label: "I only want my own food and my own kitchen time", scores: { cooking_food: 1, shared_living: 1, communication_style: 2 } },
     ],
   },
   {
     id: "study_week",
-    text: "It’s exam week and the flat is still doing its normal thing in the living room. How should the house feel?",
+    text: "It’s exam week, how should the house feel?",
     kind: "dimension",
     dimensions: [
       { key: "study_environment", weight: 1.2 },
@@ -237,13 +237,13 @@ const QUESTIONS = [
     options: [
       { label: "Quiet hours should be respected", scores: { study_environment: 4, noise_tolerance: 1 } },
       { label: "A calmer vibe would be nice", scores: { study_environment: 3, noise_tolerance: 2 } },
-      { label: "I can deal with it if people are still normal", scores: { study_environment: 2, noise_tolerance: 3 } },
+      { label: "I can deal with some noise if people are still normal", scores: { study_environment: 2, noise_tolerance: 3 } },
       { label: "The flat can stay as it is", scores: { study_environment: 1, noise_tolerance: 4 } },
     ],
   },
   {
     id: "routine",
-    text: "You’ve got an early class and someone else is still up at 2am gaming or on calls. What’s your ideal flat rhythm?",
+    text: "Your flatmate's alarm goes off three times before they actually get up. Does that kind of thing bug you?",
     kind: "dimension",
     dimensions: [
       { key: "daily_routine", weight: 1.15 },
@@ -251,30 +251,30 @@ const QUESTIONS = [
       { key: "communication_style", weight: 0.9 },
     ],
     options: [
-      { label: "I want people to be considerate of morning schedules", scores: { daily_routine: 4, noise_tolerance: 1, communication_style: 3 } },
-      { label: "Slightly different routines are fine", scores: { daily_routine: 3, noise_tolerance: 2, communication_style: 3 } },
-      { label: "I’m flexible, as long as it doesn’t affect me", scores: { daily_routine: 2, noise_tolerance: 3, communication_style: 2 } },
-      { label: "I don’t really care about routine", scores: { daily_routine: 1, noise_tolerance: 4, communication_style: 1 } },
+      { label: "Yeah, I'd want people mindful of that kind of thing", scores: { daily_routine: 4, noise_tolerance: 1, communication_style: 3 } },
+      { label: "A little annoying, but not a big deal", scores: { daily_routine: 3, noise_tolerance: 2, communication_style: 3 } },
+      { label: "Doesn't really register for me", scores: { daily_routine: 2, noise_tolerance: 3, communication_style: 2 } },
+      { label: "Honestly wouldn't even notice", scores: { daily_routine: 1, noise_tolerance: 4, communication_style: 1 } },
     ],
   },
   {
     id: "bills",
-    text: "The power bill lands and someone says, “I never use the heater.” How do you want money stuff handled?",
+    text: "How do you want bills and shared costs handled in the flat?",
     kind: "dimension",
     dimensions: [
       { key: "communication_style", weight: 1.1 },
       { key: "shared_living", weight: 1.0 },
     ],
     options: [
-      { label: "Clear expectations and a simple system", scores: { communication_style: 4, shared_living: 4 } },
-      { label: "A reasonable conversation is fine", scores: { communication_style: 3, shared_living: 3 } },
-      { label: "I’d rather keep it relaxed", scores: { communication_style: 2, shared_living: 2 } },
-      { label: "I don’t want to talk about it much", scores: { communication_style: 1, shared_living: 1 } },
+      { label: "A clear system that's split evenly and sorted each month", scores: { communication_style: 4, shared_living: 4 } },
+      { label: "Just talk it out if something feels off", scores: { communication_style: 3, shared_living: 3 } },
+      { label: "Keep it relaxed, doesn't need to be exact", scores: { communication_style: 2, shared_living: 2 } },
+      { label: "I'd rather not get into money conversations much", scores: { communication_style: 1, shared_living: 1 } },
     ],
   },
   {
     id: "privacy",
-    text: "You get home after a long day and the living room is still being used as the social centre. What feels right to you?",
+    text: "How often do you need some quiet time to yourself at home?",
     kind: "dimension",
     dimensions: [
       { key: "independence_communal", weight: 1.2 },
@@ -282,41 +282,41 @@ const QUESTIONS = [
       { key: "social_lifestyle", weight: 0.9 },
     ],
     options: [
-      { label: "I want a home that feels calm and private", scores: { independence_communal: 4, shared_living: 1, social_lifestyle: 1 } },
-      { label: "A bit of shared time is nice, but I still want space", scores: { independence_communal: 3, shared_living: 2, social_lifestyle: 2 } },
-      { label: "Shared living is fine if it’s balanced", scores: { independence_communal: 2, shared_living: 3, social_lifestyle: 3 } },
-      { label: "I want the house to feel really social and open", scores: { independence_communal: 1, shared_living: 4, social_lifestyle: 4 } },
+      { label: "Most days, I really value my own space", scores: { independence_communal: 4, shared_living: 1, social_lifestyle: 1 } },
+      { label: "Sometimes, I like having space but enjoy company too", scores: { independence_communal: 3, shared_living: 2, social_lifestyle: 2 } },
+      { label: "Not often, I like being around people at home", scores: { independence_communal: 2, shared_living: 3, social_lifestyle: 3 } },
+      { label: "Rarely, I want to be around my flatmates most of the time", scores: { independence_communal: 1, shared_living: 4, social_lifestyle: 4 } },
     ],
   },
   {
-    id: "weekend",
-    text: "Your flatmate wants a full-on weekend social scene and you’d rather do a quiet night in. What’s the best version of flat life?",
+    id: "hosting",
+    text: "How do you feel about hosting people at the flat?",
     kind: "dimension",
     dimensions: [
-      { key: "social_lifestyle", weight: 1.1 },
-      { key: "guests_hosting", weight: 1.0 },
-      { key: "shared_living", weight: 0.95 },
+      { key: "guests_hosting", weight: 1.2 },
+      { key: "social_lifestyle", weight: 1.0 },
+      { key: "communication_style", weight: 0.9 },
     ],
     options: [
-      { label: "We keep it mostly chill and low-key", scores: { social_lifestyle: 1, guests_hosting: 1, shared_living: 1 } },
-      { label: "A mix of quiet nights and social plans works", scores: { social_lifestyle: 2, guests_hosting: 2, shared_living: 2 } },
-      { label: "A social flat is great if people are considerate", scores: { social_lifestyle: 3, guests_hosting: 3, shared_living: 3 } },
-      { label: "I want a flat that is naturally social", scores: { social_lifestyle: 4, guests_hosting: 4, shared_living: 4 } },
+      { label: "I'd rather not host, ever", scores: { guests_hosting: 1, social_lifestyle: 1, communication_style: 2 } },
+      { label: "Fine, as long as it's not during exam time", scores: { guests_hosting: 2, social_lifestyle: 2, communication_style: 3 } },
+      { label: "Fine, as long as I get a heads-up first", scores: { guests_hosting: 3, social_lifestyle: 3, communication_style: 4 } },
+      { label: "Happy to host any time, no notice needed", scores: { guests_hosting: 4, social_lifestyle: 4, communication_style: 3 } },
     ],
   },
   {
     id: "bathroom",
-    text: "You walk into the bathroom and it looks like a storm hit it. How much does that bother you?",
+    text: "Be honest — how often do you clean the bathroom without someone asking you to?",
     kind: "dimension",
     dimensions: [
       { key: "cleanliness", weight: 1.15 },
       { key: "communication_style", weight: 0.95 },
     ],
     options: [
-      { label: "It bothers me a lot and I’d want it sorted", scores: { cleanliness: 4, communication_style: 4 } },
-      { label: "It’s annoying, but I’d probably just clean it", scores: { cleanliness: 3, communication_style: 3 } },
-      { label: "I can live with it for a bit", scores: { cleanliness: 2, communication_style: 2 } },
-      { label: "I’m pretty relaxed about that kind of thing", scores: { cleanliness: 1, communication_style: 1 } },
+      { label: "Once a week or more", scores: { cleanliness: 4, communication_style: 3 } },
+      { label: "Every couple of weeks or so", scores: { cleanliness: 3, communication_style: 3 } },
+      { label: "Only when it's actually gotten pretty bad", scores: { cleanliness: 2, communication_style: 2 } },
+      { label: "Almost never, if I'm honest", scores: { cleanliness: 1, communication_style: 1 } },
     ],
   },
   {
@@ -345,29 +345,135 @@ const QUESTIONS = [
   },
   {
     id: "budget",
-    text: "What rent level feels comfortable for you?",
+    text: "What rent are you most comfortable with?",
     kind: "housing",
     field: "budgetMax",
     options: [
       { label: "Under $180pw", score: 180 },
-      { label: "$180–220pw", score: 220 },
-      { label: "$220–260pw", score: 260 },
-      { label: "$260pw or more", score: 320 },
+      { label: "$180–210pw", score: 200 },
+      { label: "$210–240pw", score: 260 },
+      { label: "$240pw or more", score: 320 },
     ],
   },
   {
     id: "move_in",
-    text: "When do you need to move in?",
+    text: "When are you looking to move in?",
     kind: "housing",
     field: "moveInWindow",
     options: [
-      { label: "Now", score: 0 },
-      { label: "This month", score: 1 },
-      { label: "Next month", score: 2 },
-      { label: "Next semester", score: 3 },
+      { label: "Right now / ASAP", score: 0 },
+      { label: "Nov–Jan (new academic year)", score: 1 },
+      { label: "Jun–Jul (mid-year)", score: 2 },
+      { label: "Not sure yet / flexible", score: 3 },
     ],
   },
 ];
+
+const MINI_QUIZ_QUESTIONS = [
+  {
+    id: "smoking",
+    kind: "dealbreaker",
+    field: "smoking",
+    text: "What's the smoking or vaping situation at the flat?",
+    options: [
+      { label: "Smoke-free", value: "smoke_free" },
+      { label: "Fine outside only", value: "outside_only" },
+      { label: "Fine inside sometimes", value: "smoking_ok" },
+      { label: "No restrictions", value: "any" },
+    ],
+  },
+  {
+    id: "pets",
+    kind: "dealbreaker",
+    field: "pets",
+    text: "How does the flat feel about pets?",
+    options: [
+      { label: "No pets", value: "no_pets" },
+      { label: "Small pets are fine", value: "small_pets" },
+      { label: "Pets are welcome", value: "pets_ok" },
+      { label: "Very pet-friendly, we love pets here", value: "pet_friendly" },
+    ],
+  },
+  {
+    id: "cleanliness",
+    kind: "dimension",
+    text: "How would you describe the flat day to day?",
+    dimensions: [
+      { key: "cleanliness", weight: 1.2 },
+      { key: "communication_style", weight: 0.9 },
+      { key: "independence_communal", weight: 0.8 },
+    ],
+    options: [
+      { label: "Tidy most of the time", scores: { cleanliness: 4, communication_style: 3, independence_communal: 2 } },
+      { label: "Clean, but lived-in", scores: { cleanliness: 3, communication_style: 3, independence_communal: 3 } },
+      { label: "A bit messy sometimes", scores: { cleanliness: 2, communication_style: 2, independence_communal: 3 } },
+      { label: "Pretty relaxed about mess", scores: { cleanliness: 1, communication_style: 2, independence_communal: 4 } },
+    ],
+  },
+  {
+    id: "noise",
+    kind: "dimension",
+    text: "What's the flat usually like, noise-wise?",
+    dimensions: [
+      { key: "noise_tolerance", weight: 1.15 },
+      { key: "study_environment", weight: 1.0 },
+      { key: "daily_routine", weight: 0.9 },
+    ],
+    options: [
+      { label: "Quiet most days", scores: { noise_tolerance: 1, study_environment: 4, daily_routine: 4 } },
+      { label: "Quiet on weeknights, louder on weekends", scores: { noise_tolerance: 2, study_environment: 3, daily_routine: 3 } },
+      { label: "Fairly lively", scores: { noise_tolerance: 3, study_environment: 2, daily_routine: 2 } },
+      { label: "Loud and social most of the time", scores: { noise_tolerance: 4, study_environment: 1, daily_routine: 1 } },
+    ],
+  },
+  {
+    id: "guests",
+    kind: "dimension",
+    text: "How often do people have guests over?",
+    dimensions: [
+      { key: "guests_hosting", weight: 1.1 },
+      { key: "social_lifestyle", weight: 1.0 },
+      { key: "shared_living", weight: 0.9 },
+      { key: "cooking_food", weight: 0.7 },
+    ],
+    options: [
+      { label: "Rarely", scores: { guests_hosting: 1, social_lifestyle: 1, shared_living: 1, cooking_food: 2 } },
+      { label: "Occasionally, with a heads-up", scores: { guests_hosting: 2, social_lifestyle: 2, shared_living: 2, cooking_food: 3 } },
+      { label: "Fairly often", scores: { guests_hosting: 3, social_lifestyle: 3, shared_living: 3, cooking_food: 3 } },
+      { label: "All the time, very social flat", scores: { guests_hosting: 4, social_lifestyle: 4, shared_living: 4, cooking_food: 4 } },
+    ],
+  },
+];
+
+function buildMiniQuizProfile(answers = {}) {
+  const dimensionTotals = {};
+  const dimensionWeights = {};
+  const dealBreakers = {};
+
+  for (const question of MINI_QUIZ_QUESTIONS) {
+    const selectedIndex = answers[question.id];
+    if (selectedIndex == null) continue;
+    const option = question.options[selectedIndex];
+    if (!option) continue;
+
+    if (question.kind === "dimension") {
+      for (const dim of question.dimensions) {
+        const score = option.scores?.[dim.key] ?? 3;
+        dimensionTotals[dim.key] = (dimensionTotals[dim.key] || 0) + score * dim.weight;
+        dimensionWeights[dim.key] = (dimensionWeights[dim.key] || 0) + dim.weight;
+      }
+    } else if (question.kind === "dealbreaker") {
+      dealBreakers[question.field] = option.value;
+    }
+  }
+
+  const dimensions = {};
+  Object.keys(dimensionTotals).forEach((key) => {
+    dimensions[key] = Math.round((dimensionTotals[key] / dimensionWeights[key]) * 10) / 10;
+  });
+
+  return { dimensions, dealBreakers };
+}
 
 function buildCompatibilityProfile(answers = {}) {
   try {
@@ -1110,7 +1216,7 @@ function Intro({ onStart, onPost, institution, onInstitutionChange, userListings
             <div style={introStyles.quizBannerEmoji}>✦</div>
             <div>
               <div style={introStyles.quizBannerTitle}>
-                The wrong flatmate can ruin your year. Join the {currentInst.short} students who looked before they leased.
+                The wrong flatmate can ruin your year. Join the {currentInst.short} students who look before they lease.
               </div>
               <div style={introStyles.quizBannerSub}>
                 Take the quiz to find the perfect student flat for you.
@@ -2521,6 +2627,10 @@ function PostForm({ onSubmit, onCancel, error }) {
   const [validationError, setValidationError] = useState(null);
   const [photo, setPhoto] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
+  const [miniQuizOpen, setMiniQuizOpen] = useState(true);
+  const [fullQuizOpen, setFullQuizOpen] = useState(false);
+  const [miniQuizAnswers, setMiniQuizAnswers] = useState({});
+  const [fullQuizAnswers, setFullQuizAnswers] = useState({});
  
   function handlePhotoUpload(e) {
     const file = e.target.files[0];
@@ -2549,6 +2659,14 @@ function PostForm({ onSubmit, onCancel, error }) {
     });
   }
  
+  function updateMiniQuiz(questionId, value) {
+    setMiniQuizAnswers((prev) => ({ ...prev, [questionId]: value }));
+  }
+
+  function updateFullQuiz(questionId, value) {
+    setFullQuizAnswers((prev) => ({ ...prev, [questionId]: value }));
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     setValidationError(null);
@@ -2566,6 +2684,26 @@ function PostForm({ onSubmit, onCancel, error }) {
     for (const key of form.selectedTags) {
       tags[key] = 2;
     }
+
+    const miniQuizResult = buildMiniQuizProfile(miniQuizAnswers);
+    const miniQuizProfile = Object.keys(miniQuizResult.dimensions).length > 0
+      ? { dimensions: miniQuizResult.dimensions }
+      : null;
+
+    const fullQuizProfileData = buildCompatibilityProfile(fullQuizAnswers);
+    const fullQuizProfile = Object.keys(fullQuizAnswers).length > 0
+      ? {
+          dimensions: fullQuizProfileData.dimensions,
+          dealBreakers: fullQuizProfileData.dealBreakers,
+          housingPreferences: fullQuizProfileData.housingPreferences,
+        }
+      : null;
+
+    // full quiz deal-breakers win if taken; otherwise use mini quiz's
+    const dealBreakers = {
+      smoking: fullQuizProfile?.dealBreakers?.smoking ?? miniQuizResult.dealBreakers.smoking ?? 'neutral',
+      pets: fullQuizProfile?.dealBreakers?.pets ?? miniQuizResult.dealBreakers.pets ?? 'neutral',
+    };
  
     const people = parseInt(form.people, 10) || 1;
     const spotsNeeded = parseInt(form.spotsNeeded, 10) || 1;
@@ -2586,9 +2724,12 @@ function PostForm({ onSubmit, onCancel, error }) {
       moveIn: form.moveIn.trim(),
       bio: form.bio.trim(),
       contact: form.contact.trim(),
-     tags,
+      tags,
       photo: photo || null,
-      institution: form.institution, 
+      institution: form.institution,
+      miniQuizProfile,
+      fullQuizProfile,
+      dealBreakers,
     });
     setSubmitting(false);
   }
@@ -2604,7 +2745,7 @@ function PostForm({ onSubmit, onCancel, error }) {
       <form onSubmit={handleSubmit} style={styles.form}>
         <div style={styles.fieldRow}>
           <div style={styles.fieldGroup}>
-            <label style={styles.label}>How many people are you currently?</label>
+            <label style={styles.label}>How many people are in your flat?</label>
             <input
               style={styles.input}
               type="number"
@@ -2669,7 +2810,7 @@ function PostForm({ onSubmit, onCancel, error }) {
             </select>
           </div>
           <div style={styles.fieldGroup}>
-            <label style={styles.label}>Budget (per week)</label>
+            <label style={styles.label}>Rent cost (per week)</label>
             <input
               style={styles.input}
               type="text"
@@ -2747,6 +2888,88 @@ function PostForm({ onSubmit, onCancel, error }) {
           </div>
         </div>
  
+        <div style={styles.fieldGroup}>
+          <label style={styles.label}>Quick flat match quiz</label>
+          <div style={{ border: "1px solid #dde3f0", borderRadius: 16, padding: 16, background: "#fcfdff" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+              <strong style={{ fontSize: 14, color: COLORS.ink }}>Help people match to your flat</strong>
+              <button type="button" onClick={() => setMiniQuizOpen((prev) => !prev)} style={{ border: "none", background: "transparent", color: COLORS.teal, fontWeight: 700, cursor: "pointer" }}>
+                {miniQuizOpen ? "Hide" : "Show"}
+              </button>
+            </div>
+            {miniQuizOpen && (
+              <div style={{ display: "grid", gap: 12 }}>
+                {MINI_QUIZ_QUESTIONS.map((q) => (
+                  <div key={q.id} style={{ border: "1px solid #eef2f7", borderRadius: 12, padding: 10, background: "#fff" }}>
+                    <div style={{ fontSize: 12, color: COLORS.inkSoft, marginBottom: 8 }}>{q.text}</div>
+                    <div style={{ display: "grid", gap: 8 }}>
+                      {q.options.map((opt, idx) => (
+                        <button
+                          key={opt.label}
+                          type="button"
+                          onClick={() => updateMiniQuiz(q.id, idx)}
+                          style={{
+                            textAlign: "left",
+                            padding: "10px 12px",
+                            borderRadius: 10,
+                            border: miniQuizAnswers[q.id] === idx ? "1px solid #2d3f7c" : "1px solid #e7ebf2",
+                            background: miniQuizAnswers[q.id] === idx ? "#f4f7ff" : "#fff",
+                            cursor: "pointer",
+                            color: COLORS.ink,
+                          }}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div style={styles.fieldGroup}>
+          <label style={styles.label}>Want a more accurate match? Take the full compatibility quiz</label>
+          <div style={{ border: "1px solid #dde3f0", borderRadius: 16, padding: 16, background: "#fcfdff" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+              <span style={{ fontSize: 13, color: COLORS.inkSoft }}>This is optional and takes about 2 minutes.</span>
+              <button type="button" onClick={() => setFullQuizOpen((prev) => !prev)} style={{ border: "none", background: "transparent", color: COLORS.teal, fontWeight: 700, cursor: "pointer" }}>
+                {fullQuizOpen ? "Hide" : "Expand"}
+              </button>
+            </div>
+            {fullQuizOpen && (
+              <div style={{ display: "grid", gap: 12 }}>
+                {QUESTIONS.map((q) => (
+                  <div key={q.id} style={{ border: "1px solid #eef2f7", borderRadius: 12, padding: 10, background: "#fff" }}>
+                    <div style={{ fontSize: 12, color: COLORS.inkSoft, marginBottom: 8 }}>{q.text}</div>
+                    <div style={{ display: "grid", gap: 8 }}>
+                      {q.options.map((opt, idx) => (
+                        <button
+                          key={`${q.id}-${idx}`}
+                          type="button"
+                          onClick={() => updateFullQuiz(q.id, idx)}
+                          style={{
+                            textAlign: "left",
+                            padding: "10px 12px",
+                            borderRadius: 10,
+                            border: fullQuizAnswers[q.id] === idx ? "1px solid #2d3f7c" : "1px solid #e7ebf2",
+                            background: fullQuizAnswers[q.id] === idx ? "#f4f7ff" : "#fff",
+                            cursor: "pointer",
+                            color: COLORS.ink,
+                          }}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
         <div style={styles.fieldGroup}>
           <label style={styles.label}>Your university or polytechnic</label>
           <select

@@ -35,6 +35,9 @@ export async function fetchListings(institutionId = null) {
     photo: l.photo_url,
     status: l.status,
     institution: l.institution || null,
+    miniQuizProfile: l.mini_quiz_profile || null,
+    fullQuizProfile: l.full_quiz_profile || null,
+    dealBreakers: l.deal_breakers || null,
     updates: l.updates || [],
     createdAt: new Date(l.created_at).getTime(),
     renewedAt: new Date(l.renewed_at).getTime(),
@@ -64,31 +67,59 @@ export async function createListing(listing) {
 
   const deleteToken = crypto.randomUUID()
 
-  const { data, error } = await supabase
-    .from('listings')
-    .insert({
-      type: listing.type,
-      listing_type: listing.listingType,
-      title: listing.title,
-      crew: listing.crew || null,
-      seeking: listing.seeking || null,
-      people: listing.people,
-      spots_needed: listing.spotsNeeded,
-      suburb: listing.suburb,
-      area: listing.area,
-      distance_km: listing.distanceKm,
-      budget: listing.budget,
-      move_in: listing.moveIn,
-      bio: listing.bio,
-      contact: listing.contact,
-      tags: listing.tags,
-      photo_url: photoUrl,
-      status: 'looking',
-      institution: listing.institution || null,
-      delete_token: deleteToken,
-    })
-    .select()
-    .single()
+  const payload = {
+    type: listing.type,
+    listing_type: listing.listingType,
+    title: listing.title,
+    crew: listing.crew || null,
+    seeking: listing.seeking || null,
+    people: listing.people,
+    spots_needed: listing.spotsNeeded,
+    suburb: listing.suburb,
+    area: listing.area,
+    distance_km: listing.distanceKm,
+    budget: listing.budget,
+    move_in: listing.moveIn,
+    bio: listing.bio,
+    contact: listing.contact,
+    tags: listing.tags,
+    photo_url: photoUrl,
+    status: 'looking',
+    institution: listing.institution || null,
+    mini_quiz_profile: listing.miniQuizProfile || null,
+    full_quiz_profile: listing.fullQuizProfile || null,
+    deal_breakers: listing.dealBreakers || null,
+    delete_token: deleteToken,
+  }
+
+  let data
+  let error
+
+  try {
+    ;({ data, error } = await supabase
+      .from('listings')
+      .insert(payload)
+      .select()
+      .single())
+  } catch (insertError) {
+    error = insertError
+  }
+
+  if (error) {
+    const fallbackPayload = { ...payload }
+    delete fallbackPayload.mini_quiz_profile
+    delete fallbackPayload.full_quiz_profile
+    delete fallbackPayload.deal_breakers
+
+    const fallbackResult = await supabase
+      .from('listings')
+      .insert(fallbackPayload)
+      .select()
+      .single()
+
+    data = fallbackResult.data
+    error = fallbackResult.error
+  }
 
   if (error) throw error
 

@@ -153,10 +153,33 @@ export function deriveListingProfile(listing) {
     independence_communal: tags.chill ? 4 : tags.social ? 2 : 3,
   };
 
+  const fullQuizProfile = listing.fullQuizProfile?.dimensions
+    ? listing.fullQuizProfile
+    : listing.fullQuizProfile || null;
+  const miniQuizProfile = listing.miniQuizProfile?.dimensions
+    ? listing.miniQuizProfile
+    : null;
   const explicitDimensions = listing.compatibilityProfile || {};
-  const dimensions = Object.fromEntries(
-    Object.entries(dimensionDefaults).map(([key, value]) => [key, explicitDimensions[key] ?? value]),
-  );
+
+  const dimensions = { ...dimensionDefaults };
+
+  if (fullQuizProfile?.dimensions) {
+    Object.assign(dimensions, fullQuizProfile.dimensions);
+  } else if (miniQuizProfile?.dimensions) {
+    // blend ALL dimension keys that the mini quiz produced a value for,
+    // at 80% mini-quiz / 20% tag-inferred. Any dimension the mini quiz
+    // didn't cover falls back to pure tag-inference automatically.
+    Object.entries(dimensionDefaults).forEach(([key, tagValue]) => {
+      const miniValue = miniQuizProfile.dimensions[key];
+      if (typeof miniValue === 'number') {
+        dimensions[key] = Number(((miniValue * 0.8) + (tagValue * 0.2)).toFixed(1));
+      }
+    });
+  } else if (explicitDimensions) {
+    Object.entries(explicitDimensions).forEach(([key, value]) => {
+      if (value != null) dimensions[key] = value;
+    });
+  }
 
   return {
     dimensions,
