@@ -790,6 +790,20 @@ export default function App() {
   const [institution, setInstitution] = useState(() => {
     return localStorage.getItem("fm_institution") || "uc";
   });
+  const [selectedListing, setSelectedListing] = useState(null);
+  const [previousStage, setPreviousStage] = useState("intro");
+
+  function viewListing(listing) {
+    setPreviousStage(stage);
+    setSelectedListing(listing);
+    setStage("detail");
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }
+
+  function closeListing() {
+    setSelectedListing(null);
+    setStage(previousStage);
+  }
 
   function handleInstitutionChange(id) {
     setInstitution(id);
@@ -944,6 +958,7 @@ export default function App() {
           savedListings={savedListings}
           isSavedView={true}
           hasQuizzed={hasQuizzed}
+          onView={viewListing}
         />
       )}
  
@@ -959,6 +974,7 @@ export default function App() {
           onSave={onSave}
           savedListings={savedListings}
           hasQuizzed={hasQuizzed}
+          onView={viewListing}
         />
       )}
  
@@ -967,6 +983,17 @@ export default function App() {
           onSubmit={submitListing}
           onCancel={() => setStage("intro")}
           error={postError}
+        />
+      )}
+
+      {stage === "detail" && selectedListing && (
+        <ListingDetail
+          listing={selectedListing}
+          onBack={closeListing}
+          onMarkFilled={markFilled}
+          sessionContact={sessionContact}
+          onSave={onSave}
+          savedListings={savedListings}
         />
       )}
  
@@ -1267,11 +1294,12 @@ function Intro({ onStart, onPost, institution, onInstitutionChange, userListings
                   ) : (
                     <div style={{
                       width: 52, height: 52, borderRadius: 10,
-                      background: "#2d3f7c", color: "#fff",
+                      background: "#F7F6F2",
                       display: "flex", alignItems: "center", justifyContent: "center",
-                      fontSize: 15, fontWeight: 700, flexShrink: 0,
+                      flexShrink: 0, padding: 4,
+                      border: "1.5px solid #dde3f0",
                     }}>
-                      {listing.title[0]}
+                      <Logo size={38} />
                     </div>
                   )}
                   <div style={{ flex: 1 }}>
@@ -1645,6 +1673,8 @@ page: {
     lineHeight: 1.65,
     color: "#4a5568",
     marginBottom: 12,
+    wordBreak: "break-word",
+    overflowWrap: "break-word",
   },
   previewTakeQuiz: {
     fontFamily: "'Inter', sans-serif",
@@ -2047,7 +2077,7 @@ function HowMatchingWorks() {
   );
 }
  
-function Results({ profile, ranked, onRestart, onPost, loadingListings, onMarkFilled, sessionContact, onSave, savedListings, isSavedView, hasQuizzed }) {
+function Results({ profile, ranked, onRestart, onPost, loadingListings, onMarkFilled, sessionContact, onSave, savedListings, isSavedView, hasQuizzed, onView }) {
   const [suburbFilter, setSuburbFilter] = useState("all");
   const [sortBy, setSortBy] = useState("match");
  
@@ -2193,7 +2223,7 @@ function Results({ profile, ranked, onRestart, onPost, loadingListings, onMarkFi
             ) : (
               <div style={styles.cardsCol}>
                 {groups.map((listing) => (
-                  <ListingCard key={listing.id} listing={listing} onMarkFilled={onMarkFilled} sessionContact={sessionContact} onSave={onSave} savedListings={savedListings} hasQuizzed={hasQuizzed} onTakeQuiz={onRestart} />
+                  <ListingCard key={listing.id} listing={listing} onMarkFilled={onMarkFilled} sessionContact={sessionContact} onSave={onSave} savedListings={savedListings} hasQuizzed={hasQuizzed} onTakeQuiz={onRestart} onView={onView} />
                 ))}
               </div>
             )}
@@ -2206,7 +2236,7 @@ function Results({ profile, ranked, onRestart, onPost, loadingListings, onMarkFi
             ) : (
               <div style={styles.cardsCol}>
                 {solos.map((listing) => (
-                  <ListingCard key={listing.id} listing={listing} onMarkFilled={onMarkFilled} sessionContact={sessionContact} onSave={onSave} savedListings={savedListings} hasQuizzed={hasQuizzed} onTakeQuiz={onRestart} />
+                  <ListingCard key={listing.id} listing={listing} onMarkFilled={onMarkFilled} sessionContact={sessionContact} onSave={onSave} savedListings={savedListings} hasQuizzed={hasQuizzed} onTakeQuiz={onRestart} onView={onView} />
                 ))}
               </div>
             )}
@@ -2230,19 +2260,7 @@ function EmptyState({ text }) {
   return <div style={styles.emptyState}>{text}</div>;
 }
  
-function getInitials(title) {
-  if (!title) return "?";
-  const words = title.trim().split(/\s+/);
-  if (words.length === 1) return words[0][0].toUpperCase();
-  return (words[0][0] + words[words.length - 1][0]).toUpperCase();
-}
- 
-function getAvatarColor(title) {
-  const colors = ["#1A9090", "#1A9090", "#E8746A", "#6B9E78", "#8B7BB5", "#C4884A"];
-  let hash = 0;
-  for (let i = 0; i < (title || "").length; i++) hash += title.charCodeAt(i);
-  return colors[hash % colors.length];
-}
+
  
 function timeAgo(ts) {
   if (!ts) return "";
@@ -2459,7 +2477,7 @@ const foundStyles = {
   },
 };
 
-function ListingCard({ listing, onMarkFilled, sessionContact, onSave, savedListings, hasQuizzed, onTakeQuiz }) {
+function ListingCard({ listing, onMarkFilled, sessionContact, onSave, savedListings, hasQuizzed, onTakeQuiz, onView }) {
   const [revealed, setRevealed] = useState(false);
   const tokens = JSON.parse(localStorage.getItem('fm_tokens') || '{}');
   const isOwner = !!tokens[listing.id];
@@ -2469,10 +2487,10 @@ function ListingCard({ listing, onMarkFilled, sessionContact, onSave, savedListi
     : null;
   const spotsLeft = listing.spotsNeeded ?? null;
   return (
-    <div className="fm-card" style={styles.card}>
+    <div className="fm-card" style={{ ...styles.card, cursor: onView ? "pointer" : "default" }} onClick={() => onView && onView(listing)}>
       <div style={styles.cardTopRow}>
-        <div style={{ ...styles.avatar, background: getAvatarColor(listing.title) }}>
-          {getInitials(listing.title)}
+        <div style={{ ...styles.avatar, background: "#F7F6F2", padding: 4 }}>
+          <Logo size={32} />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 2 }}>
@@ -2493,12 +2511,12 @@ function ListingCard({ listing, onMarkFilled, sessionContact, onSave, savedListi
         <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
           {hasQuizzed
             ? <div style={styles.matchBadge}>{listing.score}% match</div>
-            : <button style={styles.matchPrompt} onClick={onTakeQuiz}>Quiz me for compatibility ✦</button>
+            : <button style={styles.matchPrompt} onClick={(e) => { e.stopPropagation(); onTakeQuiz(); }}>Quiz me for compatibility ✦</button>
           }
           {onSave && (
             <button
               style={styles.bookmarkBtn}
-              onClick={() => onSave(listing.id)}
+              onClick={(e) => { e.stopPropagation(); onSave(listing.id); }}
               title={isSaved ? "Remove from saved" : "Save listing"}
               aria-label={isSaved ? "Remove from saved" : "Save listing"}
             >
@@ -2522,7 +2540,7 @@ function ListingCard({ listing, onMarkFilled, sessionContact, onSave, savedListi
         </div>
       )}
       {isOwner && (
-        <button style={styles.markFilledBtn} onClick={() => onMarkFilled && onMarkFilled(listing.id)}>
+        <button style={styles.markFilledBtn} onClick={(e) => { e.stopPropagation(); onMarkFilled && onMarkFilled(listing.id); }}>
           ✓ Mark as filled — remove listing
         </button>
       )}
@@ -2548,7 +2566,8 @@ function ListingCard({ listing, onMarkFilled, sessionContact, onSave, savedListi
       ) : (
         <button
           style={styles.requestBtn}
-          onClick={async () => {
+          onClick={async (e) => {
+            e.stopPropagation();
             setRevealed(true);
             try {
               const current = await window.storage.get("metric:connection_requests", true);
@@ -2564,7 +2583,164 @@ function ListingCard({ listing, onMarkFilled, sessionContact, onSave, savedListi
     </div>
   );
 }
- 
+ const SMOKING_LABELS = {
+  smoke_free: "Smoke-free — no smoking or vaping",
+  outside_only: "Outside only",
+  smoking_ok: "Fine inside sometimes",
+  any: "No restrictions on smoking",
+  neutral: "Not specified",
+};
+
+const PET_LABELS = {
+  no_pets: "No pets",
+  small_pets: "Small pets are fine",
+  pets_ok: "Pets are welcome",
+  pet_friendly: "Very pet-friendly",
+  neutral: "Not specified",
+};
+
+const DIMENSION_DISPLAY_LABELS = {
+  social_lifestyle: "Social lifestyle",
+  cleanliness: "Cleanliness",
+  noise_tolerance: "Noise levels",
+  study_environment: "Study environment",
+  guests_hosting: "Guests & hosting",
+  communication_style: "Communication",
+  daily_routine: "Daily routine",
+  shared_living: "Shared living",
+  cooking_food: "Cooking & food",
+  independence_communal: "Independence",
+};
+
+function describeDimension(key, value) {
+  const rounded = Math.max(1, Math.min(4, Math.round(value)));
+  const scales = {
+    cleanliness: ["Pretty relaxed about mess", "A bit messy sometimes", "Clean, but lived-in", "Tidy most of the time"],
+    noise_tolerance: ["Quiet most days", "Quiet weeknights, louder weekends", "Fairly lively", "Loud and social most of the time"],
+    guests_hosting: ["Rarely has guests over", "Occasional guests, with a heads-up", "Fairly often has guests", "Very social, guests all the time"],
+  };
+  if (scales[key]) return scales[key][rounded - 1];
+  const generic = ["Low", "Below average", "Above average", "High"];
+  return `${generic[rounded - 1]} ${DIMENSION_DISPLAY_LABELS[key]?.toLowerCase() || key}`;
+}
+
+function ListingDetail({ listing, onBack, onMarkFilled, sessionContact, onSave, savedListings }) {
+  const [revealed, setRevealed] = useState(false);
+  const tokens = JSON.parse(localStorage.getItem('fm_tokens') || '{}');
+  const isOwner = !!tokens[listing.id];
+  const isSaved = savedListings && savedListings.includes(listing.id);
+  const spotsLeft = listing.spotsNeeded ?? null;
+
+  const dealBreakers = listing.dealBreakers || {};
+  const dimensions = listing.fullQuizProfile?.dimensions || listing.miniQuizProfile?.dimensions || null;
+
+  const vibeTagLabels = Object.keys(listing.tags || {})
+    .map((key) => NZ_TAG_OPTIONS.find((t) => t.key === key)?.label)
+    .filter(Boolean);
+
+  return (
+    <div style={styles.formWrap}>
+      <button
+        type="button"
+        onClick={onBack}
+        style={{ border: "none", background: "transparent", color: COLORS.inkSoft, fontSize: 13, fontWeight: 600, cursor: "pointer", padding: 0, marginBottom: 20 }}
+      >
+        ← Back
+      </button>
+
+      {listing.photo ? (
+        <img src={listing.photo} alt="Flat" style={{ width: "100%", maxHeight: 340, objectFit: "cover", borderRadius: 16, marginBottom: 20 }} />
+      ) : (
+        <div style={{ width: "100%", height: 180, borderRadius: 16, background: "#F7F6F2", border: "1.5px solid #dde3f0", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
+          <Logo size={56} />
+        </div>
+      )}
+
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, flexWrap: "wrap", marginBottom: 6 }}>
+        <h1 style={{ ...styles.h2, marginBottom: 0 }}>{listing.crew || listing.title}</h1>
+        {spotsLeft !== null && (
+          <span style={styles.spotsBadge}>{spotsLeft} spot{spotsLeft !== 1 ? "s" : ""} open</span>
+        )}
+      </div>
+      <StatusBadge status={listing.status || "looking"} />
+      <div style={{ fontSize: 14, color: COLORS.inkSoft, marginBottom: 20 }}>
+        {listing.area} · {listing.budget} · Move in {listing.moveIn}
+        {listing.distanceKm != null ? ` · ~${listing.distanceKm}km from campus` : ""}
+      </div>
+
+      <div style={{ marginBottom: 28 }}>
+        <div style={{ ...styles.sectionLabel, marginBottom: 10 }}>ABOUT</div>
+        <p style={{ fontSize: 15, lineHeight: 1.75, color: COLORS.ink, wordBreak: "break-word" }}>{listing.bio}</p>
+      </div>
+
+      {vibeTagLabels.length > 0 && (
+        <div style={{ marginBottom: 28 }}>
+          <div style={{ ...styles.sectionLabel, marginBottom: 10 }}>VIBE TAGS</div>
+          <div style={styles.tagGrid}>
+            {vibeTagLabels.map((label) => (
+              <span key={label} style={styles.tagBtnActive}>{label}</span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div style={{ marginBottom: 28 }}>
+        <div style={{ ...styles.sectionLabel, marginBottom: 10 }}>DEAL-BREAKERS</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <div style={{ fontSize: 14, color: COLORS.ink }}>
+            🚬 <strong>Smoking:</strong> {SMOKING_LABELS[dealBreakers.smoking] || "Not specified"}
+          </div>
+          <div style={{ fontSize: 14, color: COLORS.ink }}>
+            🐾 <strong>Pets:</strong> {PET_LABELS[dealBreakers.pets] || "Not specified"}
+          </div>
+        </div>
+      </div>
+
+      {dimensions && (
+        <div style={{ marginBottom: 28 }}>
+          <div style={{ ...styles.sectionLabel, marginBottom: 10 }}>HOW THIS FLAT LIVES</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {Object.entries(dimensions).map(([key, value]) => (
+              <div key={key} style={{ fontSize: 14, color: COLORS.ink, display: "flex", justifyContent: "space-between", borderBottom: "1px solid #f0f0f0", paddingBottom: 6 }}>
+                <span style={{ color: COLORS.inkSoft }}>{DIMENSION_DISPLAY_LABELS[key] || key}</span>
+                <span style={{ fontWeight: 600 }}>{describeDimension(key, value)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {isOwner && (
+        <button style={styles.markFilledBtn} onClick={() => onMarkFilled && onMarkFilled(listing.id)}>
+          ✓ Mark as filled — remove listing
+        </button>
+      )}
+
+      <div style={{ marginTop: 12 }}>
+        {revealed && listing.contact ? (
+          <div style={styles.contactReveal}>
+            Get in touch: <strong>{listing.contact}</strong>
+          </div>
+        ) : (
+          <button
+            style={{ ...styles.requestBtn, width: "100%", padding: "16px" }}
+            onClick={async () => {
+              setRevealed(true);
+              try {
+                const current = await window.storage.get("metric:connection_requests", true);
+                const count = current ? parseInt(current.value) : 0;
+                await window.storage.set("metric:connection_requests", String(count + 1), true);
+              } catch {}
+            }}
+            disabled={!listing.contact}
+          >
+            {listing.contact ? "Request to join" : "Sample listing"}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
 /* ---------------------------------------------
    POST FORM
 --------------------------------------------- */
@@ -2875,10 +3051,14 @@ function PostForm({ onSubmit, onCancel, error }) {
           <textarea
             style={styles.textarea}
             rows={4}
+            maxLength={500}
             placeholder="Keep it real — this is what people match on"
             value={form.bio}
-            onChange={(e) => update("bio", e.target.value)}
+            onChange={(e) => update("bio", e.target.value.slice(0, 500))}
           />
+          <div style={{ fontSize: 11.5, color: COLORS.inkSoft, textAlign: "right" }}>
+            {form.bio.length}/500 characters
+          </div>
         </div>
  
         <div style={styles.fieldGroup}>
@@ -4007,6 +4187,8 @@ const styles = {
     lineHeight: 1.65,
     color: COLORS.ink,
     marginBottom: 14,
+    wordBreak: "break-word",
+    overflowWrap: "break-word",
   },
   requestBtn: {
     fontFamily: FONT_BODY,
