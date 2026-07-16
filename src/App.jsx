@@ -116,6 +116,7 @@ function suburbDistance(suburbName, city = "christchurch") {
 --------------------------------------------- */
 
 const COMPATIBILITY_DIMENSIONS = [
+  { key: "life_stage", label: "Age / life stage", weight: 1.3 },
   { key: "social_lifestyle", label: "Social lifestyle", weight: 1.15 },
   { key: "cleanliness", label: "Cleanliness", weight: 1.2 },
   { key: "noise_tolerance", label: "Noise tolerance", weight: 1.1 },
@@ -146,6 +147,7 @@ const QUESTION_CATEGORIES = {
 };
 
 const QUESTION_TO_CATEGORY = {
+  age: "About you",
   dishes: "Home habits",
   noise: "Home habits",
   guests: "Living with others",
@@ -320,6 +322,20 @@ const QUESTIONS = [
     ],
   },
   {
+    id: "age",
+    text: "What age bracket are you in?",
+    kind: "dimension",
+    dimensions: [
+      { key: "life_stage", weight: 1.3 },
+    ],
+    options: [
+      { label: "18–19", scores: { life_stage: 1 } },
+      { label: "20–21", scores: { life_stage: 2 } },
+      { label: "22–23", scores: { life_stage: 3 } },
+      { label: "24+", scores: { life_stage: 4 } },
+    ],
+  },
+  {
     id: "smoking",
     text: "What’s your comfort level with smoking or vaping in the flat?",
     kind: "dealbreaker",
@@ -370,6 +386,20 @@ const QUESTIONS = [
 ];
 
 const MINI_QUIZ_QUESTIONS = [
+  {
+    id: "age",
+    kind: "dimension",
+    text: "What age bracket is most of the flat?",
+    dimensions: [
+      { key: "life_stage", weight: 1.3 },
+    ],
+    options: [
+      { label: "18–19", scores: { life_stage: 1 } },
+      { label: "20–21", scores: { life_stage: 2 } },
+      { label: "22–23", scores: { life_stage: 3 } },
+      { label: "24+", scores: { life_stage: 4 } },
+    ],
+  },
   {
     id: "smoking",
     kind: "dealbreaker",
@@ -2601,6 +2631,7 @@ const PET_LABELS = {
 };
 
 const DIMENSION_DISPLAY_LABELS = {
+  life_stage: "Age / life stage",
   social_lifestyle: "Social lifestyle",
   cleanliness: "Cleanliness",
   noise_tolerance: "Noise levels",
@@ -2616,6 +2647,7 @@ const DIMENSION_DISPLAY_LABELS = {
 function describeDimension(key, value) {
   const rounded = Math.max(1, Math.min(4, Math.round(value)));
   const scales = {
+    life_stage: ["Mostly 18–19", "Mostly 20–21", "Mostly 22–23", "Mostly 24+"],
     cleanliness: ["Pretty relaxed about mess", "A bit messy sometimes", "Clean, but lived-in", "Tidy most of the time"],
     noise_tolerance: ["Quiet most days", "Quiet weeknights, louder weekends", "Fairly lively", "Loud and social most of the time"],
     guests_hosting: ["Rarely has guests over", "Occasional guests, with a heads-up", "Fairly often has guests", "Very social, guests all the time"],
@@ -2644,7 +2676,7 @@ function ListingDetail({ listing, onBack, onMarkFilled, sessionContact, onSave, 
       <button
         type="button"
         onClick={onBack}
-        style={{ border: "none", background: "transparent", color: COLORS.inkSoft, fontSize: 13, fontWeight: 600, cursor: "pointer", padding: 0, marginBottom: 20 }}
+        style={{ border: "none", background: "transparent", color: COLORS.inkSoft, fontSize: 13, fontWeight: 600, cursor: "pointer", padding: 0, marginBottom: 20, alignSelf: "flex-start", display: "block", textAlign: "left" }}
       >
         ← Back
       </button>
@@ -2657,27 +2689,29 @@ function ListingDetail({ listing, onBack, onMarkFilled, sessionContact, onSave, 
         </div>
       )}
 
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, flexWrap: "wrap", marginBottom: 6 }}>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 6, marginBottom: 6 }}>
         <h1 style={{ ...styles.h2, marginBottom: 0 }}>{listing.crew || listing.title}</h1>
         {spotsLeft !== null && (
           <span style={styles.spotsBadge}>{spotsLeft} spot{spotsLeft !== 1 ? "s" : ""} open</span>
         )}
       </div>
-      <StatusBadge status={listing.status || "looking"} />
-      <div style={{ fontSize: 14, color: COLORS.inkSoft, marginBottom: 20 }}>
+      <div style={{ display: "flex", justifyContent: "center" }}>
+        <StatusBadge status={listing.status || "looking"} />
+      </div>
+      <div style={{ fontSize: 14, color: COLORS.inkSoft, marginBottom: 20, textAlign: "center" }}>
         {listing.area} · {listing.budget} · Move in {listing.moveIn}
         {listing.distanceKm != null ? ` · ~${listing.distanceKm}km from campus` : ""}
       </div>
 
-      <div style={{ marginBottom: 28 }}>
+      <div style={{ marginBottom: 28, textAlign: "center" }}>
         <div style={{ ...styles.sectionLabel, marginBottom: 10 }}>ABOUT</div>
         <p style={{ fontSize: 15, lineHeight: 1.75, color: COLORS.ink, wordBreak: "break-word" }}>{listing.bio}</p>
       </div>
 
       {vibeTagLabels.length > 0 && (
-        <div style={{ marginBottom: 28 }}>
+        <div style={{ marginBottom: 28, textAlign: "center" }}>
           <div style={{ ...styles.sectionLabel, marginBottom: 10 }}>VIBE TAGS</div>
-          <div style={styles.tagGrid}>
+          <div style={{ ...styles.tagGrid, justifyContent: "center" }}>
             {vibeTagLabels.map((label) => (
               <span key={label} style={styles.tagBtnActive}>{label}</span>
             ))}
@@ -2686,7 +2720,7 @@ function ListingDetail({ listing, onBack, onMarkFilled, sessionContact, onSave, 
       )}
 
       <div style={{ marginBottom: 28 }}>
-        <div style={{ ...styles.sectionLabel, marginBottom: 10 }}>DEAL-BREAKERS</div>
+        <div style={{ ...styles.sectionLabel, marginBottom: 10 }}>HOUSE PREFERENCES</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           <div style={{ fontSize: 14, color: COLORS.ink }}>
             🚬 <strong>Smoking:</strong> {SMOKING_LABELS[dealBreakers.smoking] || "Not specified"}

@@ -1,4 +1,5 @@
 export const DEFAULT_DIMENSIONS = [
+  { key: 'life_stage', label: 'Age / life stage', weight: 1.3 },
   { key: 'social_lifestyle', label: 'Social lifestyle', weight: 1.15 },
   { key: 'cleanliness', label: 'Cleanliness', weight: 1.2 },
   { key: 'noise_tolerance', label: 'Noise tolerance', weight: 1.1 },
