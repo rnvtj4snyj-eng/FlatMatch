@@ -2977,35 +2977,35 @@ function PostForm({ onSubmit, onCancel, error }) {
             </button>
           </div>
 
-          <div style={styles.fieldGroup}>
+          <div style={{ ...styles.fieldGroup, marginBottom: 22 }}>
             <button
               type="button"
               onClick={() => { setStep(3); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-              style={{ width: "100%", textAlign: "left", border: "1.5px dashed #7C5CBF", borderRadius: 16, padding: "16px 18px", background: "#f8f7ff", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16, flexWrap: "wrap", cursor: "pointer" }}
+              style={{ width: "100%", textAlign: "left", border: "2px solid #2d3f7c", borderRadius: 16, padding: "16px 18px", background: "linear-gradient(135deg, rgba(45,63,124,0.06), rgba(124,92,191,0.08))", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16, flexWrap: "wrap", cursor: "pointer" }}
             >
               <div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: "#1a2540", marginBottom: 4 }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: "#2d3f7c", marginBottom: 4 }}>
                   Want even sharper matches? ✦
                 </div>
                 <div style={{ fontSize: 12.5, color: COLORS.inkSoft, lineHeight: 1.5 }}>
                   Take the full compatibility quiz — 2 extra minutes, better matches for everyone who finds your listing.
                 </div>
               </div>
-              <span style={{ fontFamily: FONT_BODY, fontSize: 13, fontWeight: 700, color: "#fff", background: "#7C5CBF", borderRadius: 10, padding: "10px 18px", whiteSpace: "nowrap" }}>
+              <span style={{ fontFamily: FONT_BODY, fontSize: 13, fontWeight: 700, color: "#fff", background: "#2d3f7c", borderRadius: 10, padding: "10px 18px", whiteSpace: "nowrap" }}>
                 Take full quiz →
               </span>
             </button>
           </div>
 
           <div style={styles.fieldGroup}>
-            <div style={{ border: "1px solid #eef2f7", borderRadius: 16, padding: 16, background: "#fcfdff" }}>
+            <div style={{ border: "1.5px solid rgba(26,144,144,0.35)", borderRadius: 16, padding: 16, background: "#f5fbfb" }}>
               <strong style={{ fontSize: 16, color: COLORS.ink, display: "block", marginBottom: 4 }}>Your flat's compatibility quiz</strong>
               <p style={{ fontSize: 13, color: COLORS.inkSoft, marginBottom: 16, lineHeight: 1.6 }}>
                 Every question here feeds straight into how well you're matched with searchers — answer honestly for the best matches.
               </p>
               <div style={{ display: "grid", gap: 12 }}>
                 {MINI_QUIZ_QUESTIONS.map((q) => (
-                  <div key={q.id} style={{ border: "1px solid #eef2f7", borderRadius: 12, padding: 10, background: "#fff" }}>
+                  <div key={q.id} style={{ border: "1px solid #dde9e9", borderRadius: 12, padding: 10, background: "#fff" }}>
                     <div style={{ fontSize: 12, color: COLORS.inkSoft, marginBottom: 8 }}>{q.text}</div>
                     <div style={{ display: "grid", gap: 8 }}>
                       {q.options.map((opt, idx) => (
