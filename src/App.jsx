@@ -930,6 +930,7 @@ export default function App() {
           userListings={userListings}
           loadingListings={loadingListings}
           onMarkFilled={markFilled}
+          onView={viewListing}
         />
       )}
  
@@ -1211,7 +1212,7 @@ const ARCHETYPES = [
   { id: "chill_flatmate", emoji: "😌", name: "Chill Flatmate", tagline: "Low-key, easy-going" },
 ];
 
-function Intro({ onStart, onPost, institution, onInstitutionChange, userListings, loadingListings, onMarkFilled }) {
+function Intro({ onStart, onPost, institution, onInstitutionChange, userListings, loadingListings, onMarkFilled, onView }) {
   const [activeArchetype, setActiveArchetype] = useState(null);
   const currentInst = NZ_INSTITUTIONS.find(i => i.id === institution) || NZ_INSTITUTIONS[0];
   const realListings = (userListings || []).filter(l => !l.institution || l.institution === institution);
@@ -1279,7 +1280,7 @@ function Intro({ onStart, onPost, institution, onInstitutionChange, userListings
               const tokens = JSON.parse(localStorage.getItem('fm_tokens') || '{}');
               const isOwner = !!tokens[listing.id];
               return (
-              <div key={listing.id} style={introStyles.previewCard}>
+              <div key={listing.id} style={{ ...introStyles.previewCard, cursor: onView ? "pointer" : "default" }} onClick={() => onView && onView(listing)}>
                 <div style={introStyles.previewCardTop}>
                   {listing.photo ? (
                     <img
@@ -1313,7 +1314,7 @@ function Intro({ onStart, onPost, institution, onInstitutionChange, userListings
                 {isOwner && (
                   <button
                     style={styles.markFilledBtn}
-                    onClick={() => onMarkFilled && onMarkFilled(listing.id)}
+                    onClick={(e) => { e.stopPropagation(); onMarkFilled && onMarkFilled(listing.id); }}
                   >
                     ✓ Mark as filled — remove listing
                   </button>
