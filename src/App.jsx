@@ -1267,6 +1267,31 @@ function Intro({ onStart, onPost, institution, onInstitutionChange, userListings
         </p>
       </section>
 
+      {/* ── VALUE PROP SECTION ── */}
+      <section style={introStyles.problemSection}>
+        <div style={introStyles.problemGrid}>
+          <div style={introStyles.problemLeft}>
+            <h2 style={introStyles.problemHeading}>Looking for a Flat?</h2>
+            <p style={{ ...introStyles.problemText, fontSize: 14.5, lineHeight: 1.7 }}>
+              Finding a flat shouldn't mean scrolling through hundreds of Facebook posts
+              hoping something feels right. FlatMatch helps you discover rooms that suit
+              your budget, preferred location, move-in date, and the kind of flat you're
+              looking for — all in one place. Take the optional compatibility quiz to see
+              which flats are the best fit for you before you reach out.
+            </p>
+          </div>
+          <div style={introStyles.problemRight}>
+            <h2 style={introStyles.problemHeadingLight}>Filling a Room?</h2>
+            <p style={{ ...introStyles.solutionText, fontSize: 14.5, lineHeight: 1.7 }}>
+              Finding someone who needs a room is easy — finding someone who fits your
+              flat is harder. Create a listing and reach students from your university
+              who are looking for the same kind of flat, making it easier to find someone
+              who's a good fit for your household before they move in.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* ── QUIZ NUDGE BANNER ── */}
       <div style={{ width: "100%", maxWidth: 860, margin: "0 auto", padding: "0 24px 20px", alignSelf: "center", boxSizing: "border-box" }}>
         <section style={introStyles.quizBanner}>
@@ -1379,30 +1404,7 @@ function Intro({ onStart, onPost, institution, onInstitutionChange, userListings
         <MetricsStrip />
       </div>
 
-      {/* ── 5. THE PROBLEM ── */}
-      <section style={introStyles.problemSection}>
-        <div style={introStyles.problemGrid}>
-          <div style={introStyles.problemLeft}>
-            <h2 style={introStyles.problemHeading}>Looking for a Flat?</h2>
-            <p style={{ ...introStyles.problemText, fontSize: 14.5, lineHeight: 1.7 }}>
-              Finding a flat shouldn't mean scrolling through hundreds of Facebook posts
-              hoping something feels right. FlatMatch helps you discover rooms that suit
-              your budget, preferred location, move-in date, and the kind of flat you're
-              looking for — all in one place. Take the optional compatibility quiz to see
-              which flats are the best fit for you before you reach out.
-            </p>
-          </div>
-          <div style={introStyles.problemRight}>
-            <h2 style={introStyles.problemHeadingLight}>Filling a Room?</h2>
-            <p style={{ ...introStyles.solutionText, fontSize: 14.5, lineHeight: 1.7 }}>
-              Finding someone who needs a room is easy — finding someone who fits your
-              flat is harder. Create a listing and reach students from your university
-              who are looking for the same kind of flat, making it easier to find someone
-              who's a good fit for your household before they move in.
-            </p>
-          </div>
-        </div>
-      </section>
+      
 
       {/* ── 6. ARCHETYPE TEASER ── */}
       <section style={introStyles.archetypeSection}>
@@ -1496,7 +1498,7 @@ page: {
     fontSize: 17,
     lineHeight: 1.75,
     color: "#4a5568",
-    maxWidth: 520,
+    maxWidth: 720,
     marginBottom: 0,
   },
   quizBanner: {
