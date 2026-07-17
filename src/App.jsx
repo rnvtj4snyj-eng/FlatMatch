@@ -2686,7 +2686,15 @@ function ListingDetail({ listing, onBack, onMarkFilled, sessionContact, onSave, 
   const spotsLeft = listing.spotsNeeded ?? null;
 
   const dealBreakers = listing.dealBreakers || {};
-  const dimensions = listing.fullQuizProfile?.dimensions || listing.miniQuizProfile?.dimensions || null;
+
+  // Public display only shows the literal questions actually answered —
+  // NOT the full blended dimension set used internally for matching.
+  const tookFullQuiz = !!listing.fullQuizProfile?.dimensions;
+  const displayQuestions = tookFullQuiz ? QUESTIONS : MINI_QUIZ_QUESTIONS;
+  const displayAnswers = tookFullQuiz ? listing.fullQuizProfile?.answers : listing.miniQuizProfile?.answers;
+  const answeredQuestions = displayAnswers
+    ? displayQuestions.filter((q) => q.kind === "dimension" && displayAnswers[q.id] != null)
+    : [];
 
   const vibeTagLabels = Object.keys(listing.tags || {})
     .map((key) => NZ_TAG_OPTIONS.find((t) => t.key === key)?.label)
@@ -2769,16 +2777,20 @@ function ListingDetail({ listing, onBack, onMarkFilled, sessionContact, onSave, 
         </div>
       </div>
 
-      {dimensions && (
+      {answeredQuestions.length > 0 && (
         <div style={{ marginBottom: 28 }}>
           <div style={{ ...styles.sectionLabel, marginBottom: 10 }}>HOW THIS FLAT LIVES</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {Object.entries(dimensions).map(([key, value]) => (
-              <div key={key} style={{ fontSize: 14, color: COLORS.ink, display: "flex", justifyContent: "space-between", borderBottom: "1px solid #f0f0f0", paddingBottom: 6 }}>
-                <span style={{ color: COLORS.inkSoft }}>{DIMENSION_DISPLAY_LABELS[key] || key}</span>
-                <span style={{ fontWeight: 600 }}>{describeDimension(key, value)}</span>
-              </div>
-            ))}
+            {answeredQuestions.map((q) => {
+              const selectedIndex = displayAnswers[q.id];
+              const option = q.options[selectedIndex];
+              return (
+                <div key={q.id} style={{ fontSize: 14, color: COLORS.ink, display: "flex", justifyContent: "space-between", gap: 12, borderBottom: "1px solid #f0f0f0", paddingBottom: 6 }}>
+                  <span style={{ color: COLORS.inkSoft, flexShrink: 0 }}>{q.text}</span>
+                  <span style={{ fontWeight: 600, textAlign: "right" }}>{option?.label}</span>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
@@ -2974,7 +2986,7 @@ function PostForm({ onSubmit, onCancel, error }) {
 
     const miniQuizResult = buildMiniQuizProfile(miniQuizAnswers);
     const miniQuizProfile = Object.keys(miniQuizResult.dimensions).length > 0
-      ? { dimensions: miniQuizResult.dimensions }
+      ? { dimensions: miniQuizResult.dimensions, answers: miniQuizAnswers }
       : null;
 
     const fullQuizProfileData = buildCompatibilityProfile(fullQuizAnswers);
@@ -2983,6 +2995,7 @@ function PostForm({ onSubmit, onCancel, error }) {
           dimensions: fullQuizProfileData.dimensions,
           dealBreakers: fullQuizProfileData.dealBreakers,
           housingPreferences: fullQuizProfileData.housingPreferences,
+          answers: fullQuizAnswers,
         }
       : null;
 
