@@ -2709,6 +2709,79 @@ function describeDimension(key, value) {
   return `${generic[rounded - 1]} ${DIMENSION_DISPLAY_LABELS[key]?.toLowerCase() || key}`;
 }
 
+function PhotoCarousel({ photos, primaryPhoto }) {
+  const startIndex = Math.max(0, photos.indexOf(primaryPhoto));
+  const [index, setIndex] = useState(startIndex);
+
+  function goPrev() {
+    setIndex((i) => (i - 1 + photos.length) % photos.length);
+  }
+  function goNext() {
+    setIndex((i) => (i + 1) % photos.length);
+  }
+
+  return (
+    <div style={{ marginBottom: 20 }}>
+      <div style={{ position: "relative", width: "100%", height: 440, borderRadius: 16, overflow: "hidden", background: "#F7F6F2" }}>
+        <img
+          src={photos[index]}
+          alt={`Flat photo ${index + 1}`}
+          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+        />
+        <button
+          type="button"
+          onClick={goPrev}
+          aria-label="Previous photo"
+          style={{
+            position: "absolute", top: "50%", left: 14, transform: "translateY(-50%)",
+            width: 42, height: 42, borderRadius: "50%",
+            background: "rgba(0,0,0,0.5)", color: "#fff", border: "none",
+            fontSize: 20, cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}
+        >
+          ‹
+        </button>
+        <button
+          type="button"
+          onClick={goNext}
+          aria-label="Next photo"
+          style={{
+            position: "absolute", top: "50%", right: 14, transform: "translateY(-50%)",
+            width: 42, height: 42, borderRadius: "50%",
+            background: "rgba(0,0,0,0.5)", color: "#fff", border: "none",
+            fontSize: 20, cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}
+        >
+          ›
+        </button>
+        <div style={{
+          position: "absolute", bottom: 12, left: "50%", transform: "translateX(-50%)",
+          fontFamily: FONT_BODY, fontSize: 12, fontWeight: 600, color: "#fff",
+          background: "rgba(0,0,0,0.5)", borderRadius: 999, padding: "4px 12px",
+        }}>
+          {index + 1} / {photos.length}
+        </div>
+      </div>
+      <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 10 }}>
+        {photos.map((_, i) => (
+          <button
+            key={i}
+            type="button"
+            onClick={() => setIndex(i)}
+            aria-label={`Go to photo ${i + 1}`}
+            style={{
+              width: 8, height: 8, borderRadius: "50%", border: "none", cursor: "pointer", padding: 0,
+              background: i === index ? COLORS.teal : COLORS.border,
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function ListingDetail({ listing, onBack, onMarkFilled, sessionContact, onSave, savedListings }) {
   const [revealed, setRevealed] = useState(false);
   const tokens = JSON.parse(localStorage.getItem('fm_tokens') || '{}');
@@ -2744,14 +2817,7 @@ function ListingDetail({ listing, onBack, onMarkFilled, sessionContact, onSave, 
       </div>
 
       {listing.photos && listing.photos.length > 1 ? (
-        <div style={{ marginBottom: 20 }}>
-          <img src={listing.photo || listing.photos[0]} alt="Flat" style={{ width: "100%", maxHeight: 340, objectFit: "cover", borderRadius: 16, marginBottom: 8 }} />
-          <div style={{ display: "flex", gap: 8, overflowX: "auto" }}>
-            {listing.photos.map((url, i) => (
-              <img key={i} src={url} alt={`Flat photo ${i + 1}`} style={{ width: 70, height: 70, objectFit: "cover", borderRadius: 10, flexShrink: 0, border: url === listing.photo ? `2px solid ${COLORS.teal}` : "2px solid transparent" }} />
-            ))}
-          </div>
-        </div>
+        <PhotoCarousel photos={listing.photos} primaryPhoto={listing.photo} />
       ) : listing.photo ? (
         <img src={listing.photo} alt="Flat" style={{ width: "100%", maxHeight: 340, objectFit: "cover", borderRadius: 16, marginBottom: 20 }} />
       ) : (
