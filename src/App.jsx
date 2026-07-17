@@ -2269,10 +2269,12 @@ function Results({ profile, ranked, onRestart, onPost, loadingListings, onMarkFi
             {groups.length === 0 ? (
               <EmptyState text="No groups match this filter yet — try a different suburb." />
             ) : (
-              <div style={styles.cardsCol}>
-                {groups.map((listing) => (
-                  <ListingCard key={listing.id} listing={listing} onMarkFilled={onMarkFilled} sessionContact={sessionContact} onSave={onSave} savedListings={savedListings} hasQuizzed={hasQuizzed} onTakeQuiz={onRestart} onView={onView} />
-                ))}
+              <div style={styles.cardsColWrapper}>
+                <div style={styles.cardsCol}>
+                  {groups.map((listing) => (
+                    <ListingCard key={listing.id} listing={listing} onMarkFilled={onMarkFilled} sessionContact={sessionContact} onSave={onSave} savedListings={savedListings} hasQuizzed={hasQuizzed} onTakeQuiz={onRestart} onView={onView} />
+                  ))}
+                </div>
               </div>
             )}
           </div>
@@ -2282,10 +2284,12 @@ function Results({ profile, ranked, onRestart, onPost, loadingListings, onMarkFi
             {solos.length === 0 ? (
               <EmptyState text="No solo profiles match this filter yet — try a different suburb." />
             ) : (
-              <div style={styles.cardsCol}>
-                {solos.map((listing) => (
-                  <ListingCard key={listing.id} listing={listing} onMarkFilled={onMarkFilled} sessionContact={sessionContact} onSave={onSave} savedListings={savedListings} hasQuizzed={hasQuizzed} onTakeQuiz={onRestart} onView={onView} />
-                ))}
+              <div style={styles.cardsColWrapper}>
+                <div style={styles.cardsCol}>
+                  {solos.map((listing) => (
+                    <ListingCard key={listing.id} listing={listing} onMarkFilled={onMarkFilled} sessionContact={sessionContact} onSave={onSave} savedListings={savedListings} hasQuizzed={hasQuizzed} onTakeQuiz={onRestart} onView={onView} />
+                  ))}
+                </div>
               </div>
             )}
           </div>
@@ -4161,6 +4165,11 @@ const styles = {
     width: "100%",
     marginBottom: 32,
   },
+  cardsColWrapper: {
+    border: `1px solid ${COLORS.border}`,
+    borderRadius: 16,
+    padding: 4,
+  },
   sectionLabel: {
     fontFamily: FONT_BODY,
     fontSize: 13,
@@ -4173,6 +4182,9 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     gap: 14,
+    maxHeight: "70vh",
+    overflowY: "auto",
+    paddingRight: 6,
   },
   avatar: {
     width: 40,
