@@ -117,6 +117,7 @@ function suburbDistance(suburbName, city = "christchurch") {
 
 const COMPATIBILITY_DIMENSIONS = [
   { key: "life_stage", label: "Age / life stage", weight: 1.3 },
+  { key: "gender_mix", label: "Gender mix", weight: 1.3 },
   { key: "social_lifestyle", label: "Social lifestyle", weight: 1.15 },
   { key: "cleanliness", label: "Cleanliness", weight: 1.2 },
   { key: "noise_tolerance", label: "Noise tolerance", weight: 1.1 },
@@ -336,6 +337,20 @@ const QUESTIONS = [
     ],
   },
   {
+    id: "gender_mix",
+    text: "What gender mix are you hoping to flat with?",
+    kind: "dimension",
+    dimensions: [
+      { key: "gender_mix", weight: 1.3 },
+    ],
+    options: [
+      { label: "All female", scores: { gender_mix: 1 } },
+      { label: "Mostly female, open to mixed", scores: { gender_mix: 2 } },
+      { label: "Mixed, or no strong preference", scores: { gender_mix: 3 } },
+      { label: "Mostly or all male", scores: { gender_mix: 4 } },
+    ],
+  },
+  {
     id: "smoking",
     text: "What’s your comfort level with smoking or vaping in the flat?",
     kind: "dealbreaker",
@@ -398,6 +413,20 @@ const MINI_QUIZ_QUESTIONS = [
       { label: "20–21", scores: { life_stage: 2 } },
       { label: "22–23", scores: { life_stage: 3 } },
       { label: "24+", scores: { life_stage: 4 } },
+    ],
+  },
+  {
+    id: "gender_mix",
+    kind: "dimension",
+    text: "What's the gender mix of the flat?",
+    dimensions: [
+      { key: "gender_mix", weight: 1.3 },
+    ],
+    options: [
+      { label: "All female", scores: { gender_mix: 1 } },
+      { label: "Mostly female, open to mixed", scores: { gender_mix: 2 } },
+      { label: "Mixed, or no strong preference", scores: { gender_mix: 3 } },
+      { label: "Mostly or all male", scores: { gender_mix: 4 } },
     ],
   },
   {
@@ -2653,6 +2682,7 @@ const PET_LABELS = {
 
 const DIMENSION_DISPLAY_LABELS = {
   life_stage: "Age / life stage",
+  gender_mix: "Gender mix",
   social_lifestyle: "Social lifestyle",
   cleanliness: "Cleanliness",
   noise_tolerance: "Noise levels",
@@ -2669,6 +2699,7 @@ function describeDimension(key, value) {
   const rounded = Math.max(1, Math.min(4, Math.round(value)));
   const scales = {
     life_stage: ["Mostly 18–19", "Mostly 20–21", "Mostly 22–23", "Mostly 24+"],
+    gender_mix: ["All female", "Mostly female, open to mixed", "Mixed, or no strong preference", "Mostly or all male"],
     cleanliness: ["Pretty relaxed about mess", "A bit messy sometimes", "Clean, but lived-in", "Tidy most of the time"],
     noise_tolerance: ["Quiet most days", "Quiet weeknights, louder weekends", "Fairly lively", "Loud and social most of the time"],
     guests_hosting: ["Rarely has guests over", "Occasional guests, with a heads-up", "Fairly often has guests", "Very social, guests all the time"],
