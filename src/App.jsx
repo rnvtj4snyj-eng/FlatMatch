@@ -2743,7 +2743,16 @@ function ListingDetail({ listing, onBack, onMarkFilled, sessionContact, onSave, 
         </button>
       </div>
 
-      {listing.photo ? (
+      {listing.photos && listing.photos.length > 1 ? (
+        <div style={{ marginBottom: 20 }}>
+          <img src={listing.photo || listing.photos[0]} alt="Flat" style={{ width: "100%", maxHeight: 340, objectFit: "cover", borderRadius: 16, marginBottom: 8 }} />
+          <div style={{ display: "flex", gap: 8, overflowX: "auto" }}>
+            {listing.photos.map((url, i) => (
+              <img key={i} src={url} alt={`Flat photo ${i + 1}`} style={{ width: 70, height: 70, objectFit: "cover", borderRadius: 10, flexShrink: 0, border: url === listing.photo ? `2px solid ${COLORS.teal}` : "2px solid transparent" }} />
+            ))}
+          </div>
+        </div>
+      ) : listing.photo ? (
         <img src={listing.photo} alt="Flat" style={{ width: "100%", maxHeight: 340, objectFit: "cover", borderRadius: 16, marginBottom: 20 }} />
       ) : (
         <div style={{
@@ -2796,22 +2805,18 @@ function ListingDetail({ listing, onBack, onMarkFilled, sessionContact, onSave, 
         </div>
       )}
 
-      <div style={{ marginBottom: 28 }}>
-        <div style={{ ...styles.sectionLabel, marginBottom: 10 }}>FLAT CHARACTERISTICS</div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          <div style={{ fontSize: 14, color: COLORS.ink }}>
-            🚬 <strong>Smoking:</strong> {SMOKING_LABELS[dealBreakers.smoking] || "Not specified"}
-          </div>
-          <div style={{ fontSize: 14, color: COLORS.ink }}>
-            🐾 <strong>Pets:</strong> {PET_LABELS[dealBreakers.pets] || "Not specified"}
-          </div>
-        </div>
-      </div>
-
-      {answeredQuestions.length > 0 && (
+      {(answeredQuestions.length > 0 || dealBreakers.smoking || dealBreakers.pets) && (
         <div style={{ marginBottom: 28 }}>
           <div style={{ ...styles.sectionLabel, marginBottom: 10 }}>HOW THIS FLAT LIVES</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div style={{ fontSize: 14, color: COLORS.ink, display: "flex", justifyContent: "space-between", gap: 12, borderBottom: "1px solid #f0f0f0", paddingBottom: 6 }}>
+              <span style={{ color: COLORS.inkSoft, flexShrink: 0 }}>🚬 Smoking</span>
+              <span style={{ fontWeight: 600, textAlign: "right" }}>{SMOKING_LABELS[dealBreakers.smoking] || "Not specified"}</span>
+            </div>
+            <div style={{ fontSize: 14, color: COLORS.ink, display: "flex", justifyContent: "space-between", gap: 12, borderBottom: "1px solid #f0f0f0", paddingBottom: 6 }}>
+              <span style={{ color: COLORS.inkSoft, flexShrink: 0 }}>🐾 Pets</span>
+              <span style={{ fontWeight: 600, textAlign: "right" }}>{PET_LABELS[dealBreakers.pets] || "Not specified"}</span>
+            </div>
             {answeredQuestions.map((q) => {
               const selectedIndex = displayAnswers[q.id];
               const option = q.options[selectedIndex];
@@ -2919,8 +2924,8 @@ function PostForm({ onSubmit, onCancel, error }) {
   const [form, setForm] = useState(emptyForm());
   const [submitting, setSubmitting] = useState(false);
   const [validationError, setValidationError] = useState(null);
-  const [photo, setPhoto] = useState(null);
-  const [photoPreview, setPhotoPreview] = useState(null);
+  const [photos, setPhotos] = useState([]); // [{ dataUrl }]
+  const [primaryPhotoIndex, setPrimaryPhotoIndex] = useState(0);
   const [miniQuizOpen, setMiniQuizOpen] = useState(true);
   const [fullQuizOpen, setFullQuizOpen] = useState(false);
   const [miniQuizAnswers, setMiniQuizAnswers] = useState({});
@@ -2928,35 +2933,53 @@ function PostForm({ onSubmit, onCancel, error }) {
   const [step, setStep] = useState(1);
  
   function handlePhotoUpload(e) {
-    const file = e.target.files[0];
-    if (!file) return;
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
 
-    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
-    if (!allowedTypes.includes(file.type)) {
-      setValidationError("Please upload a JPG, PNG, or WEBP image — other formats (like HEIC or GIF) aren't supported yet.");
+    const remainingSlots = 5 - photos.length;
+    if (remainingSlots <= 0) {
+      setValidationError("You can upload up to 5 photos.");
       e.target.value = "";
       return;
     }
 
-    const reader = new FileReader();
-    reader.onerror = () => {
-      setValidationError("That image couldn't be loaded — try a different file.");
-      e.target.value = "";
-    };
-    reader.onloadend = () => {
-      const img = new Image();
-      img.onload = () => {
-        setValidationError(null);
-        setPhoto(reader.result);
-        setPhotoPreview(reader.result);
+    const filesToProcess = files.slice(0, remainingSlots);
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+
+    filesToProcess.forEach((file) => {
+      if (!allowedTypes.includes(file.type)) {
+        setValidationError("Please upload JPG, PNG, or WEBP images — other formats (like HEIC or GIF) aren't supported yet.");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onerror = () => {
+        setValidationError("One of those images couldn't be loaded — try a different file.");
       };
-      img.onerror = () => {
-        setValidationError("That image couldn't be loaded — try a different file.");
-        e.target.value = "";
+      reader.onloadend = () => {
+        const img = new Image();
+        img.onload = () => {
+          setValidationError(null);
+          setPhotos((prev) => prev.length >= 5 ? prev : [...prev, { dataUrl: reader.result }]);
+        };
+        img.onerror = () => {
+          setValidationError("One of those images couldn't be loaded — try a different file.");
+        };
+        img.src = reader.result;
       };
-      img.src = reader.result;
-    };
-    reader.readAsDataURL(file);
+      reader.readAsDataURL(file);
+    });
+
+    e.target.value = "";
+  }
+
+  function removePhoto(index) {
+    setPhotos((prev) => prev.filter((_, i) => i !== index));
+    setPrimaryPhotoIndex((prev) => {
+      if (index === prev) return 0;
+      if (index < prev) return prev - 1;
+      return prev;
+    });
   }
  
   function update(field, value) {
@@ -3056,7 +3079,8 @@ function PostForm({ onSubmit, onCancel, error }) {
       bio: form.bio.trim(),
       contact: form.contact.trim(),
       tags,
-      photo: photo || null,
+      photos: photos.map((p) => p.dataUrl),
+      primaryPhotoIndex: photos.length > 0 ? primaryPhotoIndex : 0,
       institution: form.institution,
       miniQuizProfile,
       fullQuizProfile,
@@ -3181,25 +3205,62 @@ function PostForm({ onSubmit, onCancel, error }) {
         </div>
  
         <div style={styles.fieldGroup}>
-          <label style={styles.label}>Flat photo (optional but recommended)</label>
-          <div style={styles.photoUploadBox}>
-            {photoPreview ? (
-              <div style={{ position: "relative", display: "inline-block" }}>
-                <img src={photoPreview} alt="Flat preview" style={styles.photoPreview} />
+          <label style={styles.label}>Flat photos (up to 5, optional but recommended)</label>
+          <p style={{ fontSize: 12, color: COLORS.inkSoft, marginTop: -4, marginBottom: 4 }}>
+            Click a photo to set it as your listing's main photo — the one people see first.
+          </p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))", gap: 10 }}>
+            {photos.map((p, i) => (
+              <div key={i} style={{ position: "relative" }}>
                 <button
                   type="button"
-                  style={styles.removePhotoBtn}
-                  onClick={() => { setPhoto(null); setPhotoPreview(null); }}
+                  onClick={() => setPrimaryPhotoIndex(i)}
+                  style={{
+                    display: "block",
+                    width: "100%",
+                    padding: 0,
+                    border: i === primaryPhotoIndex ? `3px solid ${COLORS.teal}` : "3px solid transparent",
+                    borderRadius: 12,
+                    cursor: "pointer",
+                    background: "none",
+                  }}
                 >
-                  ✕ Remove
+                  <img
+                    src={p.dataUrl}
+                    alt={`Flat photo ${i + 1}`}
+                    style={{ width: "100%", height: 100, objectFit: "cover", borderRadius: 9, display: "block" }}
+                  />
+                </button>
+                {i === primaryPhotoIndex && (
+                  <span style={{
+                    position: "absolute", top: 6, left: 6,
+                    fontFamily: FONT_BODY, fontSize: 10.5, fontWeight: 700,
+                    color: "#fff", background: COLORS.teal,
+                    borderRadius: 999, padding: "3px 9px",
+                  }}>
+                    ★ Main photo
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => removePhoto(i)}
+                  aria-label="Remove photo"
+                  style={{
+                    position: "absolute", top: 6, right: 6,
+                    width: 22, height: 22, borderRadius: "50%",
+                    background: "rgba(0,0,0,0.6)", color: "#fff",
+                    border: "none", cursor: "pointer", fontSize: 12,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                  }}
+                >
+                  ✕
                 </button>
               </div>
-            ) : (
-              <label style={styles.photoUploadLabel} htmlFor="photo-input">
-                <span style={{ fontSize: 28 }}>📷</span>
-                <span style={{ fontSize: 13, color: COLORS.inkSoft }}>Add a photo of your flat or crew</span>
-                <span style={{ fontSize: 11, color: COLORS.inkSoft, opacity: 0.8 }}>Makes your listing stand out</span>
-                <input id="photo-input" type="file" accept="image/jpeg,image/png,image/webp" style={{ display: "none" }} onChange={handlePhotoUpload} />
+            ))}
+            {photos.length < 5 && (
+              <label htmlFor="photo-input" style={{ ...styles.photoUploadBox, height: 100, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", margin: 0 }}>
+                <span style={{ fontSize: 12, color: COLORS.inkSoft, textAlign: "center" }}>📷<br />Add photo</span>
+                <input id="photo-input" type="file" accept="image/jpeg,image/png,image/webp" multiple style={{ display: "none" }} onChange={handlePhotoUpload} />
               </label>
             )}
           </div>

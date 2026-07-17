@@ -33,6 +33,7 @@ export async function fetchListings(institutionId = null) {
     contact: l.contact,
     tags: l.tags,
     photo: l.photo_url,
+    photos: l.photo_urls || [],
     status: l.status,
     institution: l.institution || null,
     miniQuizProfile: l.mini_quiz_profile || null,
@@ -47,9 +48,14 @@ export async function fetchListings(institutionId = null) {
 
 export async function createListing(listing) {
   let photoUrl = null
+  let photoUrls = []
 
-  if (listing.photo) {
-    const base64 = listing.photo.split(',')[1]
+  const photosToUpload = listing.photos && listing.photos.length > 0
+    ? listing.photos
+    : (listing.photo ? [listing.photo] : [])
+
+  for (const dataUrl of photosToUpload) {
+    const base64 = dataUrl.split(',')[1]
     const byteArray = Uint8Array.from(atob(base64), c => c.charCodeAt(0))
     const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`
 
@@ -61,9 +67,12 @@ export async function createListing(listing) {
       const { data: urlData } = supabase.storage
         .from('listing-photos')
         .getPublicUrl(fileName)
-      photoUrl = urlData.publicUrl
+      photoUrls.push(urlData.publicUrl)
     }
   }
+
+  const primaryIndex = Math.min(listing.primaryPhotoIndex || 0, Math.max(photoUrls.length - 1, 0))
+  photoUrl = photoUrls.length > 0 ? photoUrls[primaryIndex] : null
 
   const deleteToken = crypto.randomUUID()
 
@@ -84,6 +93,7 @@ export async function createListing(listing) {
     contact: listing.contact,
     tags: listing.tags,
     photo_url: photoUrl,
+    photo_urls: photoUrls,
     status: 'looking',
     institution: listing.institution || null,
     mini_quiz_profile: listing.miniQuizProfile || null,
@@ -111,6 +121,7 @@ export async function createListing(listing) {
     ...listing,
     id: data.id,
     photo: photoUrl,
+    photos: photoUrls,
     deleteToken,
     createdAt: new Date(data.created_at).getTime(),
     renewedAt: new Date(data.renewed_at).getTime(),
