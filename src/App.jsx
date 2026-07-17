@@ -2806,7 +2806,7 @@ function ListingDetail({ listing, onBack, onMarkFilled, sessionContact, onSave, 
 
   return (
     <div style={styles.formWrap}>
-      <div style={{ width: "100%", display: "flex", justifyContent: "flex-start", marginBottom: 20 }}>
+      <div style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
         <button
           type="button"
           onClick={onBack}
@@ -2814,6 +2814,19 @@ function ListingDetail({ listing, onBack, onMarkFilled, sessionContact, onSave, 
         >
           ← Back
         </button>
+        {onSave && (
+          <button
+            type="button"
+            onClick={() => onSave(listing.id)}
+            title={isSaved ? "Remove from saved" : "Save listing"}
+            aria-label={isSaved ? "Remove from saved" : "Save listing"}
+            style={{ border: "none", background: "transparent", cursor: "pointer", padding: 4, display: "flex", alignItems: "center", justifyContent: "center" }}
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill={isSaved ? COLORS.teal : "none"} stroke={COLORS.teal} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+            </svg>
+          </button>
+        )}
       </div>
 
       {listing.photos && listing.photos.length > 1 ? (
