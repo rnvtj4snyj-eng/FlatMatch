@@ -4182,9 +4182,11 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     gap: 14,
-    maxHeight: "70vh",
-    overflowY: "auto",
+    height: 600,
+    overflowY: "scroll",
+    overflowX: "hidden",
     paddingRight: 6,
+    WebkitOverflowScrolling: "touch",
   },
   avatar: {
     width: 40,
