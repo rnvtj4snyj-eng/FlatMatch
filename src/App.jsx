@@ -1244,6 +1244,7 @@ const ARCHETYPES = [
 
 function Intro({ onStart, onPost, institution, onInstitutionChange, userListings, loadingListings, onMarkFilled, onView }) {
   const [activeArchetype, setActiveArchetype] = useState(null);
+  const [howItWorksOpen, setHowItWorksOpen] = useState(false);
   const currentInst = NZ_INSTITUTIONS.find(i => i.id === institution) || NZ_INSTITUTIONS[0];
   const realListings = (userListings || []).filter(l => !l.institution || l.institution === institution);
 
@@ -1269,27 +1270,37 @@ function Intro({ onStart, onPost, institution, onInstitutionChange, userListings
 
       {/* ── VALUE PROP SECTION ── */}
       <section style={introStyles.problemSection}>
-        <div style={introStyles.problemGrid}>
-          <div style={introStyles.problemLeft}>
-            <h2 style={introStyles.problemHeading}>Looking for a Flat?</h2>
-            <p style={{ ...introStyles.problemText, fontSize: 14.5, lineHeight: 1.7 }}>
-              Finding a flat shouldn't mean scrolling through hundreds of Facebook posts
-              hoping something feels right. FlatMatch helps you discover rooms that suit
-              your budget, preferred location, move-in date, and the kind of flat you're
-              looking for — all in one place. Take the optional compatibility quiz to see
-              which flats are the best fit for you before you reach out.
-            </p>
+        <button
+          type="button"
+          onClick={() => setHowItWorksOpen((prev) => !prev)}
+          style={introStyles.howItWorksToggle}
+        >
+          <span>How FlatMatch works for you</span>
+          <span style={{ fontSize: 14 }}>{howItWorksOpen ? "▴ Hide" : "▾ Show"}</span>
+        </button>
+        {howItWorksOpen && (
+          <div style={introStyles.problemGrid}>
+            <div style={introStyles.problemLeft}>
+              <h2 style={introStyles.problemHeading}>Looking for a Flat?</h2>
+              <p style={{ ...introStyles.problemText, fontSize: 14.5, lineHeight: 1.7 }}>
+                Finding a flat shouldn't mean scrolling through hundreds of Facebook posts
+                hoping something feels right. FlatMatch helps you discover rooms that suit
+                your budget, preferred location, move-in date, and the kind of flat you're
+                looking for — all in one place. Take the optional compatibility quiz to see
+                which flats are the best fit for you before you reach out.
+              </p>
+            </div>
+            <div style={introStyles.problemRight}>
+              <h2 style={introStyles.problemHeadingLight}>Filling a Room?</h2>
+              <p style={{ ...introStyles.solutionText, fontSize: 14.5, lineHeight: 1.7 }}>
+                Finding someone who needs a room is easy — finding someone who fits your
+                flat is harder. Create a listing and reach students from your university
+                who are looking for the same kind of flat, making it easier to find someone
+                who's a good fit for your household before they move in.
+              </p>
+            </div>
           </div>
-          <div style={introStyles.problemRight}>
-            <h2 style={introStyles.problemHeadingLight}>Filling a Room?</h2>
-            <p style={{ ...introStyles.solutionText, fontSize: 14.5, lineHeight: 1.7 }}>
-              Finding someone who needs a room is easy — finding someone who fits your
-              flat is harder. Create a listing and reach students from your university
-              who are looking for the same kind of flat, making it easier to find someone
-              who's a good fit for your household before they move in.
-            </p>
-          </div>
-        </div>
+        )}
       </section>
 
       {/* ── QUIZ NUDGE BANNER ── */}
@@ -1740,11 +1751,28 @@ page: {
   },
   problemSection: {
     width: "100%",
-    padding: "48px 24px 72px",
+    padding: "16px 24px 48px",
     maxWidth: 860,
     margin: "0 auto",
     alignSelf: "center",
     boxSizing: "border-box",
+  },
+  howItWorksToggle: {
+    width: "100%",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    fontFamily: "'DM Serif Display', Georgia, serif",
+    fontSize: 20,
+    fontWeight: 600,
+    color: "#1a2540",
+    background: "none",
+    border: "none",
+    borderBottom: "1.5px solid #dde3f0",
+    padding: "0 0 16px",
+    marginBottom: 24,
+    cursor: "pointer",
+    textAlign: "left",
   },
   problemGrid: {
     display: "grid",
