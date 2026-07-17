@@ -1257,13 +1257,13 @@ function Intro({ onStart, onPost, institution, onInstitutionChange, userListings
           <InstitutionSelector selected={institution} onChange={onInstitutionChange} />
         </div>
         <h1 style={introStyles.hookHeadline}>
-          Flatting season moves fast.<br />
-          <span style={introStyles.hookHighlight}>Don't leave it to chance.</span>
+          Student Flatting,<br />
+          <span style={introStyles.hookHighlight}>Done Better.</span>
         </h1>
         <p style={introStyles.hookSubline}>
-          Most flats near {currentInst.short} fill up by mid-January. FlatMatch ranks
-          every listing by how well your habits and lifestyle line up, before you
-          message anyone.
+          Whether you're searching for a room or filling one, FlatMatch helps New Zealand
+          university students connect with others from the same university who share a
+          similar budget, lifestyle, and expectations for flatting.
         </p>
       </section>
 
@@ -1383,36 +1383,23 @@ function Intro({ onStart, onPost, institution, onInstitutionChange, userListings
       <section style={introStyles.problemSection}>
         <div style={introStyles.problemGrid}>
           <div style={introStyles.problemLeft}>
-            <div style={introStyles.sectionEyebrow}>THE OLD WAY</div>
-            <h2 style={introStyles.problemHeading}>Flat hunting is a mess.</h2>
-            <div style={introStyles.problemList}>
-              {[
-                "Posting in five Facebook groups and getting ghosted",
-                "Messaging people with no idea if you'd actually get along",
-                "Moving in and realising three weeks later it's the wrong vibe",
-              ].map((item, i) => (
-                <div key={i} style={introStyles.problemItem}>
-                  <span style={introStyles.problemX}>✕</span>
-                  <span style={introStyles.problemText}>{item}</span>
-                </div>
-              ))}
-            </div>
+            <h2 style={introStyles.problemHeading}>Looking for a Flat?</h2>
+            <p style={{ ...introStyles.problemText, fontSize: 14.5, lineHeight: 1.7 }}>
+              Finding a flat shouldn't mean scrolling through hundreds of Facebook posts
+              hoping something feels right. FlatMatch helps you discover rooms that suit
+              your budget, preferred location, move-in date, and the kind of flat you're
+              looking for — all in one place. Take the optional compatibility quiz to see
+              which flats are the best fit for you before you reach out.
+            </p>
           </div>
           <div style={introStyles.problemRight}>
-            <div style={introStyles.sectionEyebrow}>THE FLATMATCH WAY</div>
-            <h2 style={introStyles.problemHeadingLight}>Know before you message.</h2>
-            <div style={introStyles.problemList}>
-              {[
-                "Quiz matching shows your compatibility before any awkward texts",
-                "Every listing ranked by how well your habits actually line up",
-                "Groups and solo searchers all in one place — no tab switching",
-              ].map((item, i) => (
-                <div key={i} style={introStyles.solutionItem}>
-                  <span style={introStyles.solutionCheck}>✓</span>
-                  <span style={introStyles.solutionText}>{item}</span>
-                </div>
-              ))}
-            </div>
+            <h2 style={introStyles.problemHeadingLight}>Filling a Room?</h2>
+            <p style={{ ...introStyles.solutionText, fontSize: 14.5, lineHeight: 1.7 }}>
+              Finding someone who needs a room is easy — finding someone who fits your
+              flat is harder. Create a listing and reach students from your university
+              who are looking for the same kind of flat, making it easier to find someone
+              who's a good fit for your household before they move in.
+            </p>
           </div>
         </div>
       </section>
@@ -2673,19 +2660,36 @@ function ListingDetail({ listing, onBack, onMarkFilled, sessionContact, onSave, 
 
   return (
     <div style={styles.formWrap}>
-      <button
-        type="button"
-        onClick={onBack}
-        style={{ border: "none", background: "transparent", color: COLORS.inkSoft, fontSize: 13, fontWeight: 600, cursor: "pointer", padding: 0, marginBottom: 20, alignSelf: "flex-start", display: "block", textAlign: "left" }}
-      >
-        ← Back
-      </button>
+      <div style={{ width: "100%", display: "flex", justifyContent: "flex-start", marginBottom: 20 }}>
+        <button
+          type="button"
+          onClick={onBack}
+          style={{ border: "none", background: "transparent", color: COLORS.inkSoft, fontSize: 13, fontWeight: 600, cursor: "pointer", padding: 0 }}
+        >
+          ← Back
+        </button>
+      </div>
 
       {listing.photo ? (
         <img src={listing.photo} alt="Flat" style={{ width: "100%", maxHeight: 340, objectFit: "cover", borderRadius: 16, marginBottom: 20 }} />
       ) : (
-        <div style={{ width: "100%", height: 180, borderRadius: 16, background: "#F7F6F2", border: "1.5px solid #dde3f0", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
-          <Logo size={56} />
+        <div style={{
+          width: "100%",
+          height: 160,
+          borderRadius: 16,
+          background: "linear-gradient(135deg, rgba(45,63,124,0.06), rgba(124,92,191,0.10))",
+          border: "1.5px solid #dde3f0",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 8,
+          marginBottom: 20,
+        }}>
+          <span style={{ fontSize: 28 }}>🏠</span>
+          <span style={{ fontFamily: FONT_BODY, fontSize: 12.5, fontWeight: 600, color: COLORS.inkSoft }}>
+            No photo provided
+          </span>
         </div>
       )}
 
@@ -2720,7 +2724,7 @@ function ListingDetail({ listing, onBack, onMarkFilled, sessionContact, onSave, 
       )}
 
       <div style={{ marginBottom: 28 }}>
-        <div style={{ ...styles.sectionLabel, marginBottom: 10 }}>HOUSE PREFERENCES</div>
+        <div style={{ ...styles.sectionLabel, marginBottom: 10 }}>FLAT CHARACTERISTICS</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           <div style={{ fontSize: 14, color: COLORS.ink }}>
             🚬 <strong>Smoking:</strong> {SMOKING_LABELS[dealBreakers.smoking] || "Not specified"}
@@ -2810,6 +2814,8 @@ function emptyForm() {
 const STATUS_OPTIONS = [
   { key: "looking", label: "Actively looking", color: "#1A9090", dot: "#1A9090" },
   { key: "almost", label: "Almost full — 1 spot left", color: "#E8A030", dot: "#E8A030" },
+  { key: "urgent", label: "Need someone ASAP", color: "#E8746A", dot: "#E8746A" },
+  { key: "future", label: "Planning ahead — not urgent yet", color: "#7C5CBF", dot: "#7C5CBF" },
   { key: "paused", label: "Taking a break", color: "#9AAAB0", dot: "#9AAAB0" },
 ];
  
