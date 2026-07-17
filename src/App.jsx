@@ -990,6 +990,8 @@ export default function App() {
           loadingListings={loadingListings}
           onMarkFilled={markFilled}
           onView={viewListing}
+          onSave={onSave}
+          savedListings={savedListings}
         />
       )}
  
@@ -1271,7 +1273,7 @@ const ARCHETYPES = [
   { id: "chill_flatmate", emoji: "😌", name: "Chill Flatmate", tagline: "Low-key, easy-going" },
 ];
 
-function Intro({ onStart, onPost, institution, onInstitutionChange, userListings, loadingListings, onMarkFilled, onView }) {
+function Intro({ onStart, onPost, institution, onInstitutionChange, userListings, loadingListings, onMarkFilled, onView, onSave, savedListings }) {
   const [activeArchetype, setActiveArchetype] = useState(null);
   const [howItWorksOpen, setHowItWorksOpen] = useState(false);
   const currentInst = NZ_INSTITUTIONS.find(i => i.id === institution) || NZ_INSTITUTIONS[0];
@@ -1404,6 +1406,19 @@ function Intro({ onStart, onPost, institution, onInstitutionChange, userListings
                       {listing.area} · {listing.budget} · Move in {listing.moveIn}
                     </div>
                   </div>
+                  {onSave && (
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); onSave(listing.id); }}
+                      title={savedListings && savedListings.includes(listing.id) ? "Remove from saved" : "Save listing"}
+                      aria-label={savedListings && savedListings.includes(listing.id) ? "Remove from saved" : "Save listing"}
+                      style={{ border: "none", background: "transparent", cursor: "pointer", padding: 4, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill={savedListings && savedListings.includes(listing.id) ? COLORS.teal : "none"} stroke={COLORS.teal} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                      </svg>
+                    </button>
+                  )}
                 </div>
                 <p style={introStyles.previewCardBio}>{listing.bio}</p>
                 {isOwner && (
