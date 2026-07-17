@@ -1,12 +1,13 @@
 export const DEFAULT_DIMENSIONS = [
   { key: 'life_stage', label: 'Age / life stage', weight: 1.3 },
+  { key: 'gender_mix', label: 'Gender mix', weight: 1.3 },
   { key: 'social_lifestyle', label: 'Social lifestyle', weight: 1.15 },
   { key: 'cleanliness', label: 'Cleanliness', weight: 1.2 },
   { key: 'noise_tolerance', label: 'Noise tolerance', weight: 1.1 },
   { key: 'study_environment', label: 'Study environment', weight: 1.1 },
   { key: 'guests_hosting', label: 'Guests & hosting', weight: 1.0 },
   { key: 'communication_style', label: 'Communication', weight: 1.05 },
-  { key: 'daily_routine', label: 'Daily routine', weight: 1.0 },
+  { key: 'daily_routine', label: 'Daily routine', weight: 1.0 },    
   { key: 'shared_living', label: 'Shared living', weight: 1.05 },
   { key: 'cooking_food', label: 'Cooking & food', weight: 0.95 },
   { key: 'independence_communal', label: 'Independence', weight: 1.0 },
@@ -142,6 +143,8 @@ export function scoreCompatibility(userProfile, listingProfile, config = DEFAULT
 export function deriveListingProfile(listing) {
   const tags = listing.tags || {};
   const dimensionDefaults = {
+    life_stage: 3,
+    gender_mix: 3,
     social_lifestyle: tags.social ? 4 : tags.chill ? 2 : 3,
     cleanliness: tags.tidy ? 4 : tags.chill ? 2 : 3,
     noise_tolerance: tags.quiet ? 4 : tags.social ? 2 : 3,
