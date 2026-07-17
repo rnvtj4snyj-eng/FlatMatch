@@ -516,7 +516,9 @@ function buildCompatibilityProfile(answers = {}) {
 
     for (const question of QUESTIONS) {
       const selectedIndex = answers[question.id];
-      const option = question.options?.[selectedIndex] || question.options?.[0];
+      if (selectedIndex == null) continue;
+      const option = question.options?.[selectedIndex];
+      if (!option) continue;
 
       if (question.kind === "dimension") {
         for (const dimension of question.dimensions || []) {
@@ -534,11 +536,9 @@ function buildCompatibilityProfile(answers = {}) {
       }
     }
 
-    for (const dimension of COMPATIBILITY_DIMENSIONS) {
-      dimensions[dimension.key] = dimensionWeights[dimension.key]
-        ? Math.round((dimensionTotals[dimension.key] / dimensionWeights[dimension.key]) * 10) / 10
-        : 3;
-    }
+    Object.keys(dimensionWeights).forEach((key) => {
+      dimensions[key] = Math.round((dimensionTotals[key] / dimensionWeights[key]) * 10) / 10;
+    });
 
     return {
       dimensions,
