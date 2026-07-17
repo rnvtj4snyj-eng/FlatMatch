@@ -2811,8 +2811,28 @@ function ListingDetail({ listing, onBack, onMarkFilled, sessionContact, onSave, 
   const tookFullQuiz = !!listing.fullQuizProfile?.dimensions;
   const displayQuestions = tookFullQuiz ? QUESTIONS : MINI_QUIZ_QUESTIONS;
   const displayAnswers = tookFullQuiz ? listing.fullQuizProfile?.answers : listing.miniQuizProfile?.answers;
+  const QUESTION_DISPLAY_ORDER = [
+    "age", "gender_mix",
+    "cleanliness", "dishes", "bathroom",
+    "noise", "study_week",
+    "guests", "hosting",
+    "social_lifestyle",
+    "bills",
+    "routine",
+    "food",
+    "privacy",
+  ];
+
   const answeredQuestions = displayAnswers
-    ? displayQuestions.filter((q) => q.kind === "dimension" && displayAnswers[q.id] != null)
+    ? displayQuestions
+        .filter((q) => q.kind === "dimension" && displayAnswers[q.id] != null)
+        .sort((a, b) => {
+          const aIndex = QUESTION_DISPLAY_ORDER.indexOf(a.id);
+          const bIndex = QUESTION_DISPLAY_ORDER.indexOf(b.id);
+          const aRank = aIndex === -1 ? 999 : aIndex;
+          const bRank = bIndex === -1 ? 999 : bIndex;
+          return aRank - bRank;
+        })
     : [];
 
   const vibeTagLabels = Object.keys(listing.tags || {})
