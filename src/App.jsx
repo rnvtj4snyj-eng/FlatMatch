@@ -1,5 +1,8 @@
 import React, { useState, useMemo, useEffect } from "react";
+import Auth from "./Auth";
+import AccountMenu from "./AccountMenu";
 import { fetchListings, createListing, markListingFilled } from "./listingsService";
+import { fetchMetrics, bumpCounter, saveStory } from "./metricsService";
 import { scoreCompatibility, deriveListingProfile, DEFAULT_MATCHING_CONFIG } from "./matchingEngine.js";
  
 /* ---------------------------------------------
@@ -806,7 +809,7 @@ function LogoLockup({ size = 40, align = "center" }) {
  
 
  
-function NavBar({ onHome, onPost, onSaved }) {
+function NavBar({ onHome }) {
   return (
     <nav style={styles.navbar}>
       <div style={styles.navInner}>
@@ -815,15 +818,168 @@ function NavBar({ onHome, onPost, onSaved }) {
           <span style={styles.navLogoText}>FlatMatch</span>
         </button>
         <div style={styles.navLinks}>
-          <button className="fm-nav-link" style={styles.navSaved} onClick={onSaved}>Saved</button>
-          
-          <button className="fm-nav-cta" style={styles.navCta} onClick={onPost}>Post a listing</button>
+          <AccountMenu />
         </div>
       </div>
     </nav>
   );
 }
  
+const BookmarkIcon = (
+  <svg width="16" height="16" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}>
+    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+  </svg>
+);
+
+function FmSidebar({ stage, onNavigate, collapsed, onToggle }) {
+  const [hovered, setHovered] = useState(null);
+  const items = [
+    { key: "intro", label: "Home", icon: "🏠" },
+    { key: "result", label: "Find a room", icon: "🔍" },
+    { key: "post", label: "List a room", icon: "➕" },
+    { key: "quiz", label: "Compatibility quiz", icon: "✦", tip: { title: "How matching works", body: "FlatMatch scores real living fit across deal-breakers, practical compatibility dimensions, and housing fit. The result is a more useful match score than a personality label." } },
+    { key: "saved", label: "Saved", icon: BookmarkIcon },
+  ];
+  return (
+    <aside className="fm-sidebar" style={{ ...sidebarStyles.bar, width: collapsed ? 64 : 240 }}>
+      <button
+        onClick={onToggle}
+        title={collapsed ? "Expand" : "Collapse"}
+        aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        style={{ ...sidebarStyles.toggle, justifyContent: collapsed ? "center" : "flex-end" }}
+      >
+        {collapsed ? "»" : "«"}
+      </button>
+      <nav style={sidebarStyles.nav}>
+        {items.map((it) => {
+          const active = stage === it.key;
+          return (
+            <div
+              key={it.key}
+              style={{ position: "relative" }}
+              onMouseEnter={() => setHovered(it.key)}
+              onMouseLeave={() => setHovered((h) => (h === it.key ? null : h))}
+            >
+              <button
+                onClick={() => onNavigate(it.key)}
+                style={{
+                  ...sidebarStyles.link,
+                  ...(active ? sidebarStyles.linkActive : {}),
+                  justifyContent: collapsed ? "center" : "flex-start",
+                }}
+              >
+                <span style={sidebarStyles.icon}>{it.icon}</span>
+                {!collapsed && <span>{it.label}</span>}
+              </button>
+              {it.tip && hovered === it.key && (
+                <div style={sidebarStyles.tooltip}>
+                  <div style={sidebarStyles.tooltipTitle}>{it.tip.title}</div>
+                  <div style={sidebarStyles.tooltipBody}>{it.tip.body}</div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </nav>
+      <div style={sidebarStyles.footer}>{collapsed ? "🎓" : "Built for NZ students"}</div>
+    </aside>
+  );
+}
+
+const sidebarStyles = {
+  bar: {
+    position: "fixed",
+    top: 64,
+    left: 0,
+    width: 240,
+    height: "calc(100vh - 64px)",
+    background: "#fff",
+    borderRight: "1px solid #dde3f0",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between",
+    padding: "20px 14px",
+    boxSizing: "border-box",
+    zIndex: 90,
+  },
+  toggle: {
+    display: "flex",
+    alignItems: "center",
+    width: "100%",
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 16,
+    fontWeight: 700,
+    color: "#7C5CBF",
+    background: "transparent",
+    border: "none",
+    cursor: "pointer",
+    padding: "4px 10px 12px",
+  },
+  nav: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 4,
+  },
+  link: {
+    display: "flex",
+    alignItems: "center",
+    gap: 12,
+    width: "100%",
+    textAlign: "left",
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 14,
+    fontWeight: 600,
+    color: "#5A6B6E",
+    background: "transparent",
+    border: "none",
+    borderRadius: 10,
+    padding: "11px 14px",
+    cursor: "pointer",
+  },
+  linkActive: {
+    background: "rgba(124,92,191,0.10)",
+    color: "#7C5CBF",
+  },
+  icon: {
+    fontSize: 16,
+    width: 20,
+    textAlign: "center",
+    flexShrink: 0,
+  },
+  footer: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 11,
+    color: "#a0aec0",
+    padding: "0 14px",
+  },
+  tooltip: {
+    position: "absolute",
+    left: "calc(100% + 10px)",
+    top: "50%",
+    transform: "translateY(-50%)",
+    width: 260,
+    background: "#fff",
+    border: "1px solid #dde3f0",
+    borderRadius: 12,
+    boxShadow: "0 8px 24px rgba(35,54,58,0.14)",
+    padding: "14px 16px",
+    zIndex: 300,
+  },
+  tooltipTitle: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 13,
+    fontWeight: 700,
+    color: "#1a2540",
+    marginBottom: 6,
+  },
+  tooltipBody: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 12.5,
+    lineHeight: 1.6,
+    color: "#5A6B6E",
+  },
+};
+
 export default function App() {
   const [stage, setStage] = useState("intro");
   const [currentQ, setCurrentQ] = useState(0);
@@ -851,6 +1007,8 @@ export default function App() {
   });
   const [selectedListing, setSelectedListing] = useState(null);
   const [previousStage, setPreviousStage] = useState("intro");
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
 
   function viewListing(listing) {
     setPreviousStage(stage);
@@ -872,7 +1030,7 @@ export default function App() {
   const profile = useMemo(() => buildCompatibilityProfile(answers), [answers]);
  
   const allListings = useMemo(
-    () => [...userListings, ...SAMPLE_LISTINGS],
+    () => [...userListings],
     [userListings]
   );
  
@@ -913,11 +1071,7 @@ export default function App() {
       tokens[record.id] = record.deleteToken;
       localStorage.setItem('fm_tokens', JSON.stringify(tokens));
       setStage("posted");
-      try {
-        const current = await window.storage.get("metric:total_listings", true);
-        const count = current ? parseInt(current.value) : 0;
-        await window.storage.set("metric:total_listings", String(count + 1), true);
-      } catch {}
+      await bumpCounter("total_listings");
     } catch (err) {
       console.error("Error saving listing:", err);
       setPostError("Couldn't save your listing — try again in a moment.");
@@ -957,11 +1111,7 @@ export default function App() {
         [QUESTIONS[qIndex].id]: optIndex,
       }));
       setTimeout(() => setStage("result"), 180);
-      try {
-        const current = await window.storage.get("metric:quiz_completions", true);
-        const count = current ? parseInt(current.value) : 0;
-        await window.storage.set("metric:quiz_completions", String(count + 1), true);
-      } catch {}
+      await bumpCounter("quiz_completions");
     }
   }
  
@@ -970,20 +1120,44 @@ export default function App() {
     setCurrentQ(0);
     setStage("intro");
   }
+
+  function handleNav(key) {
+    if (key === "quiz") setCurrentQ(0);
+    setStage(key);
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }
  
   return (
-    <div style={styles.page}>
+    <div style={{ ...styles.page, paddingLeft: 64 }} className={sidebarCollapsed ? "fm-shell fm-shell-collapsed" : "fm-shell"}>
       <style>{globalCSS}</style>
-      <NavBar
-        onHome={restart}
-        onPost={() => setStage("post")}
-        onSaved={() => setStage("saved")}
+      {/* <Auth /> */}
+      <FmSidebar
+        stage={stage}
+        onNavigate={(key) => { handleNav(key); setSidebarCollapsed(true); }}
+        collapsed={sidebarCollapsed}
+        onToggle={() => setSidebarCollapsed((c) => !c)}
       />
+      {!sidebarCollapsed && (
+        <div
+          onClick={() => setSidebarCollapsed(true)}
+          style={{
+            position: "fixed",
+            top: 64,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: "rgba(30,43,46,0.25)",
+            zIndex: 89,
+          }}
+        />
+      )}
+      <NavBar onHome={restart} />
  
       {stage === "intro" && (
         <Intro
           onStart={() => setStage("quiz")}
           onPost={() => setStage("post")}
+          onFind={() => handleNav("result")}
           institution={institution}
           onInstitutionChange={handleInstitutionChange}
           userListings={userListings}
@@ -1089,18 +1263,8 @@ function MetricsStrip() {
   useEffect(() => {
     async function loadMetrics() {
       try {
-        const [listingsKey, quizKey, requestsKey, storiesKey] = await Promise.all([
-          window.storage.get("metric:total_listings", true),
-          window.storage.get("metric:quiz_completions", true),
-          window.storage.get("metric:connection_requests", true),
-          window.storage.list("story:", true),
-        ]);
-        setMetrics({
-          totalListings: listingsKey ? parseInt(listingsKey.value) : 0,
-          quizCompletions: quizKey ? parseInt(quizKey.value) : 0,
-          connectionRequests: requestsKey ? parseInt(requestsKey.value) : 0,
-          stories: storiesKey ? storiesKey.keys.length : 0,
-        });
+        const data = await fetchMetrics();
+        setMetrics(data);
       } catch {
         setMetrics({ totalListings: 0, quizCompletions: 0, connectionRequests: 0, stories: 0 });
       }
@@ -1119,57 +1283,81 @@ function MetricsStrip() {
     },
     {
       num: metrics.connectionRequests === null ? "—" : metrics.connectionRequests,
-      label: "Connection requests made",
+      label: "Connections requested",
     },
     {
       num: metrics.stories === null ? "—" : metrics.stories,
-      label: "FlatMatches found",
+      label: "FlatMates found",
     },
   ];
 
   return (
-    <div style={metricsStyles.strip}>
-      {stats.map((s, i) => (
-        <div key={i} style={metricsStyles.stat}>
-          <div style={metricsStyles.num}>{s.num}</div>
-          <div style={metricsStyles.label}>{s.label}</div>
-        </div>
-      ))}
+    <div style={metricsStyles.wrap}>
+      <span style={metricsStyles.badge}>🎓 Helping NZ students Flat Better</span>
+      <div style={metricsStyles.strip}>
+        {stats.map((s, i) => (
+          <div key={i} style={metricsStyles.stat}>
+            <span style={metricsStyles.label}>{s.label}</span>
+            <span style={metricsStyles.num}>{s.num}</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
 
 const metricsStyles = {
+  wrap: {
+    width: "100%",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 8,
+  },
+  badge: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 12,
+    fontWeight: 700,
+    letterSpacing: "0.02em",
+    color: "#4B6BB7",
+    background: "rgba(75,107,183,0.10)",
+    borderRadius: 999,
+    padding: "5px 14px",
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 6,
+  },
   strip: {
     width: "100%",
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+    gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))",
     background: "#fff",
     border: "1.5px solid #dde3f0",
-    borderRadius: 20,
+    borderRadius: 12,
     overflow: "hidden",
-    marginBottom: 72,
   },
   stat: {
-    padding: "52px 32px",
+    padding: "6px 14px",
     textAlign: "center",
     borderRight: "1px solid #dde3f0",
     display: "flex",
     flexDirection: "column",
-    gap: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 2,
   },
   num: {
     fontFamily: "'DM Serif Display', Georgia, serif",
-    fontSize: 64,
+    fontSize: 22,
     fontWeight: 700,
     color: "#2d3f7c",
     lineHeight: 1,
   },
   label: {
     fontFamily: "'Inter', sans-serif",
-    fontSize: 14,
+    fontSize: 12.5,
     color: "#718096",
-    lineHeight: 1.4,
+    lineHeight: 1.3,
   },
 };
 
@@ -1272,226 +1460,87 @@ const ARCHETYPES = [
   { id: "clean_freak", emoji: "✨", name: "Clean Freak", tagline: "Chore roster, colour-coded" },
   { id: "chill_flatmate", emoji: "😌", name: "Chill Flatmate", tagline: "Low-key, easy-going" },
 ];
+function Intro({ onStart, onPost, onFind, institution }) {
+  const currentInst = NZ_INSTITUTIONS.find((i) => i.id === institution) || NZ_INSTITUTIONS[0];
 
-function Intro({ onStart, onPost, institution, onInstitutionChange, userListings, loadingListings, onMarkFilled, onView, onSave, savedListings }) {
-  const [activeArchetype, setActiveArchetype] = useState(null);
-  const [howItWorksOpen, setHowItWorksOpen] = useState(false);
-  const currentInst = NZ_INSTITUTIONS.find(i => i.id === institution) || NZ_INSTITUTIONS[0];
-  const realListings = (userListings || []).filter(l => !l.institution || l.institution === institution);
+  const whyPoints = [
+    { icon: "🎓", title: "Same-uni only", body: `Flat with students from ${currentInst.short} — same campus, same commute, same calendar.` },
+    { icon: "✦", title: "Matched on lifestyle, not just rent", body: "Cleanliness, noise, study habits, guests — the things that actually make or break a flat." },
+    { icon: "🕓", title: "Free & fast", body: "Browse or post in about two minutes. No account needed to get started." },
+  ];
 
   return (
     <div style={introStyles.page}>
 
-      {/* ── 1. HOOK HEADER ── */}
+      {/* METRICS STRIP */}
+      <div style={{ width: "100%", maxWidth: 860, padding: "28px 24px 0", alignSelf: "center", margin: "0 auto", boxSizing: "border-box" }}>
+        <MetricsStrip />
+      </div>
+
+      {/* HERO */}
       <section style={introStyles.hookSection}>
-        <div style={introStyles.badgeRow}>
-          <span style={introStyles.nzBadge}>🎓 NZ Students</span>
-          <InstitutionSelector selected={institution} onChange={onInstitutionChange} />
-        </div>
         <h1 style={introStyles.hookHeadline}>
           Student Flatting,<br />
           <span style={introStyles.hookHighlight}>Done Better.</span>
         </h1>
         <p style={introStyles.hookSubline}>
-          Whether you're searching for a room or filling one, FlatMatch helps New Zealand
+          Whether you're searching for a room or filling one, FlatMatch helps NZ
           university students connect with others from the same university who share a
           similar budget, lifestyle, and expectations for flatting.
         </p>
       </section>
 
-      {/* ── VALUE PROP SECTION ── */}
-      <section style={introStyles.problemSection}>
-        <button
-          type="button"
-          onClick={() => setHowItWorksOpen((prev) => !prev)}
-          style={introStyles.howItWorksToggle}
-        >
-          <span>How FlatMatch works for you</span>
-          <span style={{ fontSize: 14 }}>{howItWorksOpen ? "▴ Hide" : "▾ Show"}</span>
-        </button>
-        {howItWorksOpen && (
-          <div style={introStyles.problemGrid}>
-            <div style={introStyles.problemLeft}>
-              <h2 style={introStyles.problemHeading}>Looking for a Flat?</h2>
-              <p style={{ ...introStyles.problemText, fontSize: 14.5, lineHeight: 1.7 }}>
-                Finding a flat shouldn't mean scrolling through hundreds of Facebook posts
-                hoping something feels right. FlatMatch helps you discover rooms that suit
-                your budget, preferred location, move-in date, and the kind of flat you're
-                looking for — all in one place. Take the optional compatibility quiz to see
-                which flats are the best fit for you before you reach out.
-              </p>
-            </div>
-            <div style={introStyles.problemRight}>
-              <h2 style={introStyles.problemHeadingLight}>Filling a Room?</h2>
-              <p style={{ ...introStyles.solutionText, fontSize: 14.5, lineHeight: 1.7 }}>
-                Finding someone who needs a room is easy — finding someone who fits your
-                flat is harder. Create a listing and reach students from your university
-                who are looking for the same kind of flat, making it easier to find someone
-                who's a good fit for your household before they move in.
-              </p>
-            </div>
-          </div>
-        )}
-      </section>
-
-      {/* ── QUIZ NUDGE BANNER ── */}
-      <div style={{ width: "100%", maxWidth: 860, margin: "0 auto", padding: "0 24px 20px", alignSelf: "center", boxSizing: "border-box" }}>
-        <section style={introStyles.quizBanner}>
-          <div style={introStyles.quizBannerLeft}>
-            <div style={introStyles.quizBannerEmoji}>✦</div>
-            <div>
-              <div style={introStyles.quizBannerTitle}>
-                The wrong flatmate can ruin your year. Join the {currentInst.short} students who look before they lease.
-              </div>
-              <div style={introStyles.quizBannerSub}>
-                Take the quiz to find the perfect student flat for you.
-              </div>
-            </div>
-          </div>
-          <button style={introStyles.quizBannerBtn} onClick={onStart}>
-            Take the quiz →
-          </button>
-        </section>
-      </div>
-
-      {/* ── 2. LISTINGS PREVIEW ── */}
-      <section style={introStyles.listingsSection}>
-        <div style={introStyles.listingsHeader}>
-          <h2 style={introStyles.listingsHeading}>
-            Browse listings
-            <span style={introStyles.listingsCity}> · {currentInst.city}</span>
-          </h2>
-          <p style={introStyles.listingsSub}>
-            Groups with rooms, solo searchers, people forming new flats — all in one place.
-          </p>
-        </div>
-
-        {/* REAL LISTINGS */}
-        <div style={introStyles.listingsPreview}>
-          {loadingListings ? (
-            <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, color: "#718096" }}>Loading listings…</p>
-          ) : realListings.length === 0 ? (
-            <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, color: "#718096" }}>No listings yet for {currentInst.short} — be the first to post one.</p>
-          ) : (
-            realListings.slice(0, 3).map((listing) => {
-              const tokens = JSON.parse(localStorage.getItem('fm_tokens') || '{}');
-              const isOwner = !!tokens[listing.id];
-              return (
-              <div key={listing.id} style={{ ...introStyles.previewCard, cursor: onView ? "pointer" : "default" }} onClick={() => onView && onView(listing)}>
-                <div style={introStyles.previewCardTop}>
-                  {listing.photo ? (
-                    <img
-                      src={listing.photo}
-                      alt="Flat"
-                      style={{
-                        width: 52, height: 52, borderRadius: 10,
-                        objectFit: "cover", flexShrink: 0,
-                        border: "1.5px solid #dde3f0",
-                      }}
-                    />
-                  ) : (
-                    <div style={{
-                      width: 52, height: 52, borderRadius: 10,
-                      background: "#F7F6F2",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      flexShrink: 0, padding: 4,
-                      border: "1.5px solid #dde3f0",
-                    }}>
-                      <Logo size={38} />
-                    </div>
-                  )}
-                  <div style={{ flex: 1 }}>
-                    <div style={introStyles.previewCardTitle}>{listing.title}</div>
-                    <div style={introStyles.previewCardMeta}>
-                      {listing.area} · {listing.budget} · Move in {listing.moveIn}
-                    </div>
-                  </div>
-                  {onSave && (
-                    <button
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); onSave(listing.id); }}
-                      title={savedListings && savedListings.includes(listing.id) ? "Remove from saved" : "Save listing"}
-                      aria-label={savedListings && savedListings.includes(listing.id) ? "Remove from saved" : "Save listing"}
-                      style={{ border: "none", background: "transparent", cursor: "pointer", padding: 4, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}
-                    >
-                      <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill={savedListings && savedListings.includes(listing.id) ? COLORS.teal : "none"} stroke={COLORS.teal} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
-                      </svg>
-                    </button>
-                  )}
-                </div>
-                <p style={introStyles.previewCardBio}>{listing.bio}</p>
-                {isOwner && (
-                  <button
-                    style={styles.markFilledBtn}
-                    onClick={(e) => { e.stopPropagation(); onMarkFilled && onMarkFilled(listing.id); }}
-                  >
-                    ✓ Mark as filled — remove listing
-                  </button>
-                )}
-              </div>
-              );
-            })
-          )}
-        </div>
-
-        {/* POST A LISTING CARD */}
-        <div style={{ marginTop: 20 }}>
-          <div style={introStyles.postCard}>
-            <div style={introStyles.postCardLeft}>
-              <span style={introStyles.postCardEmoji}>🏠</span>
-              <div>
-                <div style={introStyles.postCardTitle}>Have a room or forming a group?</div>
-                <div style={introStyles.postCardSub}>
-                  Post your listing — reach every {currentInst.short} student searching right now. Free, takes 2 minutes.
-                </div>
-              </div>
-            </div>
-            <button style={introStyles.postCardBtn} onClick={onPost}>
-              Post a listing →
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* ── 4. METRICS STRIP ── */}
-      <div style={{ width: "100%", maxWidth: 860, padding: "0 24px 72px", alignSelf: "center", margin: "0 auto" }}>
-        <MetricsStrip />
-      </div>
-
-      
-
-      {/* ── 6. ARCHETYPE TEASER ── */}
-      <section style={introStyles.archetypeSection}>
-        <div style={introStyles.sectionEyebrow}>YOUR FLATTING ARCHETYPE</div>
-        <h2 style={introStyles.sectionHeading}>The quiz figures out your flatting style.</h2>
-        <p style={introStyles.archetypeSubline}>
-          Hover each one — one of these is probably you.
-        </p>
-        <div style={introStyles.archetypeGrid}>
-          {ARCHETYPES.map((a) => (
-            <div
-              key={a.id}
-              style={{
-                ...introStyles.archetypeChip,
-                ...(activeArchetype === a.id ? introStyles.archetypeChipActive : {}),
-              }}
-              onMouseEnter={() => setActiveArchetype(a.id)}
-              onMouseLeave={() => setActiveArchetype(null)}
-            >
-              <span style={introStyles.archetypeChipEmoji}>{a.emoji}</span>
-              <div>
-                <div style={introStyles.archetypeChipName}>{a.name}</div>
-                {activeArchetype === a.id && (
-                  <div style={introStyles.archetypeChipTagline}>{a.tagline}</div>
-                )}
-              </div>
+      {/* WHY FLATMATCH */}
+      <section style={{ width: "100%", maxWidth: 860, margin: "0 auto", padding: "8px 24px", alignSelf: "center", boxSizing: "border-box" }}>
+        <div style={introStyles.sectionEyebrow}>WHY FLATMATCH</div>
+        <h2 style={introStyles.sectionHeading}>Built to find flatmates who actually fit.</h2>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16 }}>
+          {whyPoints.map((p) => (
+            <div key={p.title} style={{ background: "#fff", border: "1.5px solid #dde3f0", borderRadius: 16, padding: "22px 20px", textAlign: "center", display: "flex", flexDirection: "column", gap: 8, alignItems: "center" }}>
+              <span style={{ fontSize: 26 }}>{p.icon}</span>
+              <div style={{ fontFamily: FONT_BODY, fontSize: 15, fontWeight: 700, color: "#1a2540" }}>{p.title}</div>
+              <div style={{ fontFamily: FONT_BODY, fontSize: 13, color: "#718096", lineHeight: 1.6 }}>{p.body}</div>
             </div>
           ))}
         </div>
-        <button style={introStyles.archetypeCta} onClick={onStart}>
-          Take the quiz to find yours →
-        </button>
+      </section>
+
+      {/* TWO-SIDED FORK */}
+      <section style={{ width: "100%", maxWidth: 860, margin: "0 auto", padding: "40px 24px", alignSelf: "center", boxSizing: "border-box" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20 }}>
+          <div style={{ background: "#f8f7ff", border: "1.5px solid #dde3f0", borderRadius: 20, padding: "32px 28px", display: "flex", flexDirection: "column", gap: 14 }}>
+            <span style={{ fontSize: 30 }}>🔍</span>
+            <h3 style={{ fontFamily: FONT_DISPLAY, fontSize: 22, fontWeight: 600, color: "#1a2540" }}>Looking for a room</h3>
+            <p style={{ fontFamily: FONT_BODY, fontSize: 14, lineHeight: 1.7, color: "#4a5568", flex: 1 }}>
+              Browse rooms from students at your uni, filtered to your budget, area, and move-in date. Take the quiz to see which flats you'll actually get along with before you message anyone.
+            </p>
+            <button style={{ ...introStyles.postCardBtn, alignSelf: "center" }} onClick={onFind}>Find a room →</button>
+          </div>
+          <div style={{ background: "#2d3f7c", borderRadius: 20, padding: "32px 28px", display: "flex", flexDirection: "column", gap: 14 }}>
+            <span style={{ fontSize: 30 }}>🏠</span>
+            <h3 style={{ fontFamily: FONT_DISPLAY, fontSize: 22, fontWeight: 600, color: "#fff" }}>Filling a room</h3>
+            <p style={{ fontFamily: FONT_BODY, fontSize: 14, lineHeight: 1.7, color: "rgba(255,255,255,0.85)", flex: 1 }}>
+              Finding someone is easy — finding someone who fits is hard. Put your room in front of students from your uni looking for exactly your kind of flat, and fill it with someone who'll actually work out.
+            </p>
+            <button style={{ ...introStyles.postCardBtn, alignSelf: "center" }} onClick={onPost}>List a room →</button>
+          </div>
+        </div>
+      </section>
+
+      {/* QUIZ SECTION */}
+      <section style={{ width: "100%", maxWidth: 860, margin: "0 auto", padding: "0 24px 56px", alignSelf: "center", boxSizing: "border-box" }}>
+        <div style={introStyles.quizBanner}>
+          <div style={introStyles.quizBannerLeft}>
+            <div style={introStyles.quizBannerEmoji}>✦</div>
+            <div>
+              <div style={introStyles.quizBannerTitle}>The wrong flatmate can ruin your year.</div>
+              <div style={introStyles.quizBannerSub}>
+                Our 2-minute compatibility quiz scores every flat on the things that actually cause friction — cleanliness, noise, study habits, guests and more — so you see your best matches before you reach out.
+              </div>
+            </div>
+          </div>
+          <button style={introStyles.quizBannerBtn} onClick={onStart}>Take the quiz →</button>
+        </div>
       </section>
 
     </div>
@@ -1499,7 +1548,7 @@ function Intro({ onStart, onPost, institution, onInstitutionChange, userListings
 }
 
 const introStyles = {
-page: {
+  page: {
     width: "100%",
     maxWidth: "100%",
     display: "flex",
@@ -1510,7 +1559,7 @@ page: {
   hookSection: {
     width: "100%",
     textAlign: "center",
-    padding: "60px 24px 48px",
+    padding: "28px 24px 48px",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
@@ -2143,7 +2192,7 @@ function SeasonCountdown() {
       <span style={{ fontSize: 18 }}>⏳</span>
       <div>
         <div style={{ fontWeight: 700, fontSize: 13, color: COLORS.ink }}>Peak flatting season is open</div>
-        <div style={{ fontSize: 12, color: COLORS.inkSoft }}>{daysToOWeek} days until O-Week 2027 — most flats fill up by mid-January</div>
+        <div style={{ fontSize: 12, color: COLORS.inkSoft }}>{daysToOWeek} days until O-Week 2027. Most flats fill up by mid-January.</div>
       </div>
     </div>
   );
@@ -2208,9 +2257,12 @@ function Results({ profile, ranked, onRestart, onPost, loadingListings, onMarkFi
  
   return (
     <div style={styles.resultsWrap}>
-      <div style={{ marginBottom: 16, width: "100%" }}>
-        <Logo size={32} />
-      </div>
+      {!isSavedView && (
+        <div style={{ width: "100%", marginBottom: 24 }}>
+          <h1 style={{ fontFamily: FONT_DISPLAY, fontSize: "clamp(26px, 4vw, 34px)", fontWeight: 600, color: "#1a2540", marginBottom: 6 }}>Find a room</h1>
+          <p style={{ fontFamily: FONT_BODY, fontSize: 14, color: COLORS.inkSoft }}>Browse rooms and groups from students at your university.</p>
+        </div>
+      )}
       {!isSavedView && hasQuizzed && (
         <div className="stamp-anim" style={styles.archetypeCard}>
           <div style={styles.archetypeEyebrow}>YOUR LIVING PROFILE</div>
@@ -2235,10 +2287,10 @@ function Results({ profile, ranked, onRestart, onPost, loadingListings, onMarkFi
         <div style={styles.noQuizPrompt}>
           <span style={{ fontSize: 28 }}>🏡</span>
           <div>
-            <div style={{ fontWeight: 700, fontSize: 15, color: COLORS.ink, marginBottom: 4 }}>Take the quiz to see your living profile</div>
-            <div style={{ fontSize: 13, color: COLORS.inkSoft }}>Get personalised match scores based on real flatmate habits and practical fit</div>
+            <div style={{ fontWeight: 700, fontSize: 15, color: COLORS.ink, marginBottom: 4 }}>See your best matches first</div>
+            <div style={{ fontSize: 13, color: COLORS.inkSoft }}>Answer a few quick questions and we'll rank every flat by how well it actually fits how you live.</div>
           </div>
-          <button style={styles.primaryBtn} onClick={onRestart}>Take the quiz</button>
+          <button style={styles.primaryBtn} onClick={onRestart}>Take the 2-min quiz</button>
         </div>
       )}
       {isSavedView && (
@@ -2252,9 +2304,15 @@ function Results({ profile, ranked, onRestart, onPost, loadingListings, onMarkFi
       <ActivityPulse listings={ranked} />
  
       {!loadingListings && (
-        <div style={{ width: "100%", background: "rgba(26, 144, 144, 0.08)", border: `1px solid rgba(26, 144, 144, 0.2)`, borderRadius: 12, padding: "12px 16px", marginBottom: 20, fontSize: 13.5, color: COLORS.teal, fontWeight: 500 }}>
-          ✓ Showing listings ranked by your compatibility score
-        </div>
+        hasQuizzed ? (
+          <div style={{ width: "100%", background: "rgba(26, 144, 144, 0.08)", border: `1px solid rgba(26, 144, 144, 0.2)`, borderRadius: 12, padding: "12px 16px", marginBottom: 20, fontSize: 13.5, color: COLORS.teal, fontWeight: 500 }}>
+            ✓ Showing listings ranked by your compatibility score
+          </div>
+        ) : (
+          <div style={{ width: "100%", background: "rgba(192, 69, 90, 0.07)", border: "1px solid rgba(192, 69, 90, 0.25)", borderRadius: 12, padding: "12px 16px", marginBottom: 20, fontSize: 13.5, color: "#C0455A", fontWeight: 500 }}>
+            ! These listings aren't ranked for you yet. Take the quiz to see your compatibility matches.
+          </div>
+        )
       )}
  
       {!loadingListings && !isSavedView && (
@@ -2433,16 +2491,7 @@ function FoundMyFlatBtn({ listingId }) {
               if (!story.trim() || !name.trim()) return;
               setSubmitting(true);
               try {
-                await window.storage.set(
-                  `story:${listingId}:${Date.now()}`,
-                  JSON.stringify({
-                    story: story.trim(),
-                    name: name.trim(),
-                    listingId,
-                    createdAt: Date.now(),
-                  }),
-                  true
-                );
+                await saveStory({ name: name.trim(), story: story.trim(), listingId });
                 setStage("submitted");
               } catch (err) {
                 console.error("Failed to save story:", err);
@@ -2665,11 +2714,7 @@ function ListingCard({ listing, onMarkFilled, sessionContact, onSave, savedListi
           onClick={async (e) => {
             e.stopPropagation();
             setRevealed(true);
-            try {
-              const current = await window.storage.get("metric:connection_requests", true);
-              const count = current ? parseInt(current.value) : 0;
-              await window.storage.set("metric:connection_requests", String(count + 1), true);
-            } catch {}
+            await bumpCounter("connection_requests");
           }}
           disabled={!listing.contact}
         >
@@ -2961,11 +3006,7 @@ function ListingDetail({ listing, onBack, onMarkFilled, sessionContact, onSave, 
             style={{ ...styles.requestBtn, width: "100%", padding: "16px" }}
             onClick={async () => {
               setRevealed(true);
-              try {
-                const current = await window.storage.get("metric:connection_requests", true);
-                const count = current ? parseInt(current.value) : 0;
-                await window.storage.set("metric:connection_requests", String(count + 1), true);
-              } catch {}
+              await bumpCounter("connection_requests");
             }}
             disabled={!listing.contact}
           >
@@ -3645,7 +3686,7 @@ function Footer() {
           </div>
           <div style={footerStyles.communityRight}>
             <a
-              href="https://instagram.com/flatmatch_nz"
+              href="https://instagram.com/flatmatchnz"
               target="_blank"
               rel="noopener noreferrer"
               style={footerStyles.instaBtn}
@@ -3655,7 +3696,7 @@ function Footer() {
                 <circle cx="12" cy="12" r="4"/>
                 <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
               </svg>
-              @flatmatch_nz
+              @flatmatchnz
             </a>
             <p style={footerStyles.communityNote}>
               Built by UC students · Not affiliated with the University of Canterbury
@@ -3963,6 +4004,17 @@ const globalCSS = `
   .hero-btn:active {
     transform: translateY(0) scale(0.98);
   }
+  .fm-sidebar button:hover {
+    background: #f4f2fb;
+    color: #7C5CBF;
+  }
+  @media (min-width: 901px) {
+    .fm-shell { padding-left: 64px; }
+    .fm-shell-collapsed { padding-left: 64px; }
+  }
+  @media (max-width: 900px) {
+    .fm-sidebar { display: none; }
+  }
 `;
  
 const FONT_DISPLAY = "'DM Serif Display', Georgia, serif";
@@ -3988,7 +4040,7 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     alignItems: "stretch",
-    padding: "64px 0 0",
+    paddingTop: 64,
   },
   navbar: {
     position: "fixed",
@@ -4884,13 +4936,14 @@ const styles = {
     width: "100%",
     background: COLORS.cardBg,
     border: `1.5px solid ${COLORS.border}`,
-    borderRadius: 24,
-    padding: "28px 32px",
-    marginBottom: 40,
+    borderRadius: 16,
+    padding: "18px 22px",
+    marginBottom: 28,
     display: "flex",
+    flexDirection: "column",
     alignItems: "center",
-    gap: 20,
-    flexWrap: "wrap",
+    textAlign: "center",
+    gap: 10,
   },
   photoUploadBox: {
     border: `2px dashed ${COLORS.border}`,
