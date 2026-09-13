@@ -831,6 +831,86 @@ const BookmarkIcon = (
   </svg>
 );
 
+function FmBottomNav({ stage, onNavigate }) {
+  const items = [
+    { key: "intro", label: "Home", icon: "🏠" },
+    { key: "result", label: "Find", icon: "🔍" },
+    { key: "post", label: "List", icon: "➕" },
+    { key: "quiz", label: "Quiz", icon: "✦" },
+    { key: "saved", label: "Saved", icon: BookmarkIcon },
+  ];
+
+  return (
+    <nav className="fm-bottomnav" style={bottomNavStyles.nav}>
+      {items.map((it) => {
+        const active = stage === it.key;
+        return (
+          <button
+            key={it.key}
+            onClick={() => onNavigate(it.key)}
+            style={{
+              ...bottomNavStyles.link,
+              ...(active ? bottomNavStyles.linkActive : {}),
+            }}
+            title={it.label}
+            aria-label={it.label}
+          >
+            <div style={bottomNavStyles.icon}>
+              {typeof it.icon === "string" ? it.icon : it.icon}
+            </div>
+            <div style={bottomNavStyles.label}>{it.label}</div>
+          </button>
+        );
+      })}
+    </nav>
+  );
+}
+
+const bottomNavStyles = {
+  nav: {
+    position: "fixed",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 72,
+    background: "#fff",
+    borderTop: "1px solid #dde3f0",
+    justifyContent: "space-around",
+    alignItems: "center",
+    zIndex: 95,
+    boxSizing: "border-box",
+  },
+  link: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 4,
+    width: "100%",
+    height: "100%",
+    background: "none",
+    border: "none",
+    cursor: "pointer",
+    color: "#5A6B6E",
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 11,
+    fontWeight: 600,
+    padding: 0,
+  },
+  linkActive: {
+    color: "#7C5CBF",
+    background: "rgba(124,92,191,0.05)",
+  },
+  icon: {
+    fontSize: 20,
+    lineHeight: 1,
+  },
+  label: {
+    fontSize: 11,
+    fontWeight: 600,
+  },
+};
+
 function FmSidebar({ stage, onNavigate, collapsed, onToggle }) {
   const [hovered, setHovered] = useState(null);
   const items = [
@@ -1009,6 +1089,13 @@ export default function App() {
   const [previousStage, setPreviousStage] = useState("intro");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => typeof window !== "undefined" && window.innerWidth <= 900);
+
+  useEffect(() => {
+    function onResize() { setIsMobile(window.innerWidth <= 900); }
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   function viewListing(listing) {
     setPreviousStage(stage);
@@ -1128,16 +1215,19 @@ export default function App() {
   }
  
   return (
-    <div style={{ ...styles.page, paddingLeft: 64 }} className={sidebarCollapsed ? "fm-shell fm-shell-collapsed" : "fm-shell"}>
+    <div style={{ ...styles.page, paddingLeft: isMobile ? 0 : 64 }} className={sidebarCollapsed ? "fm-shell fm-shell-collapsed" : "fm-shell"}>
       <style>{globalCSS}</style>
       {/* <Auth /> */}
-      <FmSidebar
-        stage={stage}
-        onNavigate={(key) => { handleNav(key); setSidebarCollapsed(true); }}
-        collapsed={sidebarCollapsed}
-        onToggle={() => setSidebarCollapsed((c) => !c)}
-      />
-      {!sidebarCollapsed && (
+      {!isMobile && (
+        <FmSidebar
+          stage={stage}
+          onNavigate={(key) => { handleNav(key); setSidebarCollapsed(true); }}
+          collapsed={sidebarCollapsed}
+          onToggle={() => setSidebarCollapsed((c) => !c)}
+        />
+      )}
+      {isMobile && <FmBottomNav stage={stage} onNavigate={handleNav} />}
+      {!isMobile && !sidebarCollapsed && (
         <div
           onClick={() => setSidebarCollapsed(true)}
           style={{
@@ -1559,11 +1649,11 @@ const introStyles = {
   hookSection: {
     width: "100%",
     textAlign: "center",
-    padding: "28px 24px 48px",
+    padding: "clamp(20px, 5vw, 28px) clamp(16px, 4vw, 24px) clamp(32px, 5vw, 48px)",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    maxWidth: 860,
+    maxWidth: 1160,
     margin: "0 auto",
     alignSelf: "center",
   },
@@ -1607,12 +1697,12 @@ const introStyles = {
   },
   quizBanner: {
     width: "100%",
-    maxWidth: 860,
+    maxWidth: 1160,
     alignSelf: "center",
     background: "#2d3f7c",
     borderRadius: 20,
     margin: "0 auto 0",
-    padding: "24px 32px",
+    padding: "clamp(16px, 3vw, 24px) clamp(20px, 3vw, 32px)",
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
@@ -1661,9 +1751,9 @@ const introStyles = {
   },
   listingsSection: {
     width: "100%",
-    padding: "48px 24px",
+    padding: "clamp(32px, 5vw, 48px) clamp(16px, 4vw, 24px)",
     borderTop: "1px solid #dde3f0",
-    maxWidth: 860,
+    maxWidth: 1160,
     margin: "0 auto",
     alignSelf: "center",
     boxSizing: "border-box",
@@ -1844,8 +1934,8 @@ const introStyles = {
   },
   problemSection: {
     width: "100%",
-    padding: "16px 24px 48px",
-    maxWidth: 860,
+    padding: "clamp(12px, 3vw, 16px) clamp(16px, 4vw, 24px) clamp(40px, 5vw, 48px)",
+    maxWidth: 1160,
     margin: "0 auto",
     alignSelf: "center",
     boxSizing: "border-box",
@@ -1949,12 +2039,12 @@ const introStyles = {
   },
   archetypeSection: {
     width: "100%",
-    padding: "72px 24px",
+    padding: "clamp(48px, 8vw, 72px) clamp(16px, 4vw, 24px)",
     borderTop: "1px solid #dde3f0",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    maxWidth: 860,
+    maxWidth: 1160,
     margin: "0 auto",
     alignSelf: "center",
     boxSizing: "border-box",
@@ -2782,7 +2872,7 @@ function PhotoCarousel({ photos, primaryPhoto }) {
 
   return (
     <div style={{ marginBottom: 20 }}>
-      <div style={{ position: "relative", width: "100%", height: 440, borderRadius: 16, overflow: "hidden", background: "#F7F6F2" }}>
+      <div style={{ position: "relative", width: "100%", height: "clamp(220px, 45vw, 440px)", borderRadius: 16, overflow: "hidden", background: "#F7F6F2" }}>
         <img
           src={photos[index]}
           alt={`Flat photo ${index + 1}`}
@@ -3768,9 +3858,9 @@ const footerStyles = {
   communityInner: {
     maxWidth: "100%",
     margin: "0 auto",
-    padding: "52px 24px",
+    padding: "clamp(36px, 6vw, 52px) clamp(16px, 4vw, 24px)",
     display: "flex",
-    gap: 48,
+    gap: "clamp(24px, 4vw, 48px)",
     flexWrap: "wrap",
     alignItems: "flex-start",
     justifyContent: "space-between",
@@ -3848,9 +3938,9 @@ const footerStyles = {
     lineHeight: 1.6,
   },
   privacySection: {
-    maxWidth: 1400,
+    maxWidth: 1160,
     margin: "0 auto",
-    padding: "0 24px",
+    padding: "0 clamp(16px, 4vw, 24px)",
     width: "100%",
     boxSizing: "border-box",
   },
@@ -3897,9 +3987,9 @@ const footerStyles = {
     color: "#718096",
   },
   bottomBar: {
-    maxWidth: 860,
+    maxWidth: 1160,
     margin: "0 auto",
-    padding: "20px 24px",
+    padding: "clamp(14px, 3vw, 20px) clamp(16px, 4vw, 24px)",
     borderTop: "1px solid #dde3f0",
     fontFamily: "'Inter', sans-serif",
     fontSize: 12,
@@ -4008,12 +4098,16 @@ const globalCSS = `
     background: #f4f2fb;
     color: #7C5CBF;
   }
+  .fm-bottomnav { display: none; }
   @media (min-width: 901px) {
     .fm-shell { padding-left: 64px; }
     .fm-shell-collapsed { padding-left: 64px; }
   }
   @media (max-width: 900px) {
     .fm-sidebar { display: none; }
+    .fm-shell { padding-left: 0; }
+    .fm-shell-collapsed { padding-left: 0; }
+    .fm-bottomnav { display: flex; }
   }
 `;
  
@@ -4041,6 +4135,7 @@ const styles = {
     flexDirection: "column",
     alignItems: "stretch",
     paddingTop: 64,
+    paddingBottom: "clamp(0px, 3vw, 72px)",
   },
   navbar: {
     position: "fixed",
@@ -4450,14 +4545,11 @@ const styles = {
     marginBottom: 14,
   },
   cardsCol: {
-    display: "flex",
-    flexDirection: "column",
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))",
     gap: 14,
-    height: 600,
-    overflowY: "scroll",
+    width: "100%",
     overflowX: "hidden",
-    paddingRight: 6,
-    WebkitOverflowScrolling: "touch",
   },
   avatar: {
     width: 40,
@@ -4741,9 +4833,9 @@ const styles = {
     display: "inline-block",
   },
  formWrap: {
-    maxWidth: 960,
+    maxWidth: 1160,
     width: "100%",
-    padding: "40px 24px",
+    padding: "clamp(28px, 5vw, 40px) clamp(16px, 4vw, 24px)",
     margin: "0 auto",
     alignSelf: "center",
   },
@@ -4767,9 +4859,9 @@ const styles = {
     flex: 1,
   },
   fieldRow: {
-    display: "flex",
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
     gap: 14,
-    flexWrap: "wrap",
   },
   ucBadge: {
     textTransform: "uppercase",
