@@ -1222,6 +1222,10 @@ export default function App() {
   }
 
   function handleNav(key) {
+    if (key === "post") {
+      handlePostClick();
+      return;
+    }
     if (key === "quiz") setCurrentQ(0);
     setStage(key);
     window.scrollTo({ top: 0, behavior: "instant" });
