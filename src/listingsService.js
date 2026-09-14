@@ -40,6 +40,7 @@ export async function fetchListings(institutionId = null) {
     fullQuizProfile: l.full_quiz_profile || null,
     dealBreakers: l.deal_breakers || null,
     updates: l.updates || [],
+    owner_id: l.owner_id,
     createdAt: new Date(l.created_at).getTime(),
     renewedAt: new Date(l.renewed_at).getTime(),
     expiresAt: new Date(l.expires_at).getTime(),
@@ -49,6 +50,10 @@ export async function fetchListings(institutionId = null) {
 export async function createListing(listing) {
   let photoUrl = null
   let photoUrls = []
+
+  // Get the current user's ID
+  const { data: { user } } = await supabase.auth.getUser()
+  const ownerId = user?.id
 
   const photosToUpload = listing.photos && listing.photos.length > 0
     ? listing.photos
@@ -100,6 +105,7 @@ export async function createListing(listing) {
     full_quiz_profile: listing.fullQuizProfile || null,
     deal_breakers: listing.dealBreakers || null,
     delete_token: deleteToken,
+    owner_id: ownerId,
   }
 
   const { data, error } = await supabase
@@ -123,6 +129,7 @@ export async function createListing(listing) {
     photo: photoUrl,
     photos: photoUrls,
     deleteToken,
+    owner_id: ownerId,
     createdAt: new Date(data.created_at).getTime(),
     renewedAt: new Date(data.renewed_at).getTime(),
     expiresAt: new Date(data.expires_at).getTime(),

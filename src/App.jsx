@@ -4,6 +4,7 @@ import AccountMenu from "./AccountMenu";
 import { fetchListings, createListing, markListingFilled } from "./listingsService";
 import { fetchMetrics, bumpCounter, saveStory } from "./metricsService";
 import { scoreCompatibility, deriveListingProfile, DEFAULT_MATCHING_CONFIG } from "./matchingEngine.js";
+import { useAuthUser } from "./useAuthUser";
  
 /* ---------------------------------------------
    LOCATION DATA
@@ -809,7 +810,7 @@ function LogoLockup({ size = 40, align = "center" }) {
  
 
  
-function NavBar({ onHome }) {
+function NavBar({ onHome, user, showModal, setShowModal }) {
   return (
     <nav style={styles.navbar}>
       <div style={styles.navInner}>
@@ -818,7 +819,7 @@ function NavBar({ onHome }) {
           <span style={styles.navLogoText}>FlatMatch</span>
         </button>
         <div style={styles.navLinks}>
-          <AccountMenu />
+          <AccountMenu user={user} showModal={showModal} setShowModal={setShowModal} />
         </div>
       </div>
     </nav>
@@ -1070,8 +1071,11 @@ const sidebarStyles = {
 };
 
 export default function App() {
+  const { user } = useAuthUser()
   const [stage, setStage] = useState("intro");
   const [currentQ, setCurrentQ] = useState(0);
+  const [showModal, setShowModal] = useState(false);
+  const [postAfterAuth, setPostAfterAuth] = useState(false);
   const [answers, setAnswers] = useState(() => {
     try {
       const saved = localStorage.getItem("fm_answers");
@@ -1222,6 +1226,24 @@ export default function App() {
     setStage(key);
     window.scrollTo({ top: 0, behavior: "instant" });
   }
+
+  function handlePostClick() {
+    if (!user) {
+      setShowModal(true);
+      setPostAfterAuth(true);
+      return;
+    }
+    setPostAfterAuth(false);
+    setStage("post");
+  }
+
+  useEffect(() => {
+    if (user && postAfterAuth) {
+      setStage("post");
+      setPostAfterAuth(false);
+      window.scrollTo({ top: 0, behavior: "instant" });
+    }
+  }, [user, postAfterAuth]);
  
   return (
     <div style={{ ...styles.page, paddingLeft: isMobile ? 0 : 64 }} className={sidebarCollapsed ? "fm-shell fm-shell-collapsed" : "fm-shell"}>
@@ -1250,12 +1272,12 @@ export default function App() {
           }}
         />
       )}
-      <NavBar onHome={restart} />
+      <NavBar onHome={restart} user={user} showModal={showModal} setShowModal={setShowModal} />
  
       {stage === "intro" && (
         <Intro
           onStart={() => setStage("quiz")}
-          onPost={() => setStage("post")}
+          onPost={handlePostClick}
           onFind={() => handleNav("result")}
           institution={institution}
           onInstitutionChange={handleInstitutionChange}
@@ -1285,7 +1307,7 @@ export default function App() {
           profile={profile}
           ranked={ranked.filter((l) => savedListings.includes(l.id))}
           onRestart={restart}
-          onPost={() => setStage("post")}
+          onPost={handlePostClick}
           loadingListings={loadingListings}
           onMarkFilled={markFilled}
           sessionContact={sessionContact}
@@ -1294,6 +1316,7 @@ export default function App() {
           isSavedView={true}
           hasQuizzed={hasQuizzed}
           onView={viewListing}
+          user={user}
         />
       )}
  
@@ -1302,7 +1325,7 @@ export default function App() {
           profile={profile}
           ranked={ranked}
           onRestart={restart}
-          onPost={() => setStage("post")}
+          onPost={handlePostClick}
           loadingListings={loadingListings}
           onMarkFilled={markFilled}
           sessionContact={sessionContact}
@@ -1310,6 +1333,7 @@ export default function App() {
           savedListings={savedListings}
           hasQuizzed={hasQuizzed}
           onView={viewListing}
+          user={user}
         />
       )}
  
@@ -1329,6 +1353,7 @@ export default function App() {
           sessionContact={sessionContact}
           onSave={onSave}
           savedListings={savedListings}
+          user={user}
         />
       )}
  
@@ -2317,7 +2342,7 @@ function HowMatchingWorks() {
   );
 }
  
-function Results({ profile, ranked, onRestart, onPost, loadingListings, onMarkFilled, sessionContact, onSave, savedListings, isSavedView, hasQuizzed, onView }) {
+function Results({ profile, ranked, onRestart, onPost, loadingListings, onMarkFilled, sessionContact, onSave, savedListings, isSavedView, hasQuizzed, onView, user }) {
   const [suburbFilter, setSuburbFilter] = useState("all");
   const [sortBy, setSortBy] = useState("match");
  
@@ -2473,7 +2498,7 @@ function Results({ profile, ranked, onRestart, onPost, loadingListings, onMarkFi
               <div style={styles.cardsColWrapper}>
                 <div style={styles.cardsCol}>
                   {groups.map((listing) => (
-                    <ListingCard key={listing.id} listing={listing} onMarkFilled={onMarkFilled} sessionContact={sessionContact} onSave={onSave} savedListings={savedListings} hasQuizzed={hasQuizzed} onTakeQuiz={onRestart} onView={onView} />
+                    <ListingCard key={listing.id} listing={listing} onMarkFilled={onMarkFilled} sessionContact={sessionContact} onSave={onSave} savedListings={savedListings} hasQuizzed={hasQuizzed} onTakeQuiz={onRestart} onView={onView} user={user} />
                   ))}
                 </div>
               </div>
@@ -2488,7 +2513,7 @@ function Results({ profile, ranked, onRestart, onPost, loadingListings, onMarkFi
               <div style={styles.cardsColWrapper}>
                 <div style={styles.cardsCol}>
                   {solos.map((listing) => (
-                    <ListingCard key={listing.id} listing={listing} onMarkFilled={onMarkFilled} sessionContact={sessionContact} onSave={onSave} savedListings={savedListings} hasQuizzed={hasQuizzed} onTakeQuiz={onRestart} onView={onView} />
+                    <ListingCard key={listing.id} listing={listing} onMarkFilled={onMarkFilled} sessionContact={sessionContact} onSave={onSave} savedListings={savedListings} hasQuizzed={hasQuizzed} onTakeQuiz={onRestart} onView={onView} user={user} />
                   ))}
                 </div>
               </div>
@@ -2721,10 +2746,9 @@ const foundStyles = {
   },
 };
 
-function ListingCard({ listing, onMarkFilled, sessionContact, onSave, savedListings, hasQuizzed, onTakeQuiz, onView }) {
+function ListingCard({ listing, onMarkFilled, sessionContact, onSave, savedListings, hasQuizzed, onTakeQuiz, onView, user }) {
   const [revealed, setRevealed] = useState(false);
-  const tokens = JSON.parse(localStorage.getItem('fm_tokens') || '{}');
-  const isOwner = !!tokens[listing.id];
+  const isOwner = user && listing.owner_id === user.id;
   const isSaved = savedListings && savedListings.includes(listing.id);
   const daysLeft = listing.expiresAt
     ? Math.max(0, Math.ceil((listing.expiresAt - Date.now()) / (1000 * 60 * 60 * 24)))
@@ -2941,10 +2965,9 @@ function PhotoCarousel({ photos, primaryPhoto }) {
   );
 }
 
-function ListingDetail({ listing, onBack, onMarkFilled, sessionContact, onSave, savedListings }) {
+function ListingDetail({ listing, onBack, onMarkFilled, sessionContact, onSave, savedListings, user }) {
   const [revealed, setRevealed] = useState(false);
-  const tokens = JSON.parse(localStorage.getItem('fm_tokens') || '{}');
-  const isOwner = !!tokens[listing.id];
+  const isOwner = user && listing.owner_id === user.id;
   const isSaved = savedListings && savedListings.includes(listing.id);
   const spotsLeft = listing.spotsNeeded ?? null;
 

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from './supabaseClient'
+import { useAuthUser } from './useAuthUser'
 
 function isUniEmail(email) {
   return email.trim().toLowerCase().endsWith('@uclive.ac.nz')
@@ -20,10 +21,10 @@ function initialsFrom(name, email) {
   return (email?.[0] || '?').toUpperCase()
 }
 
-export default function AccountMenu() {
-  const [user, setUser] = useState(null)
+export default function AccountMenu({ user: propUser, showModal, setShowModal }) {
+  const { user: hookUser } = useAuthUser()
+  const user = propUser ?? hookUser
   const [profile, setProfile] = useState(null)
-  const [showModal, setShowModal] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [mode, setMode] = useState('signup')
   const [email, setEmail] = useState('')
@@ -33,14 +34,6 @@ export default function AccountMenu() {
   const [busy, setBusy] = useState(false)
   const menuRef = useRef(null)
   const fileRef = useRef(null)
-
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setUser(data.user))
-    const { data: listener } = supabase.auth.onAuthStateChange((_e, session) => {
-      setUser(session?.user ?? null)
-    })
-    return () => listener.subscription.unsubscribe()
-  }, [])
 
   useEffect(() => {
     if (!user) { setProfile(null); return }
