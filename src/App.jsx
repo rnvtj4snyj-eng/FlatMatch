@@ -924,11 +924,18 @@ function FmSidebar({ stage, onNavigate, collapsed, onToggle }) {
     <aside className="fm-sidebar" style={{ ...sidebarStyles.bar, width: collapsed ? 64 : 240 }}>
       <button
         onClick={onToggle}
-        title={collapsed ? "Expand" : "Collapse"}
+        title={collapsed ? "Expand menu" : "Collapse menu"}
         aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-        style={{ ...sidebarStyles.toggle, justifyContent: collapsed ? "center" : "flex-end" }}
+        style={{ ...sidebarStyles.toggle, justifyContent: collapsed ? "center" : "space-between" }}
       >
-        {collapsed ? "»" : "«"}
+        {collapsed ? (
+          <span style={{ fontSize: 18 }}>☰</span>
+        ) : (
+          <>
+            <span>Menu</span>
+            <span style={{ fontSize: 16 }}>«</span>
+          </>
+        )}
       </button>
       <nav style={sidebarStyles.nav}>
         {items.map((it) => {
@@ -987,13 +994,15 @@ const sidebarStyles = {
     alignItems: "center",
     width: "100%",
     fontFamily: "'Inter', sans-serif",
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 700,
     color: "#7C5CBF",
-    background: "transparent",
-    border: "none",
+    background: "rgba(124,92,191,0.10)",
+    border: "1.5px solid rgba(124,92,191,0.30)",
+    borderRadius: 10,
     cursor: "pointer",
-    padding: "4px 10px 12px",
+    padding: "10px 14px",
+    marginBottom: 12,
   },
   nav: {
     display: "flex",
