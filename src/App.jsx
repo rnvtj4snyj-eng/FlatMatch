@@ -1563,7 +1563,7 @@ function Intro({ onStart, onPost, onFind, institution }) {
     <div style={introStyles.page}>
 
       {/* METRICS STRIP */}
-      <div style={{ width: "100%", maxWidth: 860, padding: "28px 24px 0", alignSelf: "center", margin: "0 auto", boxSizing: "border-box" }}>
+      <div style={{ width: "100%", maxWidth: 1160, padding: "clamp(20px, 3vw, 28px) clamp(16px, 4vw, 24px) 0", alignSelf: "center", margin: "0 auto", boxSizing: "border-box" }}>
         <MetricsStrip />
       </div>
 
@@ -1581,7 +1581,7 @@ function Intro({ onStart, onPost, onFind, institution }) {
       </section>
 
       {/* WHY FLATMATCH */}
-      <section style={{ width: "100%", maxWidth: 860, margin: "0 auto", padding: "8px 24px", alignSelf: "center", boxSizing: "border-box" }}>
+      <section style={{ width: "100%", maxWidth: 1160, margin: "0 auto", padding: "clamp(6px, 2vw, 8px) clamp(16px, 4vw, 24px)", alignSelf: "center", boxSizing: "border-box" }}>
         <div style={introStyles.sectionEyebrow}>WHY FLATMATCH</div>
         <h2 style={introStyles.sectionHeading}>Built to find flatmates who actually fit.</h2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16 }}>
@@ -1596,7 +1596,7 @@ function Intro({ onStart, onPost, onFind, institution }) {
       </section>
 
       {/* TWO-SIDED FORK */}
-      <section style={{ width: "100%", maxWidth: 860, margin: "0 auto", padding: "40px 24px", alignSelf: "center", boxSizing: "border-box" }}>
+      <section style={{ width: "100%", maxWidth: 1160, margin: "0 auto", padding: "clamp(28px, 5vw, 40px) clamp(16px, 4vw, 24px)", alignSelf: "center", boxSizing: "border-box" }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20 }}>
           <div style={{ background: "#f8f7ff", border: "1.5px solid #dde3f0", borderRadius: 20, padding: "32px 28px", display: "flex", flexDirection: "column", gap: 14 }}>
             <span style={{ fontSize: 30 }}>🔍</span>
@@ -1618,7 +1618,7 @@ function Intro({ onStart, onPost, onFind, institution }) {
       </section>
 
       {/* QUIZ SECTION */}
-      <section style={{ width: "100%", maxWidth: 860, margin: "0 auto", padding: "0 24px 56px", alignSelf: "center", boxSizing: "border-box" }}>
+      <section style={{ width: "100%", maxWidth: 1160, margin: "0 auto", padding: "0 clamp(16px, 4vw, 24px) clamp(48px, 6vw, 56px)", alignSelf: "center", boxSizing: "border-box" }}>
         <div style={introStyles.quizBanner}>
           <div style={introStyles.quizBannerLeft}>
             <div style={introStyles.quizBannerEmoji}>✦</div>
@@ -2114,9 +2114,9 @@ const introStyles = {
   },
   finalCtaSection: {
     width: "calc(100% - 48px)",
-    maxWidth: 860,
+    maxWidth: 1160,
     margin: "0 auto 72px",
-    padding: "64px 40px",
+    padding: "clamp(48px, 6vw, 64px) clamp(28px, 4vw, 40px)",
     background: "#2d3f7c",
     borderRadius: 24,
     display: "flex",
@@ -4153,7 +4153,7 @@ const styles = {
     width: "100%",
     maxWidth: "100%",
     margin: "0 auto",
-    padding: "0 24px",
+    padding: "0 clamp(12px, 3vw, 24px)",
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
@@ -4285,11 +4285,11 @@ const styles = {
     paddingBottom: 32,
   },
   footerInner: {
-    maxWidth: 860,
+    maxWidth: 1160,
     margin: "0 auto",
-    padding: "0 24px",
+    padding: "0 clamp(16px, 4vw, 24px)",
     display: "flex",
-    gap: 48,
+    gap: "clamp(32px, 4vw, 48px)",
     flexWrap: "wrap",
     justifyContent: "space-between",
     marginBottom: 32,
@@ -4332,9 +4332,9 @@ const styles = {
     lineHeight: 1.5,
   },
   footerBottom: {
-    maxWidth: 860,
+    maxWidth: 1160,
     margin: "0 auto",
-    padding: "16px 24px 0",
+    padding: "clamp(12px, 2vw, 16px) clamp(16px, 4vw, 24px) 0",
     borderTop: `1px solid ${COLORS.border}`,
     fontSize: 12,
     color: COLORS.inkSoft,
@@ -4410,9 +4410,9 @@ const styles = {
     marginTop: 24,
   },
   quizWrap: {
-    maxWidth: 860,
+    maxWidth: 1160,
     width: "100%",
-    padding: "40px 24px",
+    padding: "clamp(28px, 5vw, 40px) clamp(16px, 4vw, 24px)",
     margin: "0 auto",
     alignSelf: "center",
   },
